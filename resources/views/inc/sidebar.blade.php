@@ -1,0 +1,61 @@
+<nav class="pc-sidebar">
+  <div class="navbar-wrapper">
+    <div class="m-header">
+      <a href="../dashboard/index.html" class="b-brand text-primary">
+        <!-- ========   Change your logo from here   ============ -->
+        <img src="{{asset('assets\image\logo_klh_tulisan.png')}}" class="img-fluid brand-logo" >
+      </a>
+    </div>
+    <div class="navbar-content">
+      <ul class="pc-navbar">
+        <li class="pc-item">
+          <a href="{{route('dashboard.index')}}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+            <span class="pc-mtext">Dashboard</span>
+          </a>
+        </li>
+
+        <li class="pc-item pc-caption">
+          <label>Side Panel</label>
+          <i class="ti ti-dashboard"></i>
+        </li>
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-stack-2"></i></span><span class="pc-mtext">Master Data</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="{{ route('satker.index') }}">Data Satker</a></li>
+            <li class="pc-item"><a class="pc-link" href="{{ route('bmn.index') }}">Data Jenis BMN</a></li>
+            <li class="pc-item"><a class="pc-link" href="{{ route('barang.index') }}">Data Kode Barang</a></li>
+            {{-- <li class="pc-item pc-hasmenu">
+              <a href="#!" class="pc-link">User<span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+              <ul class="pc-submenu">
+                <li class="pc-item"><a class="pc-link" href="{{ route('user.index') }}">Users</a></li>
+                <li class="pc-item"><a class="pc-link" href="{{ route('level.index') }}">Levels</a></li>
+              </ul>
+            </li> --}}
+          </ul>
+        </li>
+
+        </li>
+          <li class="pc-item ">
+          <a href="{{ route('siman.index') }}" class="pc-link"><span class="pc-micon"><i class="ti ti-database"></i></span><span class="pc-mtext">Data SIMAN</span></a>
+        </li>
+
+        </li>
+          <li class="pc-item ">
+          <a href="{{ route('internal.index') }}" class="pc-link"><span class="pc-micon"><i class="ti ti-database"></i></span><span class="pc-mtext">Data Internal</span></a>
+        </li>
+
+        </li>
+          <li class="pc-item ">
+          <a href="{{ route('compare.index') }}" class="pc-link"><span class="pc-micon"><i class=" ti ti-table"></i></span><span class="pc-mtext">Tabel Komparasi</span></a>
+        </li>
+
+        </li>
+          <li class="pc-item ">
+          <a href="{{ route('invalid.index') }}" class="pc-link"><span class="pc-micon"><i class=" ti ti-database"></i></span><span class="pc-mtext">Data Invalid</span></a>
+        </li>
+
+    </ul>
+    </div>
+  </div>
+</nav>
