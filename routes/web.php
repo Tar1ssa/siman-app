@@ -60,3 +60,5 @@ Route::resource('dashboard', DashboardController::class);
 Route::resource('bmn', bmnController::class);
 Route::resource('satker', satkerController::class);
 Route::resource('barang', BarangController::class);
+
+// daeng babi
