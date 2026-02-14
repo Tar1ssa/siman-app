@@ -9,9 +9,9 @@ class DataInternal extends Model
     protected $fillable = [
         'satker_id',
         'barang_id',
+        'lokasi_id',
         'nup',
         'tgl_perolehan',
-        'merkRaw',
         'merk',
         'tipe',
         'jumlah',
@@ -22,8 +22,8 @@ class DataInternal extends Model
         'akun_neraca',
         'pembukuan',
         'unit_kerja_id',
-        'pengguna',
-        'lokasi_ruang',
+        'penggunaRaw',
+        // 'lokasi_ruang',
         'status_inven',
         'update_kondisi',
         'link_dokumentasi',
@@ -33,7 +33,17 @@ class DataInternal extends Model
         'kode_registrasi',
         'siman_id',
         'batch',
-        'label'
+        'label',
+        'profile_image',
+        'profile_image_path',
+        'nama_pengguna',
+        'alamat_pengguna',
+        'identitas_id',
+    ];
+
+    protected $casts = [
+        'tgl_perolehan' => 'date',
+        'tgl_bahi' => 'date',
     ];
 
     public function bmns()
@@ -56,4 +66,28 @@ class DataInternal extends Model
         return $this->belongsTo(UnitKerja::class, 'unit_kerja_id', 'id');
     }
 
+    public function fotoInternals()
+    {
+        return $this->hasMany(FotoInternal::class);
+    }
+
+    public function penggunas()
+    {
+        return $this->hasOne(Pengguna::class, 'data_internal_id', 'id');
+    }
+
+    public function lokasiRuang()
+    {
+        return $this->belongsTo(LokasiRuang::class, 'lokasi_id', 'id');
+    }
+
+    public function dataAtribut()
+    {
+        return $this->hasMany(DataAtribut::class);
+    }
+
+    public function identitas()
+    {
+        return $this->belongsTo(Identitas::class, 'identitas_id', 'id');
+    }
 }

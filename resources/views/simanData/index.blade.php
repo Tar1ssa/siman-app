@@ -260,7 +260,8 @@
           var element = genericExamples[i];
           new Choices(element, {
             placeholderValue: 'This is a placeholder set in the config',
-            searchPlaceholderValue: 'Cari kode barang'
+            searchPlaceholderValue: 'Cari kode barang',
+            position: 'bottom'
           });
         }
     })

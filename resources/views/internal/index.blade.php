@@ -3,6 +3,67 @@
 <link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/responsive.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Make action column sticky */
+/* table.dataTable th.dt-action-col ,
+table.dataTable td.dt-action-col{
+    position: sticky;
+    right: 0;
+    background: #fff;
+    z-index: 2;
+    white-space: nowrap;
+} */
+
+/* Header should be above body */
+/* table.dataTable th.dt-action-col {
+    z-index: 3;
+} */
+
+/* Optional: shadow separator */
+/* table.dataTable td.dt-action-col::before,
+table.dataTable th.dt-action-col::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(to left, rgba(0,0,0,.15), transparent);
+} */
+
+/* .dt-action-col {
+    min-width: 180px;
+    max-width: 180px;
+}
+
+.dataTables_scrollHead th.batch-col {
+    padding-right: 10rem; 
+}
+
+.dataTables_scrollHead th.link_dokumentasi {
+    padding-right: 10rem; 
+}
+
+.dataTables_scrollHead th.kode-satker-col {
+    padding-right: 6rem; 
+}
+
+.dataTables_scrollHead th.merk-col {
+    padding-right: 3rem; 
+}
+.dataTables_scrollHead th.tipe-col {
+    padding-right: 3rem; 
+}
+
+.dataTables_scrollHead th.dt-action-col {
+    padding-right: 11.5rem; 
+} */
+
+.choices__list--dropdown {
+    z-index: 5 !important;
+}
+
+</style>
 @endsection
 @section('content')
     <div class="pc-content overflow-x-hidden">
@@ -91,16 +152,16 @@
                                 Search by Unit Kerja
                             </label>
                             <select
-                                        class="form-control"
+                                        class="form-control "
                                         data-unit
                                         name="unitSearch"
                                         id="unitSelect"
                                     >
-                                        <option value="" selected disabled>--Pilih Unit Kerja--</option>
-                                        <option value="">Semua</option>
+                                        <option style="z-index: 4" value="" selected disabled>--Pilih Unit Kerja--</option>
+                                        <option style="z-index: 4" value="">Semua</option>
                                         @foreach ($unitkerja as $keyunitkerja)
 
-                                        <option value="{{ $keyunitkerja->id }}">{{ $keyunitkerja->name }}</option>
+                                        <option style="z-index: 4" value="{{ $keyunitkerja->id }}">{{ $keyunitkerja->name }}</option>
                                         @endforeach
                                     </select>
                             <input
@@ -115,12 +176,14 @@
                 {{-- filter by tgl --}}
                 <div class="row mb-3">
                     <div class="col-md-4">
-
+                        <label for="lokasiSearch" class="form-label fw-bold">
+                                Search by Tanggal Perolehan
+                            </label>
                         <div class="accordion " id="accordionTgl">
                             <div class="accordion-item">
                                 <h5 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                    Search by Tanggal Perolehan
+                                    Pilih Rentang Tanggal Perolehan
                                 </button>
                                 </h5>
                                 <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionTgl">
@@ -144,10 +207,35 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label for="lokasiSearch" class="form-label fw-bold">
+                                Search by Lokasi Ruang
+                            </label>
+                            <select
+                                        class="form-control"
+                                        data-lokasi
+                                        name="lokasiSearch"
+                                        id="lokasiSearch"
+                                    >
+                                        <option value="" selected disabled>--Pilih Lokasi Ruang--</option>
+                                        <option value="">Semua</option>
+                                        @foreach ($lokasiruang as $keylokasiruang)
+
+                                        <option value="{{ $keylokasiruang->id }}">{{ $keylokasiruang->name }}</option>
+                                        @endforeach
+                                    </select>
+                            <input
+                                type="hidden"
+                                id="lokasiSearch"
+                                placeholder=""
+                            >
+                        </div>
                 </div>
 
-                <div class="">
-                    <table id="new-cons" class="table table-striped overflow-hidden" style="width:100%">
+                <div class="table-responsive">
+                    <table id="new-cons" class="table table-striped nowrap w-100 " >
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -156,7 +244,6 @@
                                 <th>NUP</th>
                                 <th>Tanggal Perolehan</th>
                                 <th>Nama Barang</th>
-                                <th>Merk/Tipe</th>
                                 <th>Merk</th>
                                 <th>Tipe</th>
                                 <th>Jumlah</th>
@@ -167,16 +254,19 @@
                                 <th>Akun Neraca</th>
                                 <th>Pembukuan</th>
                                 <th>Unit Kerja</th>
+                                <th>PenggunaRaw</th>
                                 <th>Nama Pengguna</th>
+                                <th>Alamat Pengguna</th>
                                 <th>Lokasi Ruang</th>
                                 <th>Status INVEN</th>
                                 <th>Kondisi Setelah Inventarisasi</th>
-                                {{-- <th>Update Lokasi Ruang</th> --}}
                                 <th>Link Dokumentasi</th>
                                 <th>Link Kelengkapan LHI</th>
                                 <th>Nomor BAHI (Berita Acara Hasil Inven)</th>
                                 <th>Tanggal BAHI (Berita Acara Hasil Inven)</th>
                                 <th>Batch</th>
+                                {{-- <th>Aksi</th> --}}
+                                
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -296,7 +386,8 @@
             var element = genericExamples[i];
             new Choices(element, {
                 placeholderValue: 'This is a placeholder set in the config',
-                searchPlaceholderValue: 'Cari kode barang'
+                searchPlaceholderValue: 'Cari kode barang',
+                position: 'bottom'
             });
             }
 
@@ -305,9 +396,20 @@
             var unitelement = UnitSelect[i];
             new Choices(unitelement, {
                 placeholderValue: 'This is a placeholder set in the config',
-                searchPlaceholderValue: 'Cari unit kerja'
+                searchPlaceholderValue: 'Cari unit kerja',
+                position: 'bottom'
             });
             }
+
+            var LokasiSelect = document.querySelectorAll('[data-lokasi]');
+            for (i = 0; i < LokasiSelect.length; ++i) {
+            var lokasielement = LokasiSelect[i];
+            new Choices(lokasielement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari lokasi ruang'
+            });
+            }
+
         })
     </script>
 
@@ -347,6 +449,14 @@
 
         unit.addEventListener('change', function () {
             unitSearch.value = unit.value; //  sync select → input
+            newcs.draw();
+        });
+
+        const lokasi = document.getElementById('lokasiSearch');
+        const lokasiSearch = document.getElementById('lokasiSearch');
+
+        lokasi.addEventListener('change', function () {
+            lokasiSearch.value = lokasi.value; //  sync select → input
             newcs.draw();
         });
     </script>
@@ -415,6 +525,10 @@
     newcs.ajax.reload();
     });
 
+    $('#lokasiSearch').on('change', function () {
+        newcs.draw();
+    });
+
     // $('#nupSearch').on('keyup', function () {
     //     newcs.draw();
     // });
@@ -431,12 +545,15 @@
     scrollCollapse: true,
 
     autoWidth: false,   // IMPORTANT
+    responsive: false,  // IMPORTANT
+
 
     ajax: {
         url: "{{ route('internal.datatable') }}",
         data: function (d) {
             d.itemSearch   = $('#itemSearch').val();
             d.unitSearch   = $('#unitSearch').val();
+            d.lokasiSearch = $('#lokasiSearch').val();
             // d.nupSearch = $('#nupSearch').val();
             // d.bmnSearch    = $('#bmnSearch').val();
 
@@ -447,34 +564,39 @@
     },
 
     columns: [
-        { data: 'DT_RowIndex', orderable: false, searchable: false },
-        { data: 'kode_satker', name: 'satkers.kode_satker', orderable: false },
-        { data: 'kode_barang', orderable: false },
-        { data: 'nup' },
-        { data: 'tgl_perolehan' },
-        { data: 'nama_barang', orderable: false },
-        { data: 'merkRaw' },
-        { data: 'merk' },
-        { data: 'tipe' },
-        { data: 'jumlah' },
-        { data: 'nilai_aset', name: 'nilai_aset' },
-        { data: 'nilai_penyusutan', name: 'nilai_penyusutan' },
-        { data: 'nilai_buku', name: 'nilai_buku' },
-        { data: 'kondisi' },
-        { data: 'akun_neraca' },
-        { data: 'pembukuan' },
-        { data: 'unit_kerja_id',orderable: false, },
-        { data: 'pengguna' },
-        { data: 'lokasi_ruang' },
-        { data: 'status_inven' },
-        { data: 'update_kondisi' },
-        { data: 'link_dokumentasi' },
-        { data: 'link_lhi' },
-        { data: 'no_bahi' },
-        { data: 'tgl_bahi' },
+        { data: 'DT_RowIndex', orderable: false, searchable: false, width: '3rem' },
+        { data: 'kode_satker', name: 'satkers.kode_satker', orderable: false, width: '6rem' },
+        { data: 'kode_barang', orderable: false, width: '6rem' },
+        { data: 'nup', width: '5rem' },
+        { data: 'tgl_perolehan', width: '8rem' },
+        { data: 'nama_barang', orderable: false, width: '10rem' },
+        // { data: 'merkRaw' },
+        { data: 'merk', width: '6rem' },
+        { data: 'tipe', width: '6rem' },
+        { data: 'jumlah', width: '5rem' },
+        { data: 'nilai_aset', name: 'nilai_aset', width: '8rem' },
+        { data: 'nilai_penyusutan', name: 'nilai_penyusutan', width: '8rem' },
+        { data: 'nilai_buku', name: 'nilai_buku', width: '8rem' },
+        { data: 'kondisi', width: '4rem' },
+        { data: 'akun_neraca', width: '6rem' },
+        { data: 'pembukuan', width: '6rem' },
+        { data: 'unit_kerja_id', orderable: false, width: '8rem' },
+        { data: 'penggunaRaw', width: '8rem' },
+        { data: 'nama_pengguna', width: '8rem' },
+        { data: 'alamat_pengguna', width: '10rem' },
+        { data: 'lokasi_id', width: '8rem' },
+        { data: 'status_inven', width: '6rem' },
+        { data: 'update_kondisi', width: '10rem' },
+        { data: 'link_dokumentasi', width: '12rem' },
+        { data: 'link_lhi', width: '12rem' },
+        { data: 'no_bahi', width: '8rem' },
+        { data: 'tgl_bahi', width: '8rem' },
         {
                 data: 'batch',
-                name: 'batch', orderable: false,
+                name: 'batch',
+                className: 'batch-col',
+                orderable: false,
+                width: '6rem',
                 render: function (data, type, row) {
                     if (!data || data === '-') {
                         return '<span class="text-muted">-</span>';
@@ -486,10 +608,21 @@
                         </span></h5>
                     `;
                 }
-            },
+        },
+        // { data: 'action',
+        //     name: 'action',
+        //     orderable: false,
+        //     searchable: false,
+        //     // className: 'dt-action-col'
+        // },
 
     ]
 });
+// table.on('draw.dt', function () {
+//     table.columns.adjust();
+// });
+
+
 
     </script>
 

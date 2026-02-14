@@ -6,14 +6,21 @@ use Carbon\Carbon;
 use App\Models\bmn;
 use App\Models\Barang;
 use App\Models\satker;
-use App\Models\DataInternal;
-use App\Models\InvalidData;
+use App\Models\Pengguna;
+use App\Models\Identitas;
 use App\Models\UnitKerja;
+use App\Models\DataAtribut;
+use App\Models\InvalidData;
+use App\Models\LokasiRuang;
+use App\Models\DataInternal;
+use App\Models\FotoInternal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use RealRashid\SweetAlert\Facades\Alert;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class InternalController extends Controller
 {
@@ -26,7 +33,9 @@ class InternalController extends Controller
         $barang = Barang::get();
         $batchNumber = DataInternal::select('batch', 'label')->distinct()->get();
         $unitkerja = UnitKerja::get();
-        return view('internal.index', compact('title', 'barang', 'batchNumber','unitkerja'));
+        $lokasiruang = LokasiRuang::get();
+
+        return view('internal.index', compact('title', 'barang', 'batchNumber','unitkerja','lokasiruang'));
     }
 
     /**s
@@ -441,16 +450,20 @@ class InternalController extends Controller
 
                     $opname = Carbon::now();
 
-                    DataInternal::create([
+                    $insertData = DataInternal::create([
                         // 'bmn_id' => $bmn->id,
                         'satker_id' => $satker->id,
                         'barang_id' => $barang->id,
-                        'nup' => $row['nup'],
+                        'nup' => isset($row['nup'])
+                                ? (int) str_replace(',', '', $row['nup'])
+                                : null,
                         'tgl_perolehan'=> $perolehan_tgl,
-                        'merkRaw'=> $row['merktype'],
-                        // 'merk'=> $row['merk'],
-                        // 'tipe'=> $row['tipe'],
-                        'jumlah'=> $row['jumlah'],
+                        // 'merkRaw'=> $row['merktype'],
+                        'merk'=> $row['merktype'],
+                        'tipe'=> $row['merktype'],
+                        'jumlah'=> isset($row['jumlah'])
+                                    ? (int) str_replace(',', '', $row['jumlah'])
+                                    : null,
                         'nilai_aset'=> $nilaiPerolehan,
                         'nilai_penyusutan'=> $nilaiPenyusutan,
                         'nilai_buku'=> $nilaiBuku,
@@ -458,7 +471,7 @@ class InternalController extends Controller
                         'akun_neraca'=> $row['akunneraca'],
                         'pembukuan'=> $row['pembukuan'],
                         'unit_kerja_id'=> $unitKerjaId,
-                        'pengguna'=> $row['ruanganpengguna'],
+                        'penggunaRaw'=> $row['ruanganpengguna'],
                         'status_inven'=> $statusInven,
                         'update_kondisi'=> $row['kondisisetelahinven'],
                         'link_dokumentasi'=> $row['linkfoto'],
@@ -471,6 +484,7 @@ class InternalController extends Controller
                         'batch' => $batchId,
                         'label' => $batchLabel
                     ]);
+
 
                     $inserted++;
                 }
@@ -522,7 +536,9 @@ class InternalController extends Controller
                     'nup'                   => $row['nup'] ?? null,
                     'tgl_perolehan'         => $perolehan_tgl,
                     'merkRaw'               => $row['merktype'] ?? null,
-                    'jumlah'                => $row['jumlah'] ?? null,
+                    'jumlah'                => isset($row['jumlah'])
+                                                ? (int) str_replace(',', '', $row['jumlah'])
+                                                : null,
                     'nilai_aset'            => $nilaiPerolehan,
                     'nilai_penyusutan'      => $nilaiPenyusutan,
                     'nilai_buku'            => $nilaiBuku,
@@ -530,7 +546,7 @@ class InternalController extends Controller
                     'akun_neraca'           => $row['akunneraca'] ?? null,
                     'pembukuan'             => $row['pembukuan'] ?? null,
                     'unit_kerja_id'            => $invUnitKerjaId ?? null,
-                    'pengguna'              => $row['ruanganpengguna'] ?? null,
+                    'penggunaRaw'              => $row['ruanganpengguna'] ?? null,
                     'status_inven'          => $statusInven,
                     'update_kondisi'        => $row['kondisisetelahinven'] ?? null,
                     'link_dokumentasi'      => $row['linkfoto'] ?? null,
@@ -576,7 +592,24 @@ class InternalController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $internal = DataInternal::with([
+            // 'bmns',
+            'satkers',
+            'barang',
+            'unitKerja',
+            // 'penggunas',
+            'lokasiRuang',
+            'identitas', 
+            'dataAtribut.atribut'
+        ])->findOrFail($id);
+        $identitas = Identitas::get();
+        $internalImages = FotoInternal::where('data_internal_id', $id)->get();
+        $satker = satker::all();
+        $title = 'Show Data Internal';
+        $barang = Barang::get();
+        $lokasi = LokasiRuang::get();
+        $unitkerja = UnitKerja::get();
+        return view('internal.view', compact('internal', 'satker', 'title', 'barang', 'unitkerja', 'internalImages', 'lokasi','identitas'));
     }
 
     /**
@@ -584,7 +617,128 @@ class InternalController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $internal = DataInternal::with([
+            // 'bmns',
+            'satkers',
+            'barang',
+            'unitKerja',
+            // 'penggunas',
+            'lokasiRuang',
+            'identitas.atribut', 
+            'dataAtribut'
+        ])->findOrFail($id);
+        $identitas = Identitas::get();
+        $internalImages = FotoInternal::where('data_internal_id', $id)->get();
+        $satker = satker::all();
+        $title = 'Edit Data Internal';
+        $barang = Barang::get();
+        $lokasi = LokasiRuang::get();
+        $unitkerja = UnitKerja::get();
+        $dataAtribut = $internal->dataAtribut->keyBy('atributs_id');
+        return view('internal.edit', compact('internal', 'satker', 'title', 'barang', 'unitkerja', 'internalImages', 'lokasi', 'identitas', 'dataAtribut'));
+    }
+
+    public function addImage(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $validated = $request->validate([
+                'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240', // max 10MB
+                'title' => 'nullable|string|max:255',
+                'description' => 'nullable|string|max:500',
+            ]);
+
+            /** If checked → true, if not sent → false */
+            $isCover = $request->has('isCover');
+
+            /** Optional: ensure only ONE cover per data_internal */
+            if ($isCover) {
+                FotoInternal::where('data_internal_id', $request->internal_id)
+                    ->update(['is_cover' => false]);
+            }
+
+            $dataInternalId = DataInternal::findOrFail($request->internal_id);
+            $file = $request->file('image');
+            $filename = $file->store('foto_internals', 'public');
+
+            $path = Storage::url($filename);
+            FotoInternal::create([
+                'data_internal_id' => $dataInternalId->id,
+                'filename' => $filename,
+                'path' => $path,
+                'title' => $validated['title'] ?? null,
+                'description' => $validated['description'] ?? null,
+                'is_cover' => $isCover,
+            ]);
+            DB::commit();
+            Alert::success('Sukses', 'Gambar berhasil ditambahkan.');
+            return redirect()->back()->with('success', 'Gambar berhasil ditambahkan.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Alert::error('Gagal', 'Gagal menambahkan gambar: ' . $th->getMessage());
+            return redirect()->back()->with('error', 'Gagal menambahkan gambar: ' . $th->getMessage());
+        }
+    }
+
+    public function updateImage(Request $request, string $id)
+    {
+        DB::beginTransaction();
+        try {
+            $validated = $request->validate([
+                'title' => 'nullable|string|max:255',
+                'description' => 'nullable|string|max:500',
+            ]);
+
+            /** If checked → true, if not sent → false */
+            $isCover = $request->has('isCover');
+
+            $imageId = $id;
+            $image = FotoInternal::findOrFail($imageId);
+
+            /** Optional: ensure only ONE cover per data_internal */
+            if ($isCover) {
+                FotoInternal::where('data_internal_id', $image->data_internal_id)
+                    ->update(['is_cover' => false]);
+            }
+
+            $image->title = $validated['title'] ?? null;
+            $image->description = $validated['description'] ?? null;
+            $image->is_cover = $isCover ? true : false;
+            $image->save();
+            DB::commit();
+            Alert::success('Sukses', 'Gambar berhasil diperbarui.');
+            return redirect()->back()->with('success', 'Gambar berhasil diperbarui.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Alert::error('Gagal', 'Gagal memperbarui gambar: ' . $th->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui gambar: ' . $th->getMessage());
+        }
+    }
+
+    public function imageDestroy(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $imageId = $request->id;
+            $image = FotoInternal::findOrFail($imageId);
+
+            // Delete the image file from storage
+            if (Storage::disk('public')->exists($image->filename)) {
+                Storage::disk('public')->delete($image->filename);
+            }
+
+            // Delete the database record
+            $image->delete();
+            DB::commit();
+            Alert::success('Sukses', 'Gambar berhasil dihapus.');
+            return redirect()->back()->with('success', 'Gambar berhasil dihapus.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Alert::error('Gagal', 'Gagal menghapus gambar: ' . $th->getMessage());
+            return redirect()->back()->with('error', 'Invalid image ID.');
+        }
+
+
     }
 
     /**
@@ -592,15 +746,149 @@ class InternalController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $validated = $request->validate([
+                // add your validation rules here
+                'satker_id' => 'required|exists:satkers,id',
+                'barang_id' => 'required|exists:barangs,id',
+                'unitkerja_id' => 'required|exists:unit_kerjas,id',
+                'lokasi_id' => 'required|exists:lokasi_ruangs,id',
+                'tgl_perolehan' => 'required|date',
+                'merk' => 'nullable|string',
+                'tipe' => 'nullable|string',
+                'jumlah' => 'required|integer|min:1',
+                'nilai_perolehan' => 'required|numeric',
+                'kondisi' => 'required|in:B,RR,RB',
+                'akun_neraca' => 'nullable|string',
+                'pembukuan' => 'nullable|string',
+                'link_dokumentasi' => 'nullable|url',
+                'profileImage' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'name' => 'nullable|string',
+                'address' => 'nullable|string',
+            ]);
+
+            $identitas = identitas::with('atribut')->findOrFail($request->identitas_id);
+
+
+            $dataInternal = DataInternal::findOrFail($id);
+
+            if ($request->hasFile('profileImage')) {
+                $file = $request->file('profileImage');
+                $filename = $file->store('profile_images', 'public');
+                $validated['profileImage'] = $filename;
+                $path = Storage::url($filename);
+
+                // Optionally, delete the old image file if exists
+                if ($dataInternal->profile_image && Storage::disk('public')->exists($dataInternal->profile_image)) {
+                    Storage::disk('public')->delete($dataInternal->profile_image);
+                }
+
+            }
+
+            $nupMax = DataInternal::where('barang_id', $validated['barang_id'])->max('nup');
+            $nup = $nupMax ? $nupMax + 1 : 1;
+            $dataInternal->identitas_id = $identitas->id;
+            $dataInternal->satker_id = $validated['satker_id'];
+            $dataInternal->barang_id = $validated['barang_id'];
+            $dataInternal->unit_kerja_id = $validated['unitkerja_id'];
+            $dataInternal->lokasi_id = $validated['lokasi_id'];
+            $dataInternal->nup = $nup;
+            $dataInternal->tgl_perolehan = $validated['tgl_perolehan'];
+            $dataInternal->merk = $validated['merk'];
+            $dataInternal->tipe = $validated['tipe'];
+            $dataInternal->jumlah = $validated['jumlah'];
+            $dataInternal->nilai_aset = $validated['nilai_perolehan'];
+            $dataInternal->kondisi = $validated['kondisi'];
+            $dataInternal->akun_neraca = $validated['akun_neraca'];
+            $dataInternal->pembukuan = $validated['pembukuan'];
+            $dataInternal->link_dokumentasi = $validated['link_dokumentasi'];
+            $dataInternal->nama_pengguna = $validated['name'];
+            $dataInternal->alamat_pengguna = $validated['address'];
+            if (isset($validated['profileImage'])) {
+                $dataInternal->profile_image = $filename;
+                $dataInternal->profile_image_path = $path;
+            }
+
+            $activeAttributeIds = $identitas->atribut->pluck('id')->toArray();
+            // Remove DataAtribut entries that are no longer relevant
+            DataAtribut::where('data_internal_id', $dataInternal->id)
+                ->whereNotIn('atributs_id', $activeAttributeIds)
+                ->delete();
+
+            foreach ($identitas->atribut as $attr) {
+
+                $value = $request->atribut[$attr->id] ?? null;
+
+                if ($attr->pivot->is_required && blank($value)) {
+                    throw ValidationException::withMessages([
+                        "atribut.{$attr->id}" => "{$attr->label} is required"
+                    ]);
+                }
+
+                $payload = match ($attr->data_type) {
+                    'number' => ['value_integer' => $value],
+                    'date'   => ['value_date' => $value],
+                    default  => ['value_string' => $value],
+                };
+
+                DataAtribut::updateOrCreate(
+                    [
+                        'data_internal_id' => $dataInternal->id,
+                        'atributs_id' => $attr->id,
+                    ],
+                    $payload
+                );
+            }
+
+            $dataInternal->save();
+            DB::commit();
+            Alert::success('Sukses!', 'Data Internal berhasil diupdate');
+            return redirect()->route('internal.show', $dataInternal->id)->with('Sukses!', 'Data Internal berhasil diupdate!');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Alert::error('Gagal!', 'Terjadi kesalahan: ' . ($th->getMessage()))->persistent(true);
+            return redirect()->back()->withInput();
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        DB::beginTransaction();
+        try {
+            $Data = DataInternal::findOrFail($id);
+            if ($Data->profile_image && Storage::disk('public')->exists($Data->profile_image)) {
+                Storage::disk('public')->delete($Data->profile_image);
+            }
+            $images = FotoInternal::where('data_internal_id', $id)->get();
+            foreach ($images as $image) {
+                // Delete the image file from storage
+                if (Storage::disk('public')->exists($image->filename)) {
+                    Storage::disk('public')->delete($image->filename);
+                    }
+                    // Delete the database record
+                    $image->delete();
+            }
+            $Data->delete();
+            DB::commit();
+
+            // if ($request->ajax()) {
+            //     }
+            Alert::success('Sukses!', $Data->barang->nama_barang . ' - ' . $Data->barang->nup . ' - ' .'Data Internal berhasil dihapus');
+            // return response()->json(['success' => true, 'message' => 'Data Internal berhasil dihapus!']);
+            return redirect()->back()->with('Sukses!', $Data->barang->nama_barang . ' - ' . $Data->barang->nup . ' - ' .'Data Internal berhasil dihapus!');
+        }
+        catch (\Throwable $th) {
+            DB::rollBack();
+            Alert::error('Gagal!', 'Terjadi kesalahan: ' . ($th->getMessage()))->persistent(true);
+            // return response()->json(['success' => false, 'message' => 'Gagal menghapus data: ' . $th->getMessage()], 500);
+            return redirect()->back()->with('error', 'Gagal menghapus data: ' . $th->getMessage());
+
+        }
+
     }
 
     public function destroyBatch(Request $request)
@@ -617,16 +905,16 @@ class InternalController extends Controller
                 // 'bmns:id,name',
                 'satkers:id,kode_satker',
                 'barang:id,kode_barang,nama_barang',
-                'unitKerja:id,name,nameId'
+                'unitKerja:id,name,nameId',
+                // 'penggunas:id,data_internal_id,nama_pengguna,alamat_pengguna',
+                'lokasiRuang:id,name'
             ])
             ->select([
                 'id',
-                // 'bmn_id',
                 'satker_id',
                 'barang_id',
                 'nup',
                 'tgl_perolehan',
-                'merkRaw',
                 'merk',
                 'tipe',
                 'jumlah',
@@ -637,8 +925,10 @@ class InternalController extends Controller
                 'akun_neraca',
                 'pembukuan',
                 'unit_kerja_id',
-                'pengguna',
-                'lokasi_ruang',
+                'penggunaRaw',
+                'nama_pengguna',
+                'alamat_pengguna',
+                'lokasi_id',
                 'status_inven',
                 'update_kondisi',
                 'link_dokumentasi',
@@ -654,14 +944,22 @@ class InternalController extends Controller
 
             // relations
             // ->editColumn('bmn', fn ($row) => $row->bmns->name ?? '-')
-            ->editColumn('kode_satker', fn ($row) => $row->satkers->kode_satker ?? '-')
+            ->editColumn('kode_satker', fn ($row) => $row->satkers ? $row->satkers->kode_satker : '-')
             // ->editColumn('nama_satker', fn ($row) => $row->satkers->nama_satker ?? '-')
-            ->editColumn('kode_barang', fn ($row) => $row->barang->kode_barang ?? '-')
-            ->editColumn('nama_barang', fn ($row) => $row->barang->nama_barang ?? '-')
-            ->editColumn('unit_kerja_id', fn ($row) => $row->unitKerja->name ?? '-')
+            ->editColumn('kode_barang', fn ($row) => $row->barang ? $row->barang->kode_barang : '-')
+            ->editColumn('nama_barang', fn ($row) => $row->barang ? $row->barang->nama_barang : '-')
+            ->editColumn('unit_kerja_id', fn ($row) => $row->unitKerja ? $row->unitKerja->name : '-')
+            // ->editColumn('nama_pengguna', fn ($row) => $row->penggunas ? $row->penggunas->nama_pengguna : '-')
+            // ->editColumn('alamat_pengguna', fn ($row) => $row->penggunas ? $row->penggunas->alamat_pengguna : '-')
+            ->editColumn('lokasi_id', fn ($row) => $row->lokasiRuang ? $row->lokasiRuang->name : '-')
+            // ->editColumn('tgl_perolehan', function ($row) {
+            //     return $row->tgl_perolehan
+            //         ? \Carbon\Carbon::parse($row->tgl_perolehan)->format('Y-m-d')
+            //         : '-';
+            // })
 
             ->editColumn('batch', function ($row) {
-                if (!$row->batch) {
+                if (!$row->batch && !$row->label) {
                     return '-';
                 }
 
@@ -677,11 +975,16 @@ class InternalController extends Controller
             ->editColumn('nilai_buku', fn ($row) =>
                 'Rp. ' . number_format($row->nilai_buku, 2, ',', '.')
             )
+            // ->addColumn('action', function ($row) {
+            //     return view('internal.partials.action', compact('row'))->render();
+            // })
 
             // raw numeric for sorting
             ->orderColumn('nilai_aset', 'nilai_aset $1')
             ->orderColumn('nilai_penyusutan', 'nilai_penyusutan $1')
             ->orderColumn('nilai_buku', 'nilai_buku $1')
+            // ->orderColumn('tgl_perolehan', 'tgl_perolehan $1')
+
             // ->filter(function ($query) use ($request) {
 
 
@@ -705,6 +1008,20 @@ class InternalController extends Controller
                 if ($request->filled('itemSearch')) {
                     $query->whereHas('barang', function ($q) use ($request) {
                         $q->where('kode_barang', $request->itemSearch);
+                    });
+                }
+
+                // pengguna (partial)
+                // if ($request->filled('penggunaSearch')) {
+                //     $query->whereHas('pengguna', function ($q) use ($request) {
+                //         $q->where('nama_pengguna', $request->penggunaSearch . '%');
+                //     });
+                // }
+
+                // lokasi (partial)
+                if ($request->filled('lokasiSearch')) {
+                    $query->whereHas('lokasiRuang', function ($q) use ($request) {
+                        $q->where('id', $request->lokasiSearch);
                     });
                 }
 
@@ -737,21 +1054,22 @@ class InternalController extends Controller
                 if ($search = $request->input('search.value')) {
                     $query->where(function ($q) use ($search) {
                         $q
-                        ->orWhere('data_internals.merkRaw', 'like', "%{$search}%")
+                        ->orWhere('data_internals.merk', 'like', "%{$search}%")
                         ->orWhere('data_internals.jumlah', 'like', "%{$search}%")
                         ->orWhere('data_internals.nilai_aset', 'like', "%{$search}%")
-                        ->orWhere('data_internals.pengguna', 'like', "%{$search}%")
+                        ->orWhere('data_internals.penggunaRaw', 'like', "%{$search}%")
                         ->orWhere('data_internals.akun_neraca', 'like', "%{$search}%")
                         ->orWhere('data_internals.pembukuan', 'like', "%{$search}%")
                         // ->orWhere('data_internals.unit_kerja', 'like', "%{$search}%")
-                        ->orWhere('data_internals.pembukuan', 'like', "%{$search}%")
+                        ->orWhere('data_internals.nama_pengguna', 'like', "%{$search}%")
+                        ->orWhere('data_internals.alamat_pengguna', 'like', "%{$search}%")
                         ->orWhere('data_internals.label', 'like', "%{$search}%")
                         ->orWhere('data_internals.tipe', 'like', "%{$search}%");
                     });
                 }
             })
-
-            ->toJson();
+            // ->rawColumns(['action'])
+            ->make(true);
     }
 
 
@@ -760,8 +1078,140 @@ class InternalController extends Controller
         $barang = Barang::get();
         $unitkerja = UnitKerja::get();
         $satker = satker::get();
-        return view('internal.make', compact('title','barang','unitkerja','satker'));
+        $lokasi = LokasiRuang::with('unitKerja')->get();
+        $identitas = Identitas::all();
+        return view('internal.make', compact('title','barang','unitkerja','satker','lokasi','identitas'));
 
 
+    }
+
+    public function insert(Request $request) {
+        DB::beginTransaction();
+        try {
+            $identitas = Identitas::with('atribut')->findOrFail($request->identitas_id);
+
+            // Soft validation
+            foreach ($identitas->atribut as $attr) {
+                if ($attr->pivot->is_required &&
+                    empty($request->atribut[$attr->id] ?? null)) {
+                    throw ValidationException::withMessages([
+                        $attr->key => "{$attr->label} is required"
+                    ]);
+                }
+            }
+
+            // Validate the request
+            $validated = $request->validate([
+                'satker_id' => 'required|exists:satkers,id',
+                'barang_id' => 'required|exists:barangs,id',
+                'unitkerja_id' => 'required|exists:unit_kerjas,id',
+                'lokasi_id' => 'required|exists:lokasi_ruangs,id',
+                'tgl_perolehan' => 'required|date',
+                'merk' => 'nullable|string',
+                'tipe' => 'nullable|string',
+                'jumlah' => 'required|integer|min:1',
+                'nilai_perolehan' => 'required|numeric',
+                'kondisi' => 'required|in:B,RR,RB',
+                'akun_neraca' => 'nullable|string',
+                'pembukuan' => 'nullable|string',
+                'link_dokumentasi' => 'nullable|url',
+                'profileImage' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'name' => 'nullable|string',
+                'address' => 'nullable|string',
+                'images' => 'nullable|array',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'titles' => 'nullable|array',
+                'titles.*' => 'nullable|string',
+                'descriptions' => 'nullable|array',
+                'descriptions.*' => 'nullable|string',
+                'isCover' => 'nullable|array',
+                'isCover.*' => 'boolean',
+            ]);
+
+            // Handle profile image upload if provided
+            $profileImagePath = null;
+            $profileImageUrl = null;
+            if ($request->hasFile('profileImage')) {
+                $profileImagePath = $request->file('profileImage')->store('profile_images', 'public');
+                $profileImageUrl = Storage::url($profileImagePath);
+            }
+
+            $nupMax = DataInternal::where('barang_id', $validated['barang_id'])->max('nup');
+            $nup = $nupMax ? $nupMax + 1 : 1;
+
+            // Create the DataInternal record
+            $dataInternal = DataInternal::create([
+                'satker_id' => $validated['satker_id'],
+                'barang_id' => $validated['barang_id'],
+                'lokasi_id' => $validated['lokasi_id'],
+                'identitas_id' => $identitas->id,
+                'nup' => $nup,
+                'unit_kerja_id' => $validated['unitkerja_id'],
+                'tgl_perolehan' => $validated['tgl_perolehan'],
+                'merk' => $validated['merk'],
+                'tipe' => $validated['tipe'],
+                'jumlah' => $validated['jumlah'],
+                'nilai_aset' => $validated['nilai_perolehan'],
+                'kondisi' => $validated['kondisi'],
+                'akun_neraca' => $validated['akun_neraca'],
+                'pembukuan' => $validated['pembukuan'],
+                'link_dokumentasi' => $validated['link_dokumentasi'],
+                // 'penggunaRaw' => $validated['name'],
+                'profile_image' => $profileImagePath,
+                'profile_image_path' => $profileImageUrl,
+                'nama_pengguna' => $validated['name'],
+                'alamat_pengguna' => $validated['address'],
+                // 'batch' => (DataInternal::max('batch') ?? 0) + 1,
+                'label' => 'Manual Entry',
+            ]);
+
+            // Handle multiple images
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $index => $file) {
+                    $filename = $file->store('foto_internals', 'public');
+                    $path = Storage::url($filename);
+                    FotoInternal::create([
+                        'data_internal_id' => $dataInternal->id,
+                        'filename' => $filename,
+                        'path' => $path,
+                        'title' => $request->input("titles.{$index}", ''),
+                        'description' => $request->input("descriptions.{$index}", ''),
+                        'is_cover' => $request->input("isCover.{$index}", false),
+                    ]);
+                }
+            }
+
+            foreach ($identitas->atribut as $attr) {
+            $value = $request->atribut[$attr->id] ?? null;
+            if ($value === null) continue;
+
+            $payload = match ($attr->data_type) {
+                'number' => ['value_integer' => $value],
+                'date'   => ['value_date' => $value],
+                default  => ['value_string' => $value],
+            };
+
+            $dataInternal->dataAtribut()->create([
+                'data_internal_id' => $dataInternal->id,
+                'atributs_id' => $attr->id,
+                ...$payload
+            ]);
+            }
+
+            DB::commit();
+
+            if ($request->ajax()) {
+                Alert::success('Success', 'Data Internal berhasil ditambahkan');
+                return response()->json(['success' => true, 'redirect' => route('internal.index')]);
+            }
+            Alert::success('Success', 'Data Internal berhasil ditambahkan');
+            return redirect()->route('internal.index');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+            }
+            throw $e;
+        }
     }
 }

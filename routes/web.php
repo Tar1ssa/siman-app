@@ -4,11 +4,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\bmnController;
 use App\Http\Controllers\simanController;
 use App\Http\Controllers\BarangController;
+use App\Http\Controllers\LokasiController;
 use App\Http\Controllers\satkerController;
+use App\Http\Controllers\AtributController;
 use App\Http\Controllers\CompareController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\invalidController;
 use App\Http\Controllers\InternalController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IdentitasController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,13 +23,28 @@ Route::get('/siman-data/datatable', [simanController::class, 'datatable'])
 Route::delete('/siman', [SimanController::class, 'destroyBatch'])
     ->name('siman.destroyBatch');
 
+Route::resource('identitas', IdentitasController::class);
+Route::resource('atribut', AtributController::class);
+
 Route::resource('internal', InternalController::class);
+Route::get('identitas/{identitas}/atribut', [IdentitasController::class, 'atributByIdentitas'])
+    ->name('identitas.atribut');
+
 Route::get('/internal-data/datatable', [InternalController::class, 'datatable'])
     ->name('internal.datatable');
 Route::get('/internal-data/make', [InternalController::class, 'make'])
     ->name('internal.make');
-Route::delete('/internal', [InternalController::class, 'destroyBatch'])
+Route::post('/internal/insert', [InternalController::class, 'insert'])
+    ->name('internal.insert');
+Route::delete('/internal/batch/delete', [InternalController::class, 'destroyBatch'])
     ->name('internal.destroyBatch');
+Route::post('/internal/images/store', [InternalController::class, 'addImage'])
+    ->name('internal.addImage');
+Route::put('/internal/images/{id}/update', [InternalController::class, 'updateImage'])
+    ->name('internal.updateImage');
+Route::delete('/internal/images/{id}/delete', [InternalController::class, 'imageDestroy'])
+    ->name('internal.imageDestroy');
+
 
 Route::resource('compare', CompareController::class);
 Route::get('/compare-data/datatable', [CompareController::class, 'datatable'])
@@ -60,5 +78,7 @@ Route::resource('dashboard', DashboardController::class);
 Route::resource('bmn', bmnController::class);
 Route::resource('satker', satkerController::class);
 Route::resource('barang', BarangController::class);
+Route::resource('lokasi', LokasiController::class);
+
 
 // daeng babi

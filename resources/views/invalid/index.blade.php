@@ -264,7 +264,8 @@
           var element = genericExamples[i];
           new Choices(element, {
             placeholderValue: 'This is a placeholder set in the config',
-            searchPlaceholderValue: 'Cari kode barang'
+            searchPlaceholderValue: 'Cari kode barang',
+            position: 'bottom'
           });
         }
 
@@ -273,7 +274,8 @@
           var elementBarang = modalBarang[i];
           new Choices(elementBarang, {
             placeholderValue: 'This is a placeholder set in the config',
-            searchPlaceholderValue: 'Cari kode barang'
+            searchPlaceholderValue: 'Cari kode barang',
+            position: 'bottom'
           });
         }
 
@@ -282,7 +284,8 @@
           var unitelement = UnitSelect[i];
           new Choices(unitelement, {
             placeholderValue: 'This is a placeholder set in the config',
-            searchPlaceholderValue: 'Cari unit kerja'
+            searchPlaceholderValue: 'Cari unit kerja',
+            position: 'bottom'
           });
         }
     })
