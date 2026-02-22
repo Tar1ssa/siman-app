@@ -945,26 +945,36 @@ class CompareController extends Controller
 
 
     // export internal Only
-
     private function internalOnlySheets($batchInternal, $batchSiman)
     {
-        // Get all unit kerjas
-        $unitKerjas = UnitKerja::all();
+        $unitKerjas = UnitKerja::select('id', 'name')->get();
 
-        foreach ($unitKerjas as $uk) {
+        // add virtual unit kerja for NULL
+        $unitKerjas->push((object) [
+            'id'   => null,
+            'name' => 'Tanpa Unit Kerja',
+        ]);
+
+        $usedSheetNames = [];
+
+        foreach ($unitKerjas as $unitKerja) {
             $rows = DB::table('data_internals as di')
                 ->join('barangs as b', 'b.id', '=', 'di.barang_id')
-                ->join('satkers as sat', 'sat.id', '=', 'di.satker_id')
-                ->join('lokasi_ruangs as lokasi', 'lokasi.id', '=', 'di.lokasi_id')
+                ->leftJoin('satkers as sat', 'sat.id', '=', 'di.satker_id')
+                ->leftJoin('lokasi_ruangs as lokasi', 'lokasi.id', '=', 'di.lokasi_id')
                 ->leftjoin('unit_kerjas as uk', 'uk.id', '=', 'di.unit_kerja_id')
                 ->leftJoin('siman_data as s', function ($join) use ($batchSiman) {
                     $join->on('di.barang_id', '=', 's.barang_id')
-                        ->on('di.nup', '=', 's.nup')
+                        ->on(DB::raw('CAST(di.nup AS CHAR)'), '=', 's.nup')
                         ->when($batchSiman, fn ($j) => $j->where('s.import_batch_id', $batchSiman));
                 })
                 ->whereNull('s.id')
-                ->where('di.unit_kerja_id', $uk->id)
                 ->when($batchInternal, fn ($q) => $q->where('di.batch', $batchInternal))
+                ->when(
+                    is_null($unitKerja->id),
+                    fn ($q) => $q->whereNull('di.unit_kerja_id'),
+                    fn ($q) => $q->where('di.unit_kerja_id', $unitKerja->id)
+                )
                 ->select([
                     'sat.kode_satker',
                     'b.kode_barang',
@@ -979,7 +989,7 @@ class CompareController extends Controller
                     'di.kondisi',
                     'di.akun_neraca',
                     'di.pembukuan',
-                    'uk.name as unit_kerja',
+                    DB::raw('COALESCE(uk.name, "Tanpa Unit Kerja") as unit_kerja'),
                     'di.penggunaRaw',
                     'lokasi.name as lokasi_ruang',
                     'di.status_inven',
@@ -994,138 +1004,120 @@ class CompareController extends Controller
                 ->cursor();
 
             if ($rows->isNotEmpty()) {
-                yield $this->sanitizeSheetName($uk->name) => $rows;
+                $baseSheetName = $this->sanitizeSheetName($unitKerja->name ?: 'Tanpa Unit Kerja');
+                $sheetName = $baseSheetName;
+                $suffix = 1;
+                while (in_array($sheetName, $usedSheetNames)) {
+                    $sheetName = $baseSheetName . '_' . $suffix;
+                    $suffix++;
+                }
+                $usedSheetNames[] = $sheetName;
+                yield $sheetName => $rows;
             }
-        }
-
-        // For records without unit_kerja_id
-        $rowsNull = DB::table('data_internals as di')
-            ->join('barangs as b', 'b.id', '=', 'di.barang_id')
-            ->join('satkers as sat', 'sat.id', '=', 'di.satker_id')
-            ->join('lokasi_ruangs as lokasi', 'lokasi.id', '=', 'di.lokasi_id')
-            ->leftjoin('unit_kerjas as uk', 'uk.id', '=', 'di.unit_kerja_id')
-            ->leftJoin('siman_data as s', function ($join) use ($batchSiman) {
-                $join->on('di.barang_id', '=', 's.barang_id')
-                    ->on('di.nup', '=', 's.nup')
-                    ->when($batchSiman, fn ($j) => $j->where('s.import_batch_id', $batchSiman));
-            })
-            ->whereNull('s.id')
-            ->whereNull('di.unit_kerja_id')
-            ->when($batchInternal, fn ($q) => $q->where('di.batch', $batchInternal))
-            ->select([
-                'sat.kode_satker',
-                'b.kode_barang',
-                'b.nama_barang',
-                'di.nup',
-                'di.merk',
-                'di.jumlah',
-                'di.tgl_perolehan',
-                'di.nilai_aset',
-                'di.nilai_penyusutan',
-                'di.nilai_buku',
-                'di.kondisi',
-                'di.akun_neraca',
-                'di.pembukuan',
-                DB::raw('"Tanpa Unit Kerja" as unit_kerja'),
-                'di.penggunaRaw',
-                'lokasi.name as lokasi_ruang',
-                'di.status_inven',
-                'di.update_kondisi',
-                'di.link_dokumentasi',
-                'di.link_lhi',
-                'di.no_bahi',
-                'di.tgl_bahi',
-                DB::raw("'INTERNAL_ONLY' as status"),
-            ])
-            ->orderBy('b.kode_barang')
-            ->cursor();
-
-        if ($rowsNull->isNotEmpty()) {
-            yield 'Tanpa_Unit_Kerja' => $rowsNull;
         }
     }
 
     public function exportInternalOnly(Request $request)
     {
-            $batchInternal = $request->batch_internal;
-            $batchSiman    = $request->batch_siman;
+        $batchInternal = $request->batch_internal ?? null;
+        $batchSiman    = $request->batch_siman ?? null;
 
-            $filePath = storage_path('app/internal_only.xlsx');
+        $filePath = storage_path('app/internal_only.xlsx');
 
-            $writer = new Writer();
-            $writer->openToFile($filePath);
+        $writer = new Writer();
+        $writer->openToFile($filePath);
 
-            $first = true;
-            foreach ($this->internalOnlySheets($batchInternal, $batchSiman) as $sheetName => $rows) {
-                if (!$first) {
-                    $writer->addNewSheetAndMakeItCurrent();
-                }
-
-                $writer->getCurrentSheet()->setName($this->sanitizeSheetName($sheetName));
-
-                // HEADER
-                $writer->addRow(Row::fromValues([
-                    'Kode Satker',
-                    'Kode Barang',
-                    'Nama Barang',
-                    'NUP',
-                    'Merk',
-                    'Jumlah',
-                    'Tgl Perolehan',
-                    'Nilai Aset',
-                    'Nilai Penyusutan',
-                    'Nilai Buku',
-                    'Kondisi',
-                    'Akun Neraca',
-                    'Pembukuan',
-                    'Unit Kerja',
-                    'Pengguna',
-                    'Lokasi Ruang',
-                    'Status Inventaris',
-                    'Update Kondisi',
-                    'Link Dokumentasi',
-                    'Link LHI',
-                    'No BAHI',
-                    'Tgl BAHI',
-                    'Status',
-                ]));
-
-                // DATA ROWS (explicit mapping = safe)
-                foreach ($rows as $row) {
-                    $writer->addRow(Row::fromValues([
-                        $this->sanitizeForExcel($row->kode_satker),
-                        $this->sanitizeForExcel($row->kode_barang),
-                        $this->sanitizeForExcel($row->nama_barang),
-                        $this->sanitizeForExcel($row->nup),
-                        $this->sanitizeForExcel($row->merk),
-                        $this->sanitizeForExcel($row->jumlah),
-                        $this->sanitizeForExcel($row->tgl_perolehan),
-                        $this->sanitizeForExcel($row->nilai_aset),
-                        $this->sanitizeForExcel($row->nilai_penyusutan),
-                        $this->sanitizeForExcel($row->nilai_buku),
-                        $this->sanitizeForExcel($row->kondisi),
-                        $this->sanitizeForExcel($row->akun_neraca),
-                        $this->sanitizeForExcel($row->pembukuan),
-                        $this->sanitizeForExcel($row->unit_kerja),
-                        $this->sanitizeForExcel($row->penggunaRaw),
-                        $this->sanitizeForExcel($row->lokasi_ruang),
-                        $this->sanitizeForExcel($row->status_inven),
-                        $this->sanitizeForExcel($row->update_kondisi),
-                        $this->sanitizeForExcel($row->link_dokumentasi),
-                        $this->sanitizeForExcel($row->link_lhi),
-                        $this->sanitizeForExcel($row->no_bahi),
-                        $this->sanitizeForExcel($row->tgl_bahi),
-                        $this->sanitizeForExcel($row->status),
-                    ]));
-                }
-
-                $first = false;
+        $firstSheet = true;
+        $sheetNames = [];
+        $sheetWritten = false;
+        foreach ($this->internalOnlySheets($batchInternal, $batchSiman) as $sheetName => $rows) {
+            // Guarantee unique sheet names
+            $baseSheetName = $this->sanitizeSheetName($sheetName);
+            $uniqueSheetName = $baseSheetName;
+            $suffix = 1;
+            while (in_array($uniqueSheetName, $sheetNames)) {
+                $uniqueSheetName = $baseSheetName . '_' . $suffix;
+                $suffix++;
             }
+            $sheetNames[] = $uniqueSheetName;
 
-            $writer->close();
-
-            return response()->download($filePath)->deleteFileAfterSend(true);
+            if (!$firstSheet) {
+                $writer->addNewSheetAndMakeItCurrent();
+            }
+            $firstSheet = false;
+            $writer->getCurrentSheet()->setName($uniqueSheetName);
+            $writer->addRow(Row::fromValues([
+                'Kode Satker',
+                'Kode Barang',
+                'Nama Barang',
+                'NUP',
+                'Merk',
+                'Jumlah',
+                'Tgl Perolehan',
+                'Nilai Aset',
+                'Nilai Penyusutan',
+                'Nilai Buku',
+                'Kondisi',
+                'Akun Neraca',
+                'Pembukuan',
+                'Unit Kerja',
+                'Pengguna',
+                'Lokasi Ruang',
+                'Status Inventaris',
+                'Update Kondisi',
+                'Link Dokumentasi',
+                'Link LHI',
+                'No BAHI',
+                'Tgl BAHI',
+                'Status',
+            ]));
+            $rowCount = 0;
+            foreach ($rows as $row) {
+                $writer->addRow(Row::fromValues([
+                    $this->sanitizeForExcel($row->kode_satker),
+                    $this->sanitizeForExcel($row->kode_barang),
+                    $this->sanitizeForExcel($row->nama_barang),
+                    $this->sanitizeForExcel($row->nup),
+                    $this->sanitizeForExcel($row->merk),
+                    $this->sanitizeForExcel($row->jumlah),
+                    $this->sanitizeForExcel($row->tgl_perolehan),
+                    $this->sanitizeForExcel($row->nilai_aset),
+                    $this->sanitizeForExcel($row->nilai_penyusutan),
+                    $this->sanitizeForExcel($row->nilai_buku),
+                    $this->sanitizeForExcel($row->kondisi),
+                    $this->sanitizeForExcel($row->akun_neraca),
+                    $this->sanitizeForExcel($row->pembukuan),
+                    $this->sanitizeForExcel($row->unit_kerja),
+                    $this->sanitizeForExcel($row->penggunaRaw),
+                    $this->sanitizeForExcel($row->lokasi_ruang),
+                    $this->sanitizeForExcel($row->status_inven),
+                    $this->sanitizeForExcel($row->update_kondisi),
+                    $this->sanitizeForExcel($row->link_dokumentasi),
+                    $this->sanitizeForExcel($row->link_lhi),
+                    $this->sanitizeForExcel($row->no_bahi),
+                    $this->sanitizeForExcel($row->tgl_bahi),
+                    $this->sanitizeForExcel($row->status),
+                ]));
+                $rowCount++;
+            }
+            if ($rowCount > 0) {
+                $sheetWritten = true;
+            }
+        }
+        // If no sheet with data was written, write a dummy sheet
+        if (!$sheetWritten) {
+            if (!$firstSheet) {
+                $writer->addNewSheetAndMakeItCurrent();
+            }
+            $writer->getCurrentSheet()->setName('No_Data');
+            $writer->addRow(Row::fromValues(['No data found for the selected filter.']));
+        }
+        $writer->close();
+        return response()->download($filePath)->deleteFileAfterSend(true);
     }
+
+
+
 
     private function sanitizeForExcel($value)
     {
