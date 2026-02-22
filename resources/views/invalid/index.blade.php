@@ -1,7 +1,8 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
-<link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/dataTables.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/responsive.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/dataTables.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/responsive.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 @endsection
@@ -539,7 +540,7 @@
 
         if (val === '') {
             // clear search
-            newcs.column(5).search('').draw();
+            newcs.column(3).search('').draw();
         } else {
             // exact match using regex
             newcs.column(3)
@@ -547,7 +548,6 @@
                 .draw();
         }
     });
-
 
     $('#itemSearch').on('change', function () {
     newcs.draw();
@@ -573,7 +573,7 @@
     pageLength: 25,
 
     scrollX: true,
-    scrollY: '60vh',
+    scrollY: '70vh',
 
     scrollCollapse: true,
 

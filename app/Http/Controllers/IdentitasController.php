@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Atribut;
 use App\Models\Identitas;
 use Illuminate\Http\Request;
+use App\Models\IdentitasKategori;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class IdentitasController extends Controller
@@ -14,19 +15,21 @@ class IdentitasController extends Controller
      */
     public function index()
     {
+        $identitasKategori = IdentitasKategori::all();
         $title = 'Identitas';
         $identitas = Identitas::withCount('atribut')->get();
-        return view('identitas.index', compact('identitas', 'title'));
-    }   
+        return view('identitas.index', compact('identitas', 'title', 'identitasKategori'));
+    }
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
+        $identitasKategori = IdentitasKategori::all();
         $atribut = Atribut::all();
         $title = 'Tambah Identitas';
-        return view('identitas.create', compact('atribut', 'title'));
+        return view('identitas.create', compact('identitasKategori', 'atribut', 'title'));
     }
 
     /**
@@ -37,9 +40,10 @@ class IdentitasController extends Controller
         $request->validate([
             'name' => 'required|unique:identitas,name',
             'slug' => 'required|unique:identitas,slug',
+            'kategori_id' => 'required|exists:identitas_kategoris,id',
         ]);
 
-        $identitas = Identitas::create($request->only('name', 'slug'));
+        $identitas = Identitas::create($request->only('name', 'slug', 'kategori_id'));
 
         $this->syncAttributes($identitas, $request);
         Alert::success('Success', 'Identitas created successfully');
@@ -62,8 +66,9 @@ class IdentitasController extends Controller
         $identitas = Identitas::findOrFail($id);
         $identitas->load('atribut');
         $atribut = Atribut::all();
+        $identitasKategori = IdentitasKategori::all();
         $title = 'Edit Identitas';
-        return view('identitas.edit', compact('identitas', 'atribut', 'title'));
+        return view('identitas.edit', compact('identitas', 'atribut', 'identitasKategori', 'title'));
     }
 
     /**
@@ -75,11 +80,12 @@ class IdentitasController extends Controller
         $request->validate([
             'name' => 'required|unique:identitas,name,' . $identitas->id,
             'slug' => 'required|unique:identitas,slug,' . $identitas->id,
+            'kategori_id' => 'required|exists:identitas_kategoris,id',
         ]);
 
-        $identitas->update($request->only('name', 'slug'));
+        $identitas->update($request->only('name', 'slug', 'kategori_id'));
         $this->syncAttributes($identitas, $request);
-        Alert::success('Success', 'Identitas updated successfully');    
+        Alert::success('Success', 'Identitas updated successfully');
         return redirect()->route('identitas.index')->with('success', 'Identitas updated');
     }
 
@@ -92,6 +98,11 @@ class IdentitasController extends Controller
         $identitas->delete();
         Alert::success('Success', 'Identitas deleted successfully');
         return back()->with('success', 'Identitas deleted');
+    }
+
+    public function byKategori($kategoriId)
+    {
+        return Identitas::where('kategori_id', $kategoriId)->get(['id', 'name']);
     }
 
     public function atributByIdentitas(Identitas $identitas)
@@ -113,7 +124,7 @@ class IdentitasController extends Controller
 
         foreach ($request->input('atribut', []) as $attrId => $data) {
 
-            
+
             if (!isset($data['enabled'])) {
                 continue;
             }

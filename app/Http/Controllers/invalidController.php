@@ -491,7 +491,7 @@ class invalidController extends Controller
                 continue;
             }
 
-            yield $unitKerja->name => $rows;
+            yield (($unitKerja->id ? $unitKerja->id . '_' : '') . ($unitKerja->name ?: 'Tanpa Unit Kerja')) => $rows;
         }
     }
 
@@ -516,7 +516,7 @@ class invalidController extends Controller
                 $firstSheet = false;
 
                 // Rename sheet safely
-                $writer->getCurrentSheet()->setName(substr($sheetName, 0, 31)); // Excel limit
+                $writer->getCurrentSheet()->setName($this->sanitizeSheetName($sheetName));
 
                 // HEADER
                 $writer->addRow(Row::fromValues([
@@ -549,30 +549,30 @@ class invalidController extends Controller
                 // DATA ROWS (explicit mapping = safe)
                 foreach ($rows as $row) {
                     $writer->addRow(Row::fromValues([
-                        $row->kode_satker,
-                        $row->kode_barang,
-                        $row->nama_barang,
-                        $row->nup,
-                        $row->merkRaw,
-                        $row->jumlah,
-                        $row->tgl_perolehan,
-                        $row->nilai_aset,
-                        $row->nilai_penyusutan,
-                        $row->nilai_buku,
-                        $row->kondisi,
-                        $row->akun_neraca,
-                        $row->pembukuan,
-                        $row->unit_kerja,
-                        $row->pengguna,
-                        $row->lokasi_ruang,
-                        $row->status_inven,
-                        $row->update_kondisi,
-                        $row->link_dokumentasi,
-                        $row->link_lhi,
-                        $row->no_bahi,
-                        $row->tgl_bahi,
-                        $row->description,
-                        $row->status,
+                        $this->sanitizeForExcel($row->kode_satker),
+                        $this->sanitizeForExcel($row->kode_barang),
+                        $this->sanitizeForExcel($row->nama_barang),
+                        $this->sanitizeForExcel($row->nup),
+                        $this->sanitizeForExcel($row->merkRaw),
+                        $this->sanitizeForExcel($row->jumlah),
+                        $this->sanitizeForExcel($row->tgl_perolehan),
+                        $this->sanitizeForExcel($row->nilai_aset),
+                        $this->sanitizeForExcel($row->nilai_penyusutan),
+                        $this->sanitizeForExcel($row->nilai_buku),
+                        $this->sanitizeForExcel($row->kondisi),
+                        $this->sanitizeForExcel($row->akun_neraca),
+                        $this->sanitizeForExcel($row->pembukuan),
+                        $this->sanitizeForExcel($row->unit_kerja),
+                        $this->sanitizeForExcel($row->pengguna),
+                        $this->sanitizeForExcel($row->lokasi_ruang),
+                        $this->sanitizeForExcel($row->status_inven),
+                        $this->sanitizeForExcel($row->update_kondisi),
+                        $this->sanitizeForExcel($row->link_dokumentasi),
+                        $this->sanitizeForExcel($row->link_lhi),
+                        $this->sanitizeForExcel($row->no_bahi),
+                        $this->sanitizeForExcel($row->tgl_bahi),
+                        $this->sanitizeForExcel($row->description),
+                        $this->sanitizeForExcel($row->status),
                     ]));
                 }
             }
@@ -580,5 +580,48 @@ class invalidController extends Controller
             $writer->close();
 
             return response()->download($filePath)->deleteFileAfterSend(true);
+    }
+
+    private function sanitizeForExcel($value)
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        // Convert to string
+        $value = (string) $value;
+
+        // Clean invalid UTF-8 sequences
+        $value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+
+        // Trim whitespace
+        $value = trim($value);
+
+        // Remove all non-printable characters except space (32), tab (9), newline (10), carriage return (13)
+        $value = preg_replace('/[^\x20-\x7E\x09\x0A\x0D]/u', '', $value);
+
+        // Limit length to prevent Excel issues (Excel has a 32,767 character limit per cell)
+        if (strlen($value) > 30000) {
+            $value = substr($value, 0, 30000) . '...';
+        }
+
+        return $value;
+    }
+
+    private function sanitizeSheetName($name)
+    {
+        // Remove invalid characters for Excel sheet names: keep only letters, numbers, space, underscore, dash
+        $name = preg_replace('/[^a-zA-Z0-9 \-_]/', '_', $name);
+
+        // Trim and replace multiple spaces/underscores with single
+        $name = preg_replace('/[ _]+/', '_', trim($name));
+
+        // If empty, use default
+        if (empty($name)) {
+            $name = 'Sheet';
+        }
+
+        // Limit to 31 chars
+        return substr($name, 0, 31);
     }
 }

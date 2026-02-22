@@ -1,10 +1,10 @@
 <div class="d-flex gap-1">
     {{-- Edit --}}
-    <button data-row='@json($row)'
+    {{-- <button data-row='@json($row)'
     onclick="openEditModal(this)"
        class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal">
         <i class="ti ti-edit"></i>
-    </button>
+    </button> --}}
 
     {{-- Delete --}}
     <button

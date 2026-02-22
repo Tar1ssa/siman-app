@@ -1,6 +1,74 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
 <link rel="stylesheet" href="{{asset('/assets/dist/assets/css/plugins/dropzone.min.css')}}">
+<style>
+/* Remove thumbnail box completely */
+#csvDropzone .dz-image {
+    display: none !important;
+}
+
+/* THIS is the real white blob — remove it */
+#csvDropzone .dz-preview {
+    background: none !important;
+    min-height: auto !important;
+    padding: 8px 0 !important;
+}
+
+/* Make text layout clean */
+#csvDropzone .dz-details {
+    position: relative !important;
+    opacity: 1 !important;
+    background: none !important;
+    padding: 0 !important;
+}
+
+/* Spacing so nothing overlaps */
+#csvDropzone .dz-filename {
+    margin-top: 4px;
+}
+
+#csvDropzone .dz-size {
+    margin-top: 4px;
+}
+
+#csvDropzone .dz-remove {
+    margin-top: 6px;
+    display: inline-block;
+}
+
+/* Make preview a positioning container */
+#csvDropzone .dz-preview {
+    position: relative;
+}
+
+/* Make each preview a column layout */
+#csvDropzone .dz-preview {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Put progress bar last in the column */
+#csvDropzone .dz-progress {
+    order: 99 !important;      /* forces it to bottom */
+    width: 8% !important;
+    margin-top: 8px !important;
+    height: 6px;
+}
+
+/* Make the inner bar fill properly */
+#csvDropzone .dz-progress .dz-upload {
+    height: 100% !important;
+}
+
+/* Keep text readable */
+#csvDropzone .dz-details {
+    order: 1;
+}
+
+
+
+</style>
 @endsection
 @section('content')
 <div class="pc-content">
@@ -56,50 +124,17 @@
                                 <input name="csv_file" accept=".csv" type="file" id="">
                             </div>
                         </form>
-                            <div class="text-center m-t-20">
+                            <div class="text-center m-t-20 mb-3">
                                 <button type="submit" id="uploadBtn" class="btn btn-primary">Upload Now</button>
                             </div>
-                            {{-- <input type="file" name="csv_file" accept=".csv" id="" >
-                            <button type="submit">upload</button> --}}
-                            {{-- <div class="mb-3">
-                                <div class="form-floating ">
-                                        <input value="" type="text" class="form-control" id="floatingName" placeholder="Kode Register" name="kode_register">
-                                        <label for="floatingName">Kode Register</label>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <div class="form-group">
-                                            <label class="col-form-label text-lg-end">Jenis BMN</label>
-                                            <div class="">
-                                            <select
-                                                class="form-control"
-                                                data-trigger
-                                                name="bmn_id"
-                                                id="choices-single-default">
-                                                <option value="" selected disabled>--Pilih Jenis BMN--</option>
-                                                @foreach ($bmns as $keybmns)
+                        <div class="row mb-3">
+                            <div class="col-md-4">
 
-                                                <option value="{{ $keybmns->id }}">{{ $keybmns->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                <div class="mb-3">
-                                    <div class="form-group">
-                                        <label for="" class="col-form-label text-lg-end">Kode Satker</label>
-                                        <input type="text" name="" id="satker_kode" class="form-control" readonly>
-                                    </div>
-                                </div>
-                                </div>
-                                <div class="col-md-3"></div>
-                                <div class="col-md-3"></div>
-                            </div> --}}
-                        {{-- </form> --}}
+                                <a href="{{asset('/assets/import_template_internal.csv')}}" download class="btn btn-primary btn-shadow btn-sm">
+                                    Download template import File
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -122,6 +157,7 @@
     </script>
 
     <script src="{{ asset('/assets/dist/assets/js/plugins/dropzone-amd-module.min.js')}}"></script>
+
     <script>
         Dropzone.autoDiscover = false;
 
@@ -133,6 +169,8 @@
             uploadMultiple: false,       // force single
             parallelUploads: 1,          // safety
             autoProcessQueue: false,
+            addRemoveLinks: true,
+            dictRemoveFile: 'Hapus file',
             headers: {
                 'X-CSRF-TOKEN': "{{ csrf_token() }}"
             },
@@ -141,8 +179,14 @@
                     this.removeAllFiles();
                     this.addFile(file);
                 });
+                this.on('removedfile', function(file) {
+                    // clear fallback input when a file is removed
+                    const fallbackInput = document.querySelector('#csvDropzone input[type=file]');
+                    if (fallbackInput) fallbackInput.value = '';
+                });
             }
         });
+
 
         myDropzone.on("sending", function (file, xhr, formData) {
             const batchLabel = document.getElementById('batchLabel').value;
@@ -163,7 +207,7 @@
         myDropzone.on("success", function (file, response) {
             console.log('Dropzone success fired');
 
-            if (response.success) {
+            if (response && response.success) {
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
@@ -175,27 +219,71 @@
                 });
             } else {
                 // Backend returned JSON error but HTTP 200
+                const msg = response && response.message ? response.message : 'Terjadi kesalahan pada server';
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
-                    text: response.message
+                    text: msg
                 });
+
+                // remove the failed file so user can retry
+                try { myDropzone.removeFile(file); } catch (e) { console.warn(e); }
+                const fallbackInput = document.querySelector('#csvDropzone input[type=file]');
+                if (fallbackInput) fallbackInput.value = '';
             }
         });
 
-        myDropzone.on("error", function (file, xhr) {
+        myDropzone.on("error", function (file, response, xhr) {
             let message = 'Terjadi kesalahan saat upload';
 
-            // Laravel JSON error (500 / 422)
-            if (xhr.responseJSON && xhr.responseJSON.message) {
-                message = xhr.responseJSON.message;
+            // Case A: Dropzone gives parsed JSON as `response`
+            if (response && typeof response === 'object') {
+                if (response.message) {
+                    message = response.message;
+                } else if (response.errors) {
+                    if (Array.isArray(response.errors)) {
+                        message = response.errors.join('; ');
+                    } else if (typeof response.errors === 'object') {
+                        // Laravel validation errors object
+                        message = Object.values(response.errors).flat().join('; ');
+                    }
+                }
             }
+
+            // Case B: XHR available with parsed JSON
+            else if (xhr && xhr.responseJSON) {
+                const body = xhr.responseJSON;
+                if (body.message) message = body.message;
+                else if (body.errors) {
+                    if (Array.isArray(body.errors)) message = body.errors.join('; ');
+                    else message = Object.values(body.errors).flat().join('; ');
+                }
+            }
+
+            // Case C: response may be a string (plain text or JSON string)
+            else if (typeof response === 'string') {
+                try {
+                    const parsed = JSON.parse(response);
+                    if (parsed.message) message = parsed.message;
+                    else if (parsed.errors) message = Array.isArray(parsed.errors) ? parsed.errors.join('; ') : Object.values(parsed.errors).flat().join('; ');
+                } catch (e) {
+                    // fallback to raw string
+                    message = response;
+                }
+            }
+
+            console.error('Dropzone upload error:', { file, response, xhr });
 
             Swal.fire({
                 icon: 'error',
                 title: 'Gagal',
                 text: message
             });
+
+            // remove the errored file so user can reselect
+            try { myDropzone.removeFile(file); } catch (e) { console.warn(e); }
+            const fallbackInput2 = document.querySelector('#csvDropzone input[type=file]');
+            if (fallbackInput2) fallbackInput2.value = '';
         });
 
     </script>

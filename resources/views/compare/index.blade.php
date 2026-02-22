@@ -1,4 +1,5 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
 <link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/responsive.bootstrap5.min.css') }}">
@@ -273,7 +274,7 @@ $(function () {
             { data: 'kode_barang' },
             { data: 'nama_barang' },
             { data: 'nup' },
-            { data: 'merkRaw' },
+            { data: 'merk' },
             {   data: 'merktipe',
                 width: '220px',
                 // render: data =>

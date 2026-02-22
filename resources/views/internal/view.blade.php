@@ -1,6 +1,8 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
-  <link href="../assets/css/plugins/animate.min.css" rel="stylesheet" type="text/css">
+  <link href="{{asset('/assets/dist/assets/css/plugins/animate.min.css')}}" rel="stylesheet" type="text/css">
+
 
 @endsection
 @section('content')
@@ -37,20 +39,25 @@
                         {{-- <form id="mainForm" method="POST" action="{{ route('internal.update', $internal->id) }}" enctype="multipart/form-data">
                             @csrf
                             @method('PUT') --}}
-                        <div class="row g-4" style="height: 50vh; overflow-y: hidden;">
+                        <div class="row g-4" style="height: 60vh; overflow-y: hidden;">
                             <div class="col-md-2 col-sm-12  border-end border-muted">
                                 <ul class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                     <li><a class="nav-link active" id="v-pills-detail-tab" data-bs-toggle="pill" href="#v-pills-detail" role="tab" aria-controls="v-pills-detail" aria-selected="true">Detail BMN</a></li>
                                     <li><a class="nav-link" id="v-pills-foto-tab" data-bs-toggle="pill" href="#v-pills-foto" role="tab" aria-controls="v-pills-foto" aria-selected="false">Foto</a></li>
                                     <li><a class="nav-link" id="v-pills-pengguna-tab" data-bs-toggle="pill" href="#v-pills-pengguna" role="tab" aria-controls="v-pills-pengguna" aria-selected="false">Pengguna</a></li>
                                     <li><a class="nav-link" id="v-pills-identitas-tab" data-bs-toggle="pill" href="#v-pills-identitas" role="tab" aria-controls="v-pills-identitas" aria-selected="false">Identitas</a></li>
+                                    <li><a class="nav-link" id="v-pills-bast-tab" data-bs-toggle="pill" href="#v-pills-bast" role="tab" aria-controls="v-pills-bast" aria-selected="false">BAST</a></li>
+
                                 </ul>
                             </div>
-                            <div class="col-md-10 col-sm-12 overflow-y-scroll" style="max-height: 50vh; ">
+                            <div class="col-md-10 col-sm-12 overflow-y-scroll" style="max-height: 60vh; ">
                                 <div class="tab-content" id="v-pills-tabContent">
+
                                     <div class="tab-pane fade show active" id="v-pills-detail" role="tabpanel" aria-labelledby="v-pills-detail-tab">
+
                                         <div class="mb-3" >
                                             <h4 class="fw-bold mb-3">Detail BMN</h4>
+                                            <hr>
                                             <label for="satker" class="form-label">Kode Satker</label>
                                             <select disabled class="form-control" name="satker_id" id="satker">
                                                 <option value="" disabled selected>-- Pilih kode satker --</option>
@@ -153,9 +160,12 @@
                                         </div>
                                         <div class="mb-3" style="height: 20vh"></div>
                                     </div>
+
                                     <div class="tab-pane fade" id="v-pills-foto" role="tabpanel" aria-labelledby="v-pills-foto-tab">
+
                                         {{-- <form id="imageForm" enctype="multipart/form-data" class="mb-3"> --}}
                                             <h4 class="fw-bold mb-3">Foto</h4>
+                                            <hr>
                                             <div class="row mb-3">
 
                                                 {{-- <div class="col-md-6">
@@ -222,8 +232,11 @@
                                         </div>
                                         <div class="mb-3" style="height: 5vh"></div>
                                     </div>
+
                                     <div class="tab-pane fade" id="v-pills-pengguna" role="tabpanel" aria-labelledby="v-pills-pengguna-tab">
+
                                         <h4 class="fw-bold mb-3">Pengguna</h4>
+                                        <hr>
                                         <!-- Image Upload -->
                                         <div class="mb-3">
                                             <label for="profileImage" class="form-label">Foto Pengguna</label>
@@ -243,14 +256,68 @@
                                             <input readonly type="text" name="name" class="form-control" id="name" placeholder="Masukkan nama lengkap" value="{{ $internal->nama_pengguna }}">
                                         </div> <!-- Address -->
                                         <div class="mb-3">
-                                            <label for="address" class="form-label">Alamat</label>
-                                            <textarea readonly name="address" class="form-control" id="address" rows="3" placeholder="Masukkan alamat">{{ $internal->alamat_pengguna }}</textarea>
+                                            <label for="pengguna_unitkerja_id" class="form-label">Unit Penugasan/PokJa</label>
+                                            <select
+                                                class="form-control"
+                                                data-penggunaunitkerja
+                                                name="pengguna_unitkerja_id"
+                                                id="penggunaunitkerjaSelect"
+                                                disabled
+                                                >
+                                                <option value="" selected disabled>--Pilih Unit Penugasan/PokJa--</option>
+                                                @foreach ($unitkerja as $keyunitkerja)
+
+                                                    <option {{ $internal->pengguna_unitkerja_id == $keyunitkerja->id ? 'selected' : '' }} value="{{ $keyunitkerja->id }}" >{{ $keyunitkerja->name }}</option>
+                                                @endforeach
+                                            </select>
                                         </div>
+                                        <div class="mb-3">
+                                            <label for="unit_teknis_id" class="form-label">Unit Teknis</label>
+                                            <select
+                                                class="form-control"
+                                                data-penggunaunitteknis
+                                                name="unit_teknis_id"
+                                                id="penggunaunitteknisSelect"
+                                                disabled
+                                                >
+                                                <option value="" selected disabled>--Pilih Unit Teknis--</option>
+                                                @foreach ($unitteknis as $keyunitteknis)
+
+                                                    <option {{ $internal->unit_teknis_id == $keyunitteknis->id ? 'selected' : '' }} value="{{ $keyunitteknis->id }}" >{{ $keyunitteknis->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                            <div class="mb-3">
+                                                <label for="nip_pengguna" class="form-label">NIP</label>
+                                                <input readonly type="text" name="nip_pengguna" id="nip_pengguna" class="form-control" placeholder="Masukkan NIP" value="{{ old('nip_pengguna', $internal->nip_pengguna ?? '') }}">
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="jabatan_pengguna" class="form-label">Jabatan</label>
+                                                <input readonly type="text" name="jabatan_pengguna" id="jabatan_pengguna" class="form-control" placeholder="Masukkan jabatan" value="{{ old('jabatan_pengguna', $internal->jabatan_pengguna ?? '') }}">
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="alamat_pengguna" class="form-label">Alamat</label>
+                                                <textarea readonly name="alamat_pengguna" id="alamat_pengguna" class="form-control" rows="3" placeholder="Masukkan alamat lengkap">{{ old('alamat_pengguna', $internal->alamat_pengguna ?? '') }}</textarea>
+                                            </div>
                                         <div class="mb-3" style="height: 5vh"></div>
                                     </div>
+
                                     <div class="tab-pane fade" id="v-pills-identitas" role="tabpanel" aria-labelledby="v-pills-identitas-tab">
-                                        <h4 class="fw-bold">Identitas</h4><br>
-                                        <h5 class="fw-bold">{{ $internal->identitas->name ?? 'Tidak ada identitas' }}</h5>
+
+                                        <h4 class="fw-bold mb-3">Identitas</h4>
+                                        <hr>
+
+                                        @if ($internal->identitas == null)
+                                            <div class="alert alert-warning" role="alert">
+                                                Tidak ada identitas.
+                                            </div>
+                                        @else
+                                            <h4 class="fw-bold">{{ $internal->identitas->identitasKategori->name }}</h4>
+                                            <h5 class="fw-bold">{{ $internal->identitas->name }}</h5>
+                                        @endif
                                         <ul class="list-group list-group-flush">
                                             @foreach($internal->dataAtribut as $val)
                                                 <li class="list-group-item list-group-item-action" >
@@ -259,6 +326,36 @@
                                                 </li>
                                             @endforeach
                                         </ul>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="v-pills-bast" role="tabpanel" aria-labelledby="v-pills-bast-tab">
+
+                                            <h4 class="fw-bold mb-3">BAST</h4>
+                                            <hr>
+
+                                            <a target="_blank" href="{{ route('internal.bast', $internal->id) }}"
+                                                class="btn btn-sm btn-shadow btn-primary fs-6 mb-3">
+                                                <i class="bi bi-file-pdf fs-6"></i>
+                                                Generate BAST
+                                            </a>
+
+                                            <div class="mb-3">
+                                                <label for="nama_pihak_pertama" class="form-label">Nama Pihak Pertama</label>
+                                                <input readonly type="text" name="nama_pihak_pertama" id="nama_pihak_pertama" class="form-control" placeholder="Masukkan nama pihak pertama" value="{{ old('nama_pihak_pertama', $internal->nama_pihak_pertama ?? '') }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="nip_pihak_pertama" class="form-label">NIP Pihak Pertama</label>
+                                                <input readonly type="text" name="nip_pihak_pertama" id="nip_pihak_pertama" class="form-control" placeholder="Masukkan NIP pihak pertama" value="{{ old('nip_pihak_pertama', $internal->nip_pihak_pertama ?? '') }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="jabatan_pihak_pertama" class="form-label">Jabatan Pihak Pertama</label>
+                                                <input readonly type="text" name="jabatan_pihak_pertama" id="jabatan_pihak_pertama" class="form-control" placeholder="Masukkan jabatan pihak pertama" value="{{ old('jabatan_pihak_pertama', $internal->jabatan_pihak_pertama ?? '') }}">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="alamat_pihak_pertama" class="form-label">Alamat Pihak Pertama</label>
+                                                <textarea readonly name="alamat_pihak_pertama" id="alamat_pihak_pertama" class="form-control" rows="3" placeholder="Masukkan alamat lengkap pihak pertama">{{ old('alamat_pihak_pertama', $internal->alamat_pihak_pertama ?? '') }}</textarea>
+                                            </div>
+                                            <div class="mb-3" style="height: 5vh"></div>
                                     </div>
                                 </div>
                             </div>
@@ -295,130 +392,9 @@
     <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
     <script src="{{asset('https://cdn.jsdelivr.net/npm/autonumeric@4.6.0')}}"></script>
 
-    {{-- Script for Image Modal --}}
-    {{-- <script>
-        function openEditModal(image) {
-            var editModal = new bootstrap.Modal(document.getElementById('editImageModal'));
-            editModal.show();
 
-            var modalBody = document.getElementById('modalBody');
-            const imageId = image.id; // Assuming 'image' object has an 'id' property
-            const route = "{{ route('internal.updateImage', ':id') }}".replace(':id', imageId);
-            const modalEditContent = `
-                <form id="editImageForm" action="${route}" method="POST">
-                  <div class="mb-3">
-                    <label for="editTitle" class="form-label">Title</label>
-                    <input type="text" class="form-control" id="editTitle" name="title">
-                  </div>
-                  <div class="mb-3">
-                    <label for="editDescription" class="form-label">Description</label>
-                    <input type="text" class="form-control" id="editDescription" name="description">
-                  </div>
-                  <div class="mb-3 form-check">
-                    <input type="checkbox" name="isCover" class="form-check-input" id="editIsCover">
-                    <label class="form-check-label" for="editIsCover">Set as Cover</label>
-                  </div>
-                </form>
-            `;
-            modalBody.innerHTML = modalEditContent;
-        }
-    </script> --}}
-
-    {{-- Script for Add Image Modal --}}
-    {{-- <script>
-        function openAddModal(internalId) {
-            var addModal = new bootstrap.Modal(document.getElementById('editImageModal'));
-            addModal.show();
-
-            const internalId = internalId;
-            var modalBody = document.getElementById('modalBody');
-            const route = "{{ route('internal.addImage', ':id') }}".replace(':id', internalId);
-            const modalAddContent = `
-                <form id="addImageForm" action="${route}" method="POST" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="addImageInput" class="form-label">Select Image</label>
-                    <input type="file" class="form-control" id="addImageInput" name="image" accept="image/*" required>
-                </div>
-                <div class="mb-3">
-                    <label for="addTitle" class="form-label">Title</label>
-                    <input type="text" class="form-control" id="addTitle" name="title">
-                </div>
-                <div class="mb-3">
-                    <label for="addDescription" class="form-label">Description</label>
-                    <input type="text" class="form-control" id="addDescription" name="description">
-                </div>
-                <div class="mb-3 form-check">
-                    <input type="checkbox" name="isCover" class="form-check-input" id="addIsCover">
-                    <label class="form-check-label" for="addIsCover">Set as Cover</label>
-                </div>
-                </form>
-            `;
-            modalBody.innerHTML = modalAddContent;
-        }
-    </script> --}}
-
-    {{-- Image Upload Script --}}
     <script>
-        // let tempImages = [];
 
-        // document.getElementById('addImage').addEventListener('click', function() {
-        //     const input = document.getElementById('imageInput');
-        //     if (input.files.length > 0) {
-        //         const file = input.files[0];
-        //         tempImages.push({
-        //             file: file,
-        //             title: '',
-        //             description: '',
-        //             isCover: false
-        //         });
-        //         renderTable();
-        //     }
-        // });
-
-        // function renderTable() {
-        //     const tbody = document.querySelector('#imageTable tbody');
-        //     tbody.innerHTML = '';
-
-        //     tempImages.forEach((item, index) => {
-        //         const row = `
-        //             <tr>
-        //                 <td><img class="img-thumbnail" src="${URL.createObjectURL(item.file)}" width="100"></td>
-        //                 <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: break-word;">${item.file.name}</td>
-        //                 <td><input class="form-control" type="text" value="${item.title}"
-        //                         oninput="updateTitle(${index}, this.value)"></td>
-        //                 <td><input class="form-control" type="text" value="${item.description}"
-        //                         oninput="updateDescription(${index}, this.value)"></td>
-        //                 <td>
-        //                     <input type="radio" name="cover" class="form-check-input"
-        //                         ${item.isCover ? 'checked' : ''}
-        //                         onclick="setCover(${index})">
-        //                 </td>
-        //                 <td>
-        //                     <button onclick="deleteImage(${index})" class="btn btn-shadow btn-danger">Delete</button>
-        //                 </td>
-        //             </tr>
-        //         `;
-        //         tbody.innerHTML += row;
-        //     });
-        // }
-
-        // function updateTitle(index, value) {
-        //     tempImages[index].title = value;
-        // }
-
-        // function updateDescription(index, value) {
-        //     tempImages[index].description = value;
-        // }
-
-        // function setCover(index) {
-        //     tempImages.forEach((img, i) => img.isCover = (i === index));
-        //     renderTable();
-        // }
-
-        // function deleteImage(index) {
-        //     tempImages.splice(index, 1);
-        //     renderTable();
-        // }
 
         document.getElementById('imageForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -430,16 +406,16 @@
 
     {{-- pengguna script --}}
     <script> // Preview uploaded image
-        document.getElementById('profileImage').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) { const reader = new FileReader(); reader.onload = function(e) {
-                const preview = document.getElementById('preview');
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        // document.getElementById('profileImage').addEventListener('change', function(event) {
+        //     const file = event.target.files[0];
+        //     if (file) { const reader = new FileReader(); reader.onload = function(e) {
+        //         const preview = document.getElementById('preview');
+        //         preview.src = e.target.result;
+        //         preview.style.display = 'block';
+        //         };
+        //         reader.readAsDataURL(file);
+        //     }
+        // });
 
             // Handle form submission (example)
             // document.getElementById('profileForm').addEventListener('submit', function(e) {
@@ -462,79 +438,18 @@
             });
     </script>
 
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function () {
 
-            // Main form submit
-            // document.getElementById('mainForm').addEventListener('submit', function(e) {
-            //     e.preventDefault(); // Prevent default to handle manually
 
-            //     const formData = new FormData(this);
-
-            //     // Append images
-            //     tempImages.forEach((item, index) => {
-            //         formData.append(`images[${index}]`, item.file);
-            //         formData.append(`titles[${index}]`, item.title);
-            //         formData.append(`descriptions[${index}]`, item.description);
-            //         formData.append(`isCover[${index}]`, item.isCover ? 1 : 0);
-            //     });
-
-            //     // Submit via fetch
-            //     fetch(this.action, {
-            //         method: 'POST',
-            //         body: formData,
-            //         headers: {
-            //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            //             'Accept': 'application/json',
-            //             'X-Requested-With': 'XMLHttpRequest'
-            //         }
-            //     })
-            //     .then(response => {
-            //         if (response.ok) {
-            //             return response.json();
-            //         } else {
-            //             return response.text().then(text => {
-            //                 try {
-            //                     const data = JSON.parse(text);
-            //                     throw new Error(data.message || 'Validation error');
-            //                 } catch (e) {
-            //                     if (e instanceof SyntaxError) {
-            //                         throw new Error('Server error: ' + response.status);
-            //                     } else {
-            //                         throw e;
-            //                     }
-            //                 }
-            //             });
-            //         }
-            //     })
-            //     .then(data => {
-            //         if (data.success) {
-            //             window.location.href = data.redirect;
-            //         } else {
-            //             Swal.fire({
-            //                 title: 'Error',
-            //                 text: data.message || 'Unknown error',
-            //                 icon: 'error',
-            //                 confirmButtonText: 'OK'
-            //             });
-            //         }
-            //     })
-            //     .catch(error => {
-            //         Swal.fire({
-            //             title: 'Error',
-            //             text: 'An error occurred while submitting the form: ' + error.message,
-            //             icon: 'error',
-            //             confirmButtonText: 'OK'
-            //         });
-            //     });
-            // });
 
             var modalBarang = document.querySelectorAll('[data-barang]');
             for (i = 0; i < modalBarang.length; ++i) {
             var elementBarang = modalBarang[i];
             new Choices(elementBarang, {
                 placeholderValue: 'This is a placeholder set in the config',
-                searchPlaceholderValue: 'Cari kode barang'
+                searchPlaceholderValue: 'Cari kode barang',
+                position: 'bottom'
             });
             }
 
@@ -547,16 +462,35 @@
             });
             }
 
+            var UnitPenggunaSelect = document.querySelectorAll('[data-penggunaunitkerja]');
+            for (i = 0; i < UnitPenggunaSelect.length; ++i) {
+            var unitelement = UnitPenggunaSelect[i];
+            new Choices(unitelement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari unit penugasan/pokja'
+            });
+            }
+
+
+
             var LokasiSelect = document.querySelectorAll('[data-lokasi]');
             for (i = 0; i < LokasiSelect.length; ++i) {
             var lokasielement = LokasiSelect[i];
             new Choices(lokasielement, {
                 placeholderValue: 'This is a placeholder set in the config',
-                searchPlaceholderValue: 'Cari lokasi'
+                searchPlaceholderValue: 'Cari lokasi',
+                position: 'top'
             });
             }
         })
-    </script>
+    </script> --}}
+
+
+
+
+
+
+
 
 
 

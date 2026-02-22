@@ -10,6 +10,8 @@ class DataInternal extends Model
         'satker_id',
         'barang_id',
         'lokasi_id',
+        'pengguna_unitkerja_id',
+        'unit_teknis_id',
         'nup',
         'tgl_perolehan',
         'merk',
@@ -39,6 +41,12 @@ class DataInternal extends Model
         'nama_pengguna',
         'alamat_pengguna',
         'identitas_id',
+        'nip_pengguna',
+        'jabatan_pengguna',
+        'nama_pihak_pertama',
+        'nip_pihak_pertama',
+        'jabatan_pihak_pertama',
+        'alamat_pihak_pertama',
     ];
 
     protected $casts = [

@@ -1,4 +1,5 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
 <style>
     #attribute-search {
@@ -50,7 +51,17 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                
+
+                                <label class="form-label">Kategori</label>
+                                <select name="kategori_id" id="kategori_id" class="form-control">
+                                    <option value="">Pilih Kategori</option>
+                                    @foreach($identitasKategori as $kategori)
+                                        <option value="{{ $kategori->id }}">{{ $kategori->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+
                                 <label class="form-label">Name</label>
                                 <input class="form-control" type="text" name="name">
                             </div>
@@ -74,28 +85,28 @@
 
                                 <div id="attribute-container" class="mb-3"
                                         style="max-height: 450px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
-                                    
+
                                         @foreach($atribut as $attr)
                                             <div class="attribute-item mb-3"
                                                 data-label="{{ strtolower($attr->label) }}"
                                                 data-key="{{ strtolower($attr->key) }}">
-        
+
                                                 <div class="border rounded p-3">
-        
+
                                                     {{-- ENABLE ATTRIBUTE --}}
                                                     <div class="form-check mb-2">
                                                         <input class="form-check-input"
                                                             type="checkbox"
                                                             name="atribut[{{ $attr->id }}][enabled]"
                                                             id="attr-{{ $attr->id }}">
-        
+
                                                         <label class="form-check-label fw-bold"
                                                             for="attr-{{ $attr->id }}">
                                                             {{ $attr->label }}
                                                             <small class="text-muted">({{ $attr->key }})</small>
                                                         </label>
                                                     </div>
-        
+
                                                     {{-- REQUIRED --}}
                                                     <div class="mb-2">
                                                         <label class="form-label">Required</label><br>
@@ -106,7 +117,7 @@
                                                             Wajib diisi saat input data.
                                                         </small>
                                                     </div>
-        
+
                                                     {{-- ORDER --}}
                                                     <div class="mb-2">
                                                         <label class="form-label">Order</label>
@@ -118,7 +129,7 @@
                                                             Urutan tampil di form. (semakin kecil semakin duluan)
                                                         </small>
                                                     </div>
-        
+
                                                     {{-- PLACEHOLDER --}}
                                                     <div class="mb-2">
                                                         <label class="form-label">Placeholder</label>
@@ -129,7 +140,7 @@
                                                             Contoh isi input. (opsional)
                                                         </small>
                                                     </div>
-        
+
                                                     {{-- HELP TEXT --}}
                                                     <div class="mb-2">
                                                         <label class="form-label">Help Text</label>
@@ -140,7 +151,7 @@
                                                             Penjelasan tambahan. (opsional)
                                                         </small>
                                                     </div>
-        
+
                                                 </div>
                                             </div>
                                         @endforeach

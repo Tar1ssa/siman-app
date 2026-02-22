@@ -3,7 +3,8 @@
 <!-- [Head] start -->
 
 <head>
-  <title>Home | Mantis Bootstrap 5 Admin Template</title>
+  <title>@yield('title')</title>
+
   <!-- [Meta] -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
@@ -13,7 +14,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
     @yield('dependencies')
   <!-- [Favicon] icon -->
-<link rel="icon" href="{{asset('assets/dist/assets/images/favicon.svg')}}" type="image/x-icon"> <!-- [Google Font] Family -->
+<link rel="icon" href="{{asset('assets/favicon.png')}}" type="image/x-icon"> <!-- [Google Font] Family -->
 <link rel="stylesheet" href="{{asset('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap')}}" id="main-font-link">
 <!-- [Tabler Icons] https://tablericons.com -->
 <link rel="stylesheet" href="{{asset('assets/dist/assets/fonts/tabler-icons.min.css')}}" >
@@ -26,6 +27,9 @@
 <!-- [Template CSS Files] -->
 <link rel="stylesheet" href="{{asset('assets/dist/assets/css/style.css')}}" id="main-style-link" >
 <link rel="stylesheet" href="{{asset('assets/dist/assets/css/style-preset.css')}}" >
+<link rel="stylesheet" href="{{ asset('bootstrap-icons/font/bootstrap-icons.min.css') }}">
+
+
 
     <!-- In your main layout file -->
 
@@ -59,6 +63,7 @@
   @include('inc.footer')
 
   {{-- @include('sweetalert::alert') --}}
+@include('sweetalert::alert')
 
   <!-- [Page Specific JS] start -->
   <script src="{{asset('assets/dist/assets/js/plugins/apexcharts.min.js')}}"></script>
@@ -94,6 +99,59 @@
 
   <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @include('sweetalert::alert')
+
+  <script>
+  // Global AJAX error handler for session expiration
+  document.addEventListener('DOMContentLoaded', function() {
+      // Override fetch to check for 401 and 419
+      const originalFetch = window.fetch;
+      window.fetch = function(...args) {
+          return originalFetch.apply(this, args).then(response => {
+              if (response.status === 401) {
+                  Swal.fire({
+                      icon: 'warning',
+                      title: 'Session Expired',
+                      text: 'Your session has expired. Please log in again.',
+                      confirmButtonText: 'OK'
+                  }).then(() => {
+                      window.location.href = '/login';
+                  });
+              } else if (response.status === 419) {
+                  Swal.fire({
+                      icon: 'error',
+                      title: 'Page Expired',
+                      text: 'The page has expired due to inactivity. Redirecting to login...',
+                      confirmButtonText: 'OK',
+                      timer: 3000,
+                      timerProgressBar: true
+                  }).then(() => {
+                      window.location.href = '/login';
+                  });
+              }
+              return response;
+          });
+      };
+
+      // Proactive session expiration warning for AFK users
+      // Assuming session lifetime is 120 minutes (7200000 ms), warn 5 minutes before (300000 ms)
+      const sessionLifetime = 7200000; // 120 minutes in ms
+      const warningTime = 300000; // 5 minutes before expiration
+      const warningDelay = sessionLifetime - warningTime;
+
+      setTimeout(() => {
+          Swal.fire({
+              icon: 'warning',
+              title: 'Session Expiring Soon',
+              text: 'Your session will expire in 5 minutes due to inactivity. Please save your work or continue using the app.',
+              confirmButtonText: 'OK',
+              timer: 10000, // Auto-close after 10 seconds
+              timerProgressBar: true
+          });
+      }, warningDelay);
+  });
+  </script>
+
+@yield('script')
 
 </body>
 <!-- [Body] end -->

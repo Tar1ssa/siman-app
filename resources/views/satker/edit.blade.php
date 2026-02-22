@@ -1,4 +1,5 @@
 @extends('app')
+@section('title', $title)
 @section('content')
 <div class="pc-content">
         <!-- [ breadcrumb ] start -->

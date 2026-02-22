@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('satker_id')->constrained('satkers')->onDelete('cascade');
             $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
-            $table->foreignId('unit_kerja_id')->nullable()->constrained('unit_kerjas')->onDelete('cascade');
-            $table->foreignId('lokasi_id')->nullable()->constrained('lokasi_ruangs')->onDelete('cascade');
+            $table->foreignId('unit_kerja_id')->nullable()->constrained('unit_kerjas')->onDelete('set null');
+            $table->foreignId('lokasi_id')->nullable()->constrained('lokasi_ruangs')->onDelete('set null');
             $table->foreignId('identitas_id')->nullable()->constrained('identitas')->onDelete('set null');
+            $table->foreignId('pengguna_unitkerja_id')->nullable()->constrained('unit_kerjas')->onDelete('set null');
+            $table->foreignId('unit_teknis_id')->nullable()->constrained('unit_teknis')->onDelete('set null');
             $table->unique(['barang_id', 'nup']);
             $table->unsignedInteger('nup')->nullable();
             $table->date('tgl_perolehan')->nullable();
@@ -45,7 +47,6 @@ return new class extends Migration
             $table->string('profile_image')->nullable();
             $table->string('profile_image_path')->nullable();
             $table->string('nama_pengguna')->nullable();
-            $table->text('alamat_pengguna')->nullable();
             $table->timestamps();
         });
     }

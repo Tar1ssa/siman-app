@@ -1,26 +1,29 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
-<link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/dataTables.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/responsive.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/dataTables.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/responsive.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     /* Make action column sticky */
-/* table.dataTable th.dt-action-col ,
+table.dataTable th.dt-action-col ,
 table.dataTable td.dt-action-col{
     position: sticky;
     right: 0;
     background: #fff;
     z-index: 2;
     white-space: nowrap;
-} */
+}
 
 /* Header should be above body */
-/* table.dataTable th.dt-action-col {
-    z-index: 3;
-} */
+table.dataTable th.dt-action-col {
+    /* z-index: 3; */
+}
+
+
 
 /* Optional: shadow separator */
-/* table.dataTable td.dt-action-col::before,
+table.dataTable td.dt-action-col::before,
 table.dataTable th.dt-action-col::before {
     content: "";
     position: absolute;
@@ -29,7 +32,7 @@ table.dataTable th.dt-action-col::before {
     bottom: 0;
     width: 6px;
     background: linear-gradient(to left, rgba(0,0,0,.15), transparent);
-} */
+}
 
 /* .dt-action-col {
     min-width: 180px;
@@ -37,26 +40,26 @@ table.dataTable th.dt-action-col::before {
 }
 
 .dataTables_scrollHead th.batch-col {
-    padding-right: 10rem; 
+    padding-right: 10rem;
 }
 
 .dataTables_scrollHead th.link_dokumentasi {
-    padding-right: 10rem; 
+    padding-right: 10rem;
 }
 
 .dataTables_scrollHead th.kode-satker-col {
-    padding-right: 6rem; 
+    padding-right: 6rem;
 }
 
 .dataTables_scrollHead th.merk-col {
-    padding-right: 3rem; 
+    padding-right: 3rem;
 }
 .dataTables_scrollHead th.tipe-col {
-    padding-right: 3rem; 
+    padding-right: 3rem;
 }
 
 .dataTables_scrollHead th.dt-action-col {
-    padding-right: 11.5rem; 
+    padding-right: 11.5rem;
 } */
 
 .choices__list--dropdown {
@@ -96,6 +99,9 @@ table.dataTable th.dt-action-col::before {
                     <a href="{{ route('internal.make') }}" class="btn btn-shadow btn-success">Tambah data Internal</a>
 
                     <a href="{{ route('internal.create') }}" class="btn btn-shadow btn-primary">Import data Internal</a>
+
+                    <a href="{{ route('export.internal-all') }}" class="btn btn-shadow btn-info">Export All Data</a>
+
                     <button
                     type="button"
                     class="btn btn-shadow btn-danger"
@@ -110,15 +116,29 @@ table.dataTable th.dt-action-col::before {
                 <div class="row">
                     <div class="col-md-2">
                         <div class="mb-2">
-                            <label for="numberSearch" class="form-label fw-bold">
-                                Search by NUP
+                            <label for="nupSearch" class="form-label fw-bold">
+                                Search by NUP Range
                             </label>
-                            <input
-                                type="text"
-                                id="nupSearch"
-                                class="form-control"
-                                placeholder="Ketik Nomor NUP..."
-                            >
+                            <div class="row g-1">
+                                <div class="col-6">
+                                    <input
+                                        type="number"
+                                        id="nupMin"
+                                        class="form-control form-control-sm"
+                                        placeholder="Min NUP"
+                                        min="1"
+                                    >
+                                </div>
+                                <div class="col-6">
+                                    <input
+                                        type="number"
+                                        id="nupMax"
+                                        class="form-control form-control-sm"
+                                        placeholder="Max NUP"
+                                        min="1"
+                                    >
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -126,7 +146,7 @@ table.dataTable th.dt-action-col::before {
                             <label for="itemsSearch" class="form-label fw-bold">
                                 Search by Kode Barang
                             </label>
-                            <select
+                                <select
                                         class="form-control"
                                         data-trigger
                                         name="itemsSearch"
@@ -138,7 +158,7 @@ table.dataTable th.dt-action-col::before {
 
                                         <option value="{{ $keybarang->kode_barang }}">{{ $keybarang->kode_barang }} - {{ $keybarang->nama_barang }}</option>
                                         @endforeach
-                                    </select>
+                                </select>
                             <input
                                 type="hidden"
                                 id="itemSearch"
@@ -232,10 +252,73 @@ table.dataTable th.dt-action-col::before {
                                 placeholder=""
                             >
                         </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="identitasSearch" class="form-label fw-bold">
+                                Search by Identitas
+                            </label>
+                        <div class="accordion " id="accordionIdentitas">
+                            <div class="accordion-item">
+                                <h5 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIdentitas" aria-expanded="false" aria-controls="collapseIdentitas">
+                                    Pilih Identitas
+                                </button>
+                                </h5>
+                                <div id="collapseIdentitas" class="accordion-collapse collapse" data-bs-parent="#accordionIdentitas">
+                                    <div class="accordion-body">
+                                        <div class="row d-flex justify-content-between flex-column">
+                                            <div class="col-md-12">
+                                            <div class="mb-2">
+                                                <label for="kategoriIdentitasSearch" class="form-label">
+                                                    Pilih Kategori Identitas
+                                                </label>
+                                                <select
+                                                    class="form-control"
+                                                    data-kategori-identitas
+                                                    name="kategoriIdentitasSearch"
+                                                    id="kategoriIdentitasSearch"
+                                                >
+                                                    <option value="" selected disabled>--Pilih Kategori Identitas--</option>
+                                                    <option value="">Semua</option>
+                                                    @foreach ($identitasKategori as $kategori)
+                                                    <option value="{{ $kategori->id }}">{{ $kategori->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="mb-2">
+                                                <label for="identitasSearch" class="form-label">
+                                                    Pilih Identitas
+                                                </label>
+                                                <select
+                                                    class="form-control"
+                                                    data-identitas
+                                                    name="identitasSearch"
+                                                    id="identitasSearch"
+                                                    disabled
+                                                >
+                                                    <option value="" selected disabled>--Pilih Identitas--</option>
+                                                    <option value="">Semua</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table id="new-cons" class="table table-striped nowrap w-100 " >
+                {{-- filter by identitas --}}
+                <div class="row mb-3">
+
+                </div>
+
+                {{-- <div class="table-responsive"> --}}
+                    <table id="new-cons" class="table table-striped  " style="width:100%">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -244,6 +327,8 @@ table.dataTable th.dt-action-col::before {
                                 <th>NUP</th>
                                 <th>Tanggal Perolehan</th>
                                 <th>Nama Barang</th>
+                                <th>Foto Barang</th>
+                                <th>Identitas</th>
                                 <th>Merk</th>
                                 <th>Tipe</th>
                                 <th>Jumlah</th>
@@ -254,9 +339,8 @@ table.dataTable th.dt-action-col::before {
                                 <th>Akun Neraca</th>
                                 <th>Pembukuan</th>
                                 <th>Unit Kerja</th>
-                                <th>PenggunaRaw</th>
+                                <th>Pengguna (CSV)</th>
                                 <th>Nama Pengguna</th>
-                                <th>Alamat Pengguna</th>
                                 <th>Lokasi Ruang</th>
                                 <th>Status INVEN</th>
                                 <th>Kondisi Setelah Inventarisasi</th>
@@ -265,8 +349,8 @@ table.dataTable th.dt-action-col::before {
                                 <th>Nomor BAHI (Berita Acara Hasil Inven)</th>
                                 <th>Tanggal BAHI (Berita Acara Hasil Inven)</th>
                                 <th>Batch</th>
-                                {{-- <th>Aksi</th> --}}
-                                
+                                <th >Aksi</th>
+
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -331,7 +415,7 @@ table.dataTable th.dt-action-col::before {
 
                     </tbody>
                   </table> --}}
-                </div>
+                {{-- </div> --}}
               </div>
 
     </div>
@@ -387,7 +471,8 @@ table.dataTable th.dt-action-col::before {
             new Choices(element, {
                 placeholderValue: 'This is a placeholder set in the config',
                 searchPlaceholderValue: 'Cari kode barang',
-                position: 'bottom'
+                position: 'bottom',
+                shouldSort: false
             });
             }
 
@@ -408,6 +493,28 @@ table.dataTable th.dt-action-col::before {
                 placeholderValue: 'This is a placeholder set in the config',
                 searchPlaceholderValue: 'Cari lokasi ruang'
             });
+            }
+
+            var KategoriIdentitasSelect = document.querySelectorAll('[data-kategori-identitas]');
+            for (i = 0; i < KategoriIdentitasSelect.length; ++i) {
+            var kategoriIdentitaselement = KategoriIdentitasSelect[i];
+            new Choices(kategoriIdentitaselement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari kategori identitas',
+                position: 'bottom'
+            });
+            }
+
+            var IdentitasSelect = document.querySelectorAll('[data-identitas]');
+            for (i = 0; i < IdentitasSelect.length; ++i) {
+            var identitaselement = IdentitasSelect[i];
+            var choicesInstance = new Choices(identitaselement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari identitas',
+                position: 'bottom'
+            });
+            // Store the Choices instance for later use
+            $(identitaselement).data('choices', choicesInstance);
             }
 
         })
@@ -498,18 +605,9 @@ table.dataTable th.dt-action-col::before {
 
     $('#new-cons_filter input').attr('id', 'newConsSearch');
 
-    $('#nupSearch').on('keyup', function () {
-        const val = this.value.trim();
-
-        if (val === '') {
-            // clear search
-            newcs.column(3).search('').draw();
-        } else {
-            // exact match using regex
-            newcs.column(3)
-                .search('^' + val + '$', true, false)
-                .draw();
-        }
+    // NUP range filter
+    $('#nupMin, #nupMax').on('input', function () {
+        newcs.draw();
     });
 
     // redraw table when filter applied
@@ -526,6 +624,65 @@ table.dataTable th.dt-action-col::before {
     });
 
     $('#lokasiSearch').on('change', function () {
+        newcs.draw();
+    });
+
+    // Identitas filter logic
+    $('#kategoriIdentitasSearch').on('change', function () {
+        const kategoriId = $(this).val();
+        const identitasSelect = $('#identitasSearch');
+        const identitasChoices = identitasSelect.data('choices');
+
+        if (kategoriId) {
+            // Fetch identitas for selected kategori
+            $.ajax({
+                url: '{{ route("internal.kategoriIdentitas", ":id") }}'.replace(':id', kategoriId),
+                type: 'GET',
+                success: function (data) {
+                    // Clear existing options except the first two (placeholder and "Semua")
+                    identitasChoices.clearChoices();
+
+                    // Add "Semua" option
+                    identitasChoices.setChoices([{
+                        value: '',
+                        label: 'Semua',
+                        selected: false
+                    }], 'value', 'label', false);
+
+                    // Add fetched identitas options
+                    const identitasOptions = data.map(function (identitas) {
+                        return {
+                            value: identitas.id,
+                            label: identitas.name,
+                            selected: false
+                        };
+                    });
+                    identitasChoices.setChoices(identitasOptions, 'value', 'label', false);
+
+                    // Enable the select
+                    identitasSelect.prop('disabled', false);
+                    identitasChoices.enable();
+                }
+            });
+        } else {
+            // Reset to disabled state
+            identitasChoices.clearChoices();
+            identitasChoices.setChoices([{
+                value: '',
+                label: '--Pilih Identitas--',
+                selected: true,
+                disabled: true
+            }], 'value', 'label', false);
+            identitasSelect.prop('disabled', true);
+            identitasChoices.disable();
+        }
+
+        // Reset identitas selection and redraw table
+        identitasChoices.setChoiceByValue('');
+        newcs.draw();
+    });
+
+    $('#identitasSearch').on('change', function () {
         newcs.draw();
     });
 
@@ -554,7 +711,10 @@ table.dataTable th.dt-action-col::before {
             d.itemSearch   = $('#itemSearch').val();
             d.unitSearch   = $('#unitSearch').val();
             d.lokasiSearch = $('#lokasiSearch').val();
-            // d.nupSearch = $('#nupSearch').val();
+            d.kategoriIdentitasSearch = $('#kategoriIdentitasSearch').val();
+            d.identitasSearch = $('#identitasSearch').val();
+            d.nupMin = $('#nupMin').val();
+            d.nupMax = $('#nupMax').val();
             // d.bmnSearch    = $('#bmnSearch').val();
 
             //  DATE RANGE
@@ -564,39 +724,39 @@ table.dataTable th.dt-action-col::before {
     },
 
     columns: [
-        { data: 'DT_RowIndex', orderable: false, searchable: false, width: '3rem' },
-        { data: 'kode_satker', name: 'satkers.kode_satker', orderable: false, width: '6rem' },
-        { data: 'kode_barang', orderable: false, width: '6rem' },
-        { data: 'nup', width: '5rem' },
-        { data: 'tgl_perolehan', width: '8rem' },
-        { data: 'nama_barang', orderable: false, width: '10rem' },
+        { data: 'DT_RowIndex', orderable: false, searchable: false },
+        { data: 'kode_satker', name: 'satkers.kode_satker', orderable: false,  },
+        { data: 'kode_barang', orderable: false },
+        { data: 'nup' },
+        { data: 'tgl_perolehan' },
+        { data: 'nama_barang', orderable: false },
+        { data: 'foto_barang', orderable: false },
+        { data: 'identitas', orderable: false },
         // { data: 'merkRaw' },
-        { data: 'merk', width: '6rem' },
-        { data: 'tipe', width: '6rem' },
-        { data: 'jumlah', width: '5rem' },
-        { data: 'nilai_aset', name: 'nilai_aset', width: '8rem' },
-        { data: 'nilai_penyusutan', name: 'nilai_penyusutan', width: '8rem' },
-        { data: 'nilai_buku', name: 'nilai_buku', width: '8rem' },
-        { data: 'kondisi', width: '4rem' },
-        { data: 'akun_neraca', width: '6rem' },
-        { data: 'pembukuan', width: '6rem' },
-        { data: 'unit_kerja_id', orderable: false, width: '8rem' },
-        { data: 'penggunaRaw', width: '8rem' },
-        { data: 'nama_pengguna', width: '8rem' },
-        { data: 'alamat_pengguna', width: '10rem' },
-        { data: 'lokasi_id', width: '8rem' },
-        { data: 'status_inven', width: '6rem' },
-        { data: 'update_kondisi', width: '10rem' },
-        { data: 'link_dokumentasi', width: '12rem' },
-        { data: 'link_lhi', width: '12rem' },
-        { data: 'no_bahi', width: '8rem' },
-        { data: 'tgl_bahi', width: '8rem' },
+        { data: 'merk', },
+        { data: 'tipe',  },
+        { data: 'jumlah' },
+        { data: 'nilai_aset', name: 'nilai_aset' },
+        { data: 'nilai_penyusutan', name: 'nilai_penyusutan' },
+        { data: 'nilai_buku', name: 'nilai_buku' },
+        { data: 'kondisi' },
+        { data: 'akun_neraca' },
+        { data: 'pembukuan' },
+        { data: 'unit_kerja_id',orderable: false, },
+        { data: 'penggunaRaw' },
+        { data: 'nama_pengguna' },
+        { data: 'lokasi_id' },
+        { data: 'status_inven' },
+        { data: 'update_kondisi' },
+        { data: 'link_dokumentasi', },
+        { data: 'link_lhi' },
+        { data: 'no_bahi' },
+        { data: 'tgl_bahi' },
         {
                 data: 'batch',
                 name: 'batch',
                 className: 'batch-col',
                 orderable: false,
-                width: '6rem',
                 render: function (data, type, row) {
                     if (!data || data === '-') {
                         return '<span class="text-muted">-</span>';
@@ -609,12 +769,12 @@ table.dataTable th.dt-action-col::before {
                     `;
                 }
         },
-        // { data: 'action',
-        //     name: 'action',
-        //     orderable: false,
-        //     searchable: false,
-        //     // className: 'dt-action-col'
-        // },
+        { data: 'action',
+            name: 'action',
+            orderable: false,
+            searchable: false,
+            className: 'dt-action-col'
+        },
 
     ]
 });
@@ -622,7 +782,34 @@ table.dataTable th.dt-action-col::before {
 //     table.columns.adjust();
 // });
 
+    // Function to open image modal
+    function openImageModal(imageSrc, title) {
+        // Create modal if it doesn't exist
+        if (!$('#imageModal').length) {
+            $('body').append(`
+                <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="imageModalLabel">${title}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="${imageSrc}" class="img-fluid" alt="${title}" style="max-height: 70vh;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        } else {
+            // Update existing modal
+            $('#imageModal .modal-title').text(title);
+            $('#imageModal img').attr('src', imageSrc).attr('alt', title);
+        }
 
+        // Show modal
+        $('#imageModal').modal('show');
+    }
 
     </script>
 

@@ -1,4 +1,5 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
 <link rel="stylesheet" href="{{asset('/assets/dist/assets/css/plugins/dropzone.min.css')}}">
 @endsection
@@ -62,47 +63,15 @@
                             <div class="text-center m-t-20">
                             <button type="button" id="uploadBtn" class="btn btn-primary">Upload Now</button>
                             </div>
-                            {{-- <input type="file" name="csv_file" accept=".csv" id="" >
-                            <button type="submit">upload</button> --}}
-                            {{-- <div class="mb-3">
-                                <div class="form-floating ">
-                                        <input value="" type="text" class="form-control" id="floatingName" placeholder="Kode Register" name="kode_register">
-                                        <label for="floatingName">Kode Register</label>
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+
+                                    <a href="{{asset('/assets/import_template_siman.csv')}}" download class="btn btn-primary btn-shadow btn-sm">
+                                        Download template import File
+                                    </a>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <div class="mb-3">
-                                        <div class="form-group">
-                                            <label class="col-form-label text-lg-end">Jenis BMN</label>
-                                            <div class="">
-                                            <select
-                                                class="form-control"
-                                                data-trigger
-                                                name="bmn_id"
-                                                id="choices-single-default">
-                                                <option value="" selected disabled>--Pilih Jenis BMN--</option>
-                                                @foreach ($bmns as $keybmns)
-
-                                                <option value="{{ $keybmns->id }}">{{ $keybmns->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                <div class="mb-3">
-                                    <div class="form-group">
-                                        <label for="" class="col-form-label text-lg-end">Kode Satker</label>
-                                        <input type="text" name="" id="satker_kode" class="form-control" readonly>
-                                    </div>
-                                </div>
-                                </div>
-                                <div class="col-md-3"></div>
-                                <div class="col-md-3"></div>
-                            </div> --}}
-                        {{-- </form> --}}
+                        </div>
                     </div>
                 </div>
             </div>

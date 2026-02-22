@@ -1,4 +1,5 @@
 @extends('app')
+@section('title', $title)
 @section('content')
 <div class="pc-content">
         <!-- [ breadcrumb ] start -->
@@ -36,6 +37,7 @@
                     <thead>
                       <tr>
                         <th>No.</th>
+                        <th>Kategori</th>
                         <th>Nama Identitas</th>
                         <th>Jumlah Atribut</th>
                         <th>Aksi</th>
@@ -45,7 +47,8 @@
                         @foreach($identitas as $index => $identitas)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $identitas->name }}</td>
+                                <td>({{ $identitas->identitasKategori->name ?? 'Tidak Ada Kategori' }})</td>
+                                <td>{{ $identitas->name }} </td>
                                 <td>{{ $identitas->atribut_count }} Atribut</td>
                                 <td>
                                     <a class="btn btn-sm btn-warning" href="{{ route('identitas.edit', $identitas) }}">Edit</a>

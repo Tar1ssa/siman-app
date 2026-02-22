@@ -113,7 +113,7 @@ class CompareController extends Controller
             'b.kode_barang',
             'b.nama_barang',
             'di.nup',
-            'di.merkRaw',
+            'di.merk',
             DB::raw("CONCAT(s.merk, ' - ', s.tipe) AS merktipe"),
             'di.tgl_perolehan as tgl_internal',
             's.tgl_perolehan as tgl_siman',
@@ -162,7 +162,7 @@ class CompareController extends Controller
             'b.kode_barang',
             'b.nama_barang',
             'di.nup',
-            'di.merkRaw',
+            'di.merk',
             DB::raw('NULL AS merktipe'),
             'di.tgl_perolehan as tgl_internal',
             DB::raw('NULL as tgl_siman'),
@@ -191,7 +191,7 @@ class CompareController extends Controller
             'b.kode_barang',
             'b.nama_barang',
             's.nup',
-            DB::raw('NULL as merkRaw'),
+            DB::raw('NULL as merk'),
             DB::raw("CONCAT(s.merk, ' - ', s.tipe) AS merktipe"),
             DB::raw('NULL as tgl_internal'),
             's.tgl_perolehan as tgl_siman',
@@ -322,7 +322,7 @@ class CompareController extends Controller
                     'b.kode_barang',
                     'b.nama_barang',
                     'di.nup',
-                    'di.merkRaw',
+                    'di.merk',
                     DB::raw("CONCAT('Merk : ',s.merk, ' - ', 'Tipe : ' , s.tipe, ' - ', 'No Polisi : ' , s.no_polisi) AS uraian_siman"),
                     'di.tgl_perolehan as tgl_internal',
                     's.tgl_perolehan as tgl_siman',
@@ -330,7 +330,7 @@ class CompareController extends Controller
                     's.nilai_perolehan as nilai_siman',
                     DB::raw('(di.nilai_aset - s.nilai_perolehan) as selisih_nilai'),
                     DB::raw('COALESCE(uk.name, "Tanpa Unit Kerja") as unit_kerja'),
-                    'di.pengguna',
+                    'di.penggunaRaw',
                     's.nama_pengguna',
                     's.kode_register',
                     DB::raw("'MATCH' as status")
@@ -343,7 +343,7 @@ class CompareController extends Controller
                 continue;
             }
 
-            yield ($unitKerja->name ?: 'Tanpa Unit Kerja') => $rows;
+            yield (($unitKerja->id ? $unitKerja->id . '_' : '') . ($unitKerja->name ?: 'Tanpa Unit Kerja')) => $rows;
         }
     }
 
@@ -369,7 +369,7 @@ class CompareController extends Controller
                 $firstSheet = false;
 
                 // Rename sheet safely
-                $writer->getCurrentSheet()->setName(substr($sheetName, 0, 31)); // Excel limit
+                $writer->getCurrentSheet()->setName($this->sanitizeSheetName($sheetName));
 
                 // HEADER
                 $writer->addRow(Row::fromValues([
@@ -394,21 +394,21 @@ class CompareController extends Controller
                 // DATA ROWS (explicit mapping = safe)
                 foreach ($rows as $row) {
                     $writer->addRow(Row::fromValues([
-                        $row->kode_barang,
-                        $row->nama_barang,
-                        $row->nup,
-                        $row->merkRaw,
-                        $row->uraian_siman,
-                        $row->tgl_internal,
-                        $row->tgl_siman,
-                        $row->nilai_internal,
-                        $row->nilai_siman,
-                        $row->selisih_nilai,
-                        $row->unit_kerja,
-                        $row->pengguna,
-                        $row->nama_pengguna,
-                        $row->kode_register,
-                        $row->status,
+                        $this->sanitizeForExcel($row->kode_barang),
+                        $this->sanitizeForExcel($row->nama_barang),
+                        $this->sanitizeForExcel($row->nup),
+                        $this->sanitizeForExcel($row->merk),
+                        $this->sanitizeForExcel($row->uraian_siman),
+                        $this->sanitizeForExcel($row->tgl_internal),
+                        $this->sanitizeForExcel($row->tgl_siman),
+                        $this->sanitizeForExcel($row->nilai_internal),
+                        $this->sanitizeForExcel($row->nilai_siman),
+                        $this->sanitizeForExcel($row->selisih_nilai),
+                        $this->sanitizeForExcel($row->unit_kerja),
+                        $this->sanitizeForExcel($row->penggunaRaw),
+                        $this->sanitizeForExcel($row->nama_pengguna),
+                        $this->sanitizeForExcel($row->kode_register),
+                        $this->sanitizeForExcel($row->status),
                     ]));
                 }
             }
@@ -451,7 +451,7 @@ class CompareController extends Controller
                     'b.kode_barang',
                     'b.nama_barang',
                     'di.nup',
-                    'di.merkRaw',
+                    'di.merk',
                     DB::raw("CONCAT('Merk : ',s.merk, ' - ', 'Tipe : ' , s.tipe, ' - ', 'No Polisi : ' , s.no_polisi) AS uraian_siman"),
                     'di.tgl_perolehan as tgl_internal',
                     's.tgl_perolehan as tgl_siman',
@@ -459,7 +459,7 @@ class CompareController extends Controller
                     's.nilai_perolehan as nilai_siman',
                     DB::raw('(di.nilai_aset - s.nilai_perolehan) as selisih_nilai'),
                     DB::raw('COALESCE(uk.name, "Tanpa Unit Kerja") as unit_kerja'),
-                    'di.pengguna',
+                    'di.penggunaRaw',
                     's.nama_pengguna',
                     's.kode_register',
                     DB::raw("'MATCH' as status")
@@ -472,7 +472,7 @@ class CompareController extends Controller
                 continue;
             }
 
-            yield ($unitKerja->name ?: 'Tanpa Unit Kerja') => $rows;
+            yield (($unitKerja->id ? $unitKerja->id . '_' : '') . ($unitKerja->name ?: 'Tanpa Unit Kerja')) => $rows;
         }
     }
 
@@ -498,7 +498,7 @@ class CompareController extends Controller
                 $firstSheet = false;
 
                 // Rename sheet safely
-                $writer->getCurrentSheet()->setName(substr($sheetName, 0, 31)); // Excel limit
+                $writer->getCurrentSheet()->setName($this->sanitizeSheetName($sheetName));
 
                 // HEADER
                 $writer->addRow(Row::fromValues([
@@ -523,21 +523,21 @@ class CompareController extends Controller
                 // DATA ROWS (explicit mapping = safe)
                 foreach ($rows as $row) {
                     $writer->addRow(Row::fromValues([
-                        $row->kode_barang,
-                        $row->nama_barang,
-                        $row->nup,
-                        $row->merkRaw,
-                        $row->uraian_siman,
-                        $row->tgl_internal,
-                        $row->tgl_siman,
-                        $row->nilai_internal,
-                        $row->nilai_siman,
-                        $row->selisih_nilai,
-                        $row->unit_kerja,
-                        $row->pengguna,
-                        $row->nama_pengguna,
-                        $row->kode_register,
-                        $row->status,
+                        $this->sanitizeForExcel($row->kode_barang),
+                        $this->sanitizeForExcel($row->nama_barang),
+                        $this->sanitizeForExcel($row->nup),
+                        $this->sanitizeForExcel($row->merk),
+                        $this->sanitizeForExcel($row->uraian_siman),
+                        $this->sanitizeForExcel($row->tgl_internal),
+                        $this->sanitizeForExcel($row->tgl_siman),
+                        $this->sanitizeForExcel($row->nilai_internal),
+                        $this->sanitizeForExcel($row->nilai_siman),
+                        $this->sanitizeForExcel($row->selisih_nilai),
+                        $this->sanitizeForExcel($row->unit_kerja),
+                        $this->sanitizeForExcel($row->penggunaRaw),
+                        $this->sanitizeForExcel($row->nama_pengguna),
+                        $this->sanitizeForExcel($row->kode_register),
+                        $this->sanitizeForExcel($row->status),
                     ]));
                 }
             }
@@ -584,7 +584,7 @@ class CompareController extends Controller
                     'b.kode_barang',
                     'b.nama_barang',
                     'di.nup',
-                    'di.merkRaw',
+                    'di.merk',
                     DB::raw("CONCAT('Merk : ',s.merk, ' - ', 'Tipe : ' , s.tipe, ' - ', 'No Polisi : ' , s.no_polisi) AS uraian_siman"),
                     'di.tgl_perolehan as tgl_internal',
                     's.tgl_perolehan as tgl_siman',
@@ -592,7 +592,7 @@ class CompareController extends Controller
                     's.nilai_perolehan as nilai_siman',
                     DB::raw('(di.nilai_aset - s.nilai_perolehan) as selisih_nilai'),
                     DB::raw('COALESCE(uk.name, "Tanpa Unit Kerja") as unit_kerja'),
-                    'di.pengguna',
+                    'di.penggunaRaw',
                     's.nama_pengguna',
                     's.kode_register',
                     DB::raw("'MATCH_NILAI' as status")
@@ -605,7 +605,7 @@ class CompareController extends Controller
                 continue;
             }
 
-            yield ($unitKerja->name ?: 'Tanpa Unit Kerja') => $rows;
+            yield (($unitKerja->id ? $unitKerja->id . '_' : '') . ($unitKerja->name ?: 'Tanpa Unit Kerja')) => $rows;
         }
     }
 
@@ -631,7 +631,7 @@ class CompareController extends Controller
                 $firstSheet = false;
 
                 // Rename sheet safely
-                $writer->getCurrentSheet()->setName(substr($sheetName, 0, 31)); // Excel limit
+                $writer->getCurrentSheet()->setName($this->sanitizeSheetName($sheetName));
 
                 // HEADER
                 $writer->addRow(Row::fromValues([
@@ -656,21 +656,21 @@ class CompareController extends Controller
                 // DATA ROWS (explicit mapping = safe)
                 foreach ($rows as $row) {
                     $writer->addRow(Row::fromValues([
-                        $row->kode_barang,
-                        $row->nama_barang,
-                        $row->nup,
-                        $row->merkRaw,
-                        $row->uraian_siman,
-                        $row->tgl_internal,
-                        $row->tgl_siman,
-                        $row->nilai_internal,
-                        $row->nilai_siman,
-                        $row->selisih_nilai,
-                        $row->unit_kerja,
-                        $row->pengguna,
-                        $row->nama_pengguna,
-                        $row->kode_register,
-                        $row->status,
+                        $this->sanitizeForExcel($row->kode_barang),
+                        $this->sanitizeForExcel($row->nama_barang),
+                        $this->sanitizeForExcel($row->nup),
+                        $this->sanitizeForExcel($row->merk),
+                        $this->sanitizeForExcel($row->uraian_siman),
+                        $this->sanitizeForExcel($row->tgl_internal),
+                        $this->sanitizeForExcel($row->tgl_siman),
+                        $this->sanitizeForExcel($row->nilai_internal),
+                        $this->sanitizeForExcel($row->nilai_siman),
+                        $this->sanitizeForExcel($row->selisih_nilai),
+                        $this->sanitizeForExcel($row->unit_kerja),
+                        $this->sanitizeForExcel($row->penggunaRaw),
+                        $this->sanitizeForExcel($row->nama_pengguna),
+                        $this->sanitizeForExcel($row->kode_register),
+                        $this->sanitizeForExcel($row->status),
                     ]));
                 }
             }
@@ -718,7 +718,7 @@ class CompareController extends Controller
                     'b.kode_barang',
                     'b.nama_barang',
                     'di.nup',
-                    'di.merkRaw',
+                    'di.merk',
                     DB::raw("CONCAT('Merk : ',s.merk, ' - ', 'Tipe : ' , s.tipe, ' - ', 'No Polisi : ' , s.no_polisi) AS uraian_siman"),
                     'di.tgl_perolehan as tgl_internal',
                     's.tgl_perolehan as tgl_siman',
@@ -726,7 +726,7 @@ class CompareController extends Controller
                     's.nilai_perolehan as nilai_siman',
                     DB::raw('(di.nilai_aset - s.nilai_perolehan) as selisih_nilai'),
                     DB::raw('COALESCE(uk.name, "Tanpa Unit Kerja") as unit_kerja'),
-                    'di.pengguna',
+                    'di.penggunaRaw',
                     's.nama_pengguna',
                     's.kode_register',
                     DB::raw("'MATCH_TGL_MISMATCH' as status")
@@ -739,7 +739,7 @@ class CompareController extends Controller
                 continue;
             }
 
-            yield ($unitKerja->name ?: 'Tanpa Unit Kerja') => $rows;
+            yield (($unitKerja->id ? $unitKerja->id . '_' : '') . ($unitKerja->name ?: 'Tanpa Unit Kerja')) => $rows;
         }
     }
 
@@ -765,7 +765,7 @@ class CompareController extends Controller
                 $firstSheet = false;
 
                 // Rename sheet safely
-                $writer->getCurrentSheet()->setName(substr($sheetName, 0, 31)); // Excel limit
+                $writer->getCurrentSheet()->setName($this->sanitizeSheetName($sheetName));
 
                 // HEADER
                 $writer->addRow(Row::fromValues([
@@ -790,21 +790,21 @@ class CompareController extends Controller
                 // DATA ROWS (explicit mapping = safe)
                 foreach ($rows as $row) {
                     $writer->addRow(Row::fromValues([
-                        $row->kode_barang,
-                        $row->nama_barang,
-                        $row->nup,
-                        $row->merkRaw,
-                        $row->uraian_siman,
-                        $row->tgl_internal,
-                        $row->tgl_siman,
-                        $row->nilai_internal,
-                        $row->nilai_siman,
-                        $row->selisih_nilai,
-                        $row->unit_kerja,
-                        $row->pengguna,
-                        $row->nama_pengguna,
-                        $row->kode_register,
-                        $row->status,
+                        $this->sanitizeForExcel($row->kode_barang),
+                        $this->sanitizeForExcel($row->nama_barang),
+                        $this->sanitizeForExcel($row->nup),
+                        $this->sanitizeForExcel($row->merk),
+                        $this->sanitizeForExcel($row->uraian_siman),
+                        $this->sanitizeForExcel($row->tgl_internal),
+                        $this->sanitizeForExcel($row->tgl_siman),
+                        $this->sanitizeForExcel($row->nilai_internal),
+                        $this->sanitizeForExcel($row->nilai_siman),
+                        $this->sanitizeForExcel($row->selisih_nilai),
+                        $this->sanitizeForExcel($row->unit_kerja),
+                        $this->sanitizeForExcel($row->penggunaRaw),
+                        $this->sanitizeForExcel($row->nama_pengguna),
+                        $this->sanitizeForExcel($row->kode_register),
+                        $this->sanitizeForExcel($row->status),
                     ]));
                 }
             }
@@ -823,12 +823,12 @@ class CompareController extends Controller
             ->join('satkers as sat', 'sat.id', '=', 's.satker_id')
             ->join('bmns as bmn', 'bmn.id', '=', 's.bmn_id')
             ->join('siman_batches as sb', 'sb.id', '=', 's.import_batch_id')
-            ->leftJoin('data_internals as di', function ($join) {
+            ->leftJoin('data_internals as di', function ($join) use ($batchInternal) {
                 $join->on('di.barang_id', '=', 's.barang_id')
-                    ->on('di.nup', '=', 's.nup');
+                    ->on('di.nup', '=', 's.nup')
+                    ->when($batchInternal, fn ($j) => $j->where('di.batch', $batchInternal));
             })
             ->when($batchSiman, fn ($q) => $q->where('sb.id', $batchSiman))
-            ->when($batchInternal, fn ($q) => $q->where('di.batch', $batchInternal))
             ->whereNull('di.id')
             ->select(
                 'bmn.name',
@@ -909,30 +909,30 @@ class CompareController extends Controller
         // DATA (streaming-safe)
         foreach ($rows as $row) {
             $writer->addRow(Row::fromValues([
-                $row->name,
-                $row->kode_satker,
-                $row->nama_satker,
-                $row->kode_barang,
-                $row->nama_barang,
-                $row->nup,
-                $row->merk,
-                $row->tipe,
-                $row->kondisi,
-                $row->no_dokumen,
-                $row->no_BPKP,
-                $row->no_polisi,
-                $row->no_sertifikat,
-                $row->tgl_perolehan,
-                $row->nilai_perolehan,
-                $row->nilai_penyusutan,
-                $row->nilai_buku,
-                $row->kode_register,
-                $row->lokasi_ruang,
-                $row->update_lokasi_ruang,
-                $row->update_kondisi,
-                $row->nama_pengguna,
-                $row->link_dokumentasi,
-                $row->status,
+                $this->sanitizeForExcel($row->name),
+                $this->sanitizeForExcel($row->kode_satker),
+                $this->sanitizeForExcel($row->nama_satker),
+                $this->sanitizeForExcel($row->kode_barang),
+                $this->sanitizeForExcel($row->nama_barang),
+                $this->sanitizeForExcel($row->nup),
+                $this->sanitizeForExcel($row->merk),
+                $this->sanitizeForExcel($row->tipe),
+                $this->sanitizeForExcel($row->kondisi),
+                $this->sanitizeForExcel($row->no_dokumen),
+                $this->sanitizeForExcel($row->no_BPKP),
+                $this->sanitizeForExcel($row->no_polisi),
+                $this->sanitizeForExcel($row->no_sertifikat),
+                $this->sanitizeForExcel($row->tgl_perolehan),
+                $this->sanitizeForExcel($row->nilai_perolehan),
+                $this->sanitizeForExcel($row->nilai_penyusutan),
+                $this->sanitizeForExcel($row->nilai_buku),
+                $this->sanitizeForExcel($row->kode_register),
+                $this->sanitizeForExcel($row->lokasi_ruang),
+                $this->sanitizeForExcel($row->update_lokasi_ruang),
+                $this->sanitizeForExcel($row->update_kondisi),
+                $this->sanitizeForExcel($row->nama_pengguna),
+                $this->sanitizeForExcel($row->link_dokumentasi),
+                $this->sanitizeForExcel($row->status),
             ]));
         }
 
@@ -948,37 +948,29 @@ class CompareController extends Controller
 
     private function internalOnlySheets($batchInternal, $batchSiman)
     {
-        $unitKerjas = UnitKerja::select('id', 'name')->get();
+        // Get all unit kerjas
+        $unitKerjas = UnitKerja::all();
 
-        // add virtual unit kerja for NULL
-        $unitKerjas->push((object) [
-            'id'   => null,
-            'name' => 'Tanpa Unit Kerja',
-        ]);
-
-        foreach ($unitKerjas as $unitKerja) {
-
+        foreach ($unitKerjas as $uk) {
             $rows = DB::table('data_internals as di')
                 ->join('barangs as b', 'b.id', '=', 'di.barang_id')
                 ->join('satkers as sat', 'sat.id', '=', 'di.satker_id')
+                ->join('lokasi_ruangs as lokasi', 'lokasi.id', '=', 'di.lokasi_id')
                 ->leftjoin('unit_kerjas as uk', 'uk.id', '=', 'di.unit_kerja_id')
-                ->leftJoin('siman_data as s', function ($join) {
+                ->leftJoin('siman_data as s', function ($join) use ($batchSiman) {
                     $join->on('di.barang_id', '=', 's.barang_id')
-                        ->on('di.nup', '=', 's.nup');
+                        ->on('di.nup', '=', 's.nup')
+                        ->when($batchSiman, fn ($j) => $j->where('s.import_batch_id', $batchSiman));
                 })
                 ->whereNull('s.id')
-                ->when(
-                    is_null($unitKerja->id),
-                    fn ($q) => $q->whereNull('di.unit_kerja_id'),
-                    fn ($q) => $q->where('di.unit_kerja_id', $unitKerja->id)
-                )
+                ->where('di.unit_kerja_id', $uk->id)
                 ->when($batchInternal, fn ($q) => $q->where('di.batch', $batchInternal))
                 ->select([
                     'sat.kode_satker',
                     'b.kode_barang',
                     'b.nama_barang',
                     'di.nup',
-                    'di.merkRaw',
+                    'di.merk',
                     'di.jumlah',
                     'di.tgl_perolehan',
                     'di.nilai_aset',
@@ -987,9 +979,9 @@ class CompareController extends Controller
                     'di.kondisi',
                     'di.akun_neraca',
                     'di.pembukuan',
-                    DB::raw('COALESCE(uk.name, "Tanpa Unit Kerja") as unit_kerja'),
-                    'di.pengguna',
-                    'di.lokasi_ruang',
+                    'uk.name as unit_kerja',
+                    'di.penggunaRaw',
+                    'lokasi.name as lokasi_ruang',
                     'di.status_inven',
                     'di.update_kondisi',
                     'di.link_dokumentasi',
@@ -999,14 +991,57 @@ class CompareController extends Controller
                     DB::raw("'INTERNAL_ONLY' as status"),
                 ])
                 ->orderBy('b.kode_barang')
-                ->cursor(); //  streaming
+                ->cursor();
 
-            //  IMPORTANT: skip empty sheets
-            if ($rows->isEmpty()) {
-                continue;
+            if ($rows->isNotEmpty()) {
+                yield $this->sanitizeSheetName($uk->name) => $rows;
             }
+        }
 
-            yield $unitKerja->name => $rows;
+        // For records without unit_kerja_id
+        $rowsNull = DB::table('data_internals as di')
+            ->join('barangs as b', 'b.id', '=', 'di.barang_id')
+            ->join('satkers as sat', 'sat.id', '=', 'di.satker_id')
+            ->join('lokasi_ruangs as lokasi', 'lokasi.id', '=', 'di.lokasi_id')
+            ->leftjoin('unit_kerjas as uk', 'uk.id', '=', 'di.unit_kerja_id')
+            ->leftJoin('siman_data as s', function ($join) use ($batchSiman) {
+                $join->on('di.barang_id', '=', 's.barang_id')
+                    ->on('di.nup', '=', 's.nup')
+                    ->when($batchSiman, fn ($j) => $j->where('s.import_batch_id', $batchSiman));
+            })
+            ->whereNull('s.id')
+            ->whereNull('di.unit_kerja_id')
+            ->when($batchInternal, fn ($q) => $q->where('di.batch', $batchInternal))
+            ->select([
+                'sat.kode_satker',
+                'b.kode_barang',
+                'b.nama_barang',
+                'di.nup',
+                'di.merk',
+                'di.jumlah',
+                'di.tgl_perolehan',
+                'di.nilai_aset',
+                'di.nilai_penyusutan',
+                'di.nilai_buku',
+                'di.kondisi',
+                'di.akun_neraca',
+                'di.pembukuan',
+                DB::raw('"Tanpa Unit Kerja" as unit_kerja'),
+                'di.penggunaRaw',
+                'lokasi.name as lokasi_ruang',
+                'di.status_inven',
+                'di.update_kondisi',
+                'di.link_dokumentasi',
+                'di.link_lhi',
+                'di.no_bahi',
+                'di.tgl_bahi',
+                DB::raw("'INTERNAL_ONLY' as status"),
+            ])
+            ->orderBy('b.kode_barang')
+            ->cursor();
+
+        if ($rowsNull->isNotEmpty()) {
+            yield 'Tanpa_Unit_Kerja' => $rowsNull;
         }
     }
 
@@ -1020,19 +1055,13 @@ class CompareController extends Controller
             $writer = new Writer();
             $writer->openToFile($filePath);
 
-            $firstSheet = true;
-
+            $first = true;
             foreach ($this->internalOnlySheets($batchInternal, $batchSiman) as $sheetName => $rows) {
-
-                // For next sheets, create new one
-                if (! $firstSheet) {
+                if (!$first) {
                     $writer->addNewSheetAndMakeItCurrent();
                 }
 
-                $firstSheet = false;
-
-                // Rename sheet safely
-                $writer->getCurrentSheet()->setName(substr($sheetName, 0, 31)); // Excel limit
+                $writer->getCurrentSheet()->setName($this->sanitizeSheetName($sheetName));
 
                 // HEADER
                 $writer->addRow(Row::fromValues([
@@ -1064,31 +1093,33 @@ class CompareController extends Controller
                 // DATA ROWS (explicit mapping = safe)
                 foreach ($rows as $row) {
                     $writer->addRow(Row::fromValues([
-                        $row->kode_satker,
-                        $row->kode_barang,
-                        $row->nama_barang,
-                        $row->nup,
-                        $row->merkRaw,
-                        $row->jumlah,
-                        $row->tgl_perolehan,
-                        $row->nilai_aset,
-                        $row->nilai_penyusutan,
-                        $row->nilai_buku,
-                        $row->kondisi,
-                        $row->akun_neraca,
-                        $row->pembukuan,
-                        $row->unit_kerja,
-                        $row->pengguna,
-                        $row->lokasi_ruang,
-                        $row->status_inven,
-                        $row->update_kondisi,
-                        $row->link_dokumentasi,
-                        $row->link_lhi,
-                        $row->no_bahi,
-                        $row->tgl_bahi,
-                        $row->status,
+                        $this->sanitizeForExcel($row->kode_satker),
+                        $this->sanitizeForExcel($row->kode_barang),
+                        $this->sanitizeForExcel($row->nama_barang),
+                        $this->sanitizeForExcel($row->nup),
+                        $this->sanitizeForExcel($row->merk),
+                        $this->sanitizeForExcel($row->jumlah),
+                        $this->sanitizeForExcel($row->tgl_perolehan),
+                        $this->sanitizeForExcel($row->nilai_aset),
+                        $this->sanitizeForExcel($row->nilai_penyusutan),
+                        $this->sanitizeForExcel($row->nilai_buku),
+                        $this->sanitizeForExcel($row->kondisi),
+                        $this->sanitizeForExcel($row->akun_neraca),
+                        $this->sanitizeForExcel($row->pembukuan),
+                        $this->sanitizeForExcel($row->unit_kerja),
+                        $this->sanitizeForExcel($row->penggunaRaw),
+                        $this->sanitizeForExcel($row->lokasi_ruang),
+                        $this->sanitizeForExcel($row->status_inven),
+                        $this->sanitizeForExcel($row->update_kondisi),
+                        $this->sanitizeForExcel($row->link_dokumentasi),
+                        $this->sanitizeForExcel($row->link_lhi),
+                        $this->sanitizeForExcel($row->no_bahi),
+                        $this->sanitizeForExcel($row->tgl_bahi),
+                        $this->sanitizeForExcel($row->status),
                     ]));
                 }
+
+                $first = false;
             }
 
             $writer->close();
@@ -1096,5 +1127,50 @@ class CompareController extends Controller
             return response()->download($filePath)->deleteFileAfterSend(true);
     }
 
+    private function sanitizeForExcel($value)
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        // Convert to string
+        $value = (string) $value;
+
+        // Clean invalid UTF-8 sequences
+        $value = iconv('UTF-8', 'UTF-8//IGNORE', $value);
+
+        // Remove invisible Unicode characters that can cause Excel XML errors
+        $value = preg_replace('/[\x{200B}-\x{200D}]/u', '', $value);
+
+        // Trim whitespace
+        $value = trim($value);
+
+        // Remove all non-printable characters except space (32), tab (9), newline (10), carriage return (13)
+        $value = preg_replace('/[^\x20-\x7E\x09\x0A\x0D]/u', '', $value);
+
+        // Limit length to prevent Excel issues (Excel has a 32,767 character limit per cell)
+        if (strlen($value) > 30000) {
+            $value = substr($value, 0, 30000) . '...';
+        }
+
+        return $value;
+    }
+
+    private function sanitizeSheetName($name)
+    {
+        // Remove invalid characters for Excel sheet names: keep only letters, numbers, space, underscore, dash
+        $name = preg_replace('/[^a-zA-Z0-9 \-_]/', '_', $name);
+
+        // Trim and replace multiple spaces/underscores with single
+        $name = preg_replace('/[ _]+/', '_', trim($name));
+
+        // If empty, use default
+        if (empty($name)) {
+            $name = 'Sheet';
+        }
+
+        // Limit to 31 chars
+        return substr($name, 0, 31);
+    }
 
 }

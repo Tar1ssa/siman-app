@@ -24,6 +24,7 @@ class simanController extends Controller
     {
         $title = 'Data Siman';
         $barang = Barang::get();
+        $batchNumber = SimanBatch::select('id', 'label')->distinct()->get();
         // $dataSiman->transform(function ($item) {
         //     $item->nilai_perolehan_fmt  = 'Rp. ' . number_format($item->nilai_perolehan, 2, ',', '.');
         //     $item->nilai_penyusutan_fmt = 'Rp. ' . number_format($item->nilai_penyusutan, 2, ',', '.');
@@ -31,7 +32,7 @@ class simanController extends Controller
 
         //     return $item;
         // });
-        return view('simanData.index', compact('title', 'barang'));
+        return view('simanData.index', compact('title', 'barang', 'batchNumber'));
     }
 
     /**
@@ -334,6 +335,7 @@ class simanController extends Controller
     public function destroyBatch(Request $request)
     {
         $Siman = simanData::where('import_batch_id', $request->batch)->delete();
+        simanBatch::where('id', $request->batch)->delete();
         Alert::success('Sukses!', 'Data SIMAN berhasil dihapus');
         return redirect()->back()->with('Sukses!', 'Data SIMAN berhasil dihapus!');
     }

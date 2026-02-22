@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+
         Schema::create('identitas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('kategori_id')->nullable()->constrained('identitas_kategoris')->onDelete('set null');
             $table->string('name');
             $table->string('slug')->unique();
             $table->timestamps();

@@ -1,7 +1,8 @@
 @extends('app')
+@section('title', $title)
 @section('dependencies')
-<link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/dataTables.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="{{ asset('/assets/asset/css/plugins/responsive.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/dataTables.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/responsive.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 @endsection
@@ -231,7 +232,12 @@
                         @csrf
                         @method('DELETE')
                         <label for="number" class="form-label">Masukkan batch number</label>
-                        <input type="number" name="batch" class="form-control">
+                        <select name="batch" id="" class="form-control">
+                            <option value="" selected disabled>-- Pilih Batch --</option>
+                            @foreach ($batchNumber as $keyBatch)
+                                <option value="{{$keyBatch->id}}">{{$keyBatch->id}} - {{$keyBatch->label}}</option>
+                            @endforeach
+                        </select>
 
             </div>
             <div class="modal-footer">

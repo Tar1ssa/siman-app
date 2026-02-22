@@ -9,6 +9,7 @@ class Identitas extends Model
     protected $fillable = [
         'name',
         'slug',
+        'kategori_id',
     ];
 
     public function atribut()
@@ -21,5 +22,10 @@ class Identitas extends Model
         )
         ->withPivot(['is_required', 'sort_order', 'placeholder', 'help_text'])
         ->orderBy('sort_order');
+    }
+
+    public function identitasKategori()
+    {
+        return $this->belongsTo(IdentitasKategori::class, 'kategori_id');
     }
 }
