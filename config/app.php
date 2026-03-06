@@ -125,6 +125,10 @@ return [
 
     'Alert' => RealRashid\SweetAlert\Facades\Alert::class,
 
+    // 'Image' => Intervention\Image\Facades\Image::class,
+
     // 'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+
+    'admin_phone' => env('ADMIN_PHONE', '6281234567890'),
 
 ];

@@ -25,7 +25,7 @@
         <div class="row mb-3">
             <h3>Selamat Datang, {{ auth()->user()->name }}</h3>
             <hr class="mb-3">
-            <div class="col-md-6 col-xl-3">
+            <div class="col-md-3">
                 <div class="card">
                     <div class="card-body">
                         <h6 class="mb-2 f-w-400 text-muted">Level Akses</h6>
@@ -88,6 +88,18 @@
                         });
                         </script>
                     </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="mb-2 f-w-400 text-muted">Total Requested to Unlock</h6>
+                        <h2 class="mb-3"><span class="badge bg-light-info border border-info">{{ number_format($requestedCount) }}</span></h2>
+                        <a href="{{ route('internal.locked') }}" class="mb-0 text-info text-sm">
+                            <i class="ti ti-lock"></i> View Locked Data
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 

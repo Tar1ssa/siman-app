@@ -49,15 +49,29 @@
                 <div class="row">
                     <div class="col-md-2">
                         <div class="mb-2">
-                            <label for="numberSearch" class="form-label fw-bold">
-                                Search by NUP
+                            <label for="nupSearch" class="form-label fw-bold">
+                                Search by NUP Range
                             </label>
-                            <input
-                                type="text"
-                                id="nupSearch"
-                                class="form-control"
-                                placeholder="Ketik Nomor NUP..."
-                            >
+                            <div class="row g-1">
+                                <div class="col-6">
+                                    <input
+                                        type="number"
+                                        id="nupMin"
+                                        class="form-control form-control-sm"
+                                        placeholder="Min NUP"
+                                        min="1"
+                                    >
+                                </div>
+                                <div class="col-6">
+                                    <input
+                                        type="number"
+                                        id="nupMax"
+                                        class="form-control form-control-sm"
+                                        placeholder="Max NUP"
+                                        min="1"
+                                    >
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -250,14 +264,14 @@
     </div>
 
      <!-- datatable Js -->
-    <script src="{{ asset('https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js') }}"></script>
+    <script src="{{ asset('/assets/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/responsive.bootstrap5.min.js') }}"></script>
 
     <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{{ asset('/assets/flatpickr/dist/flatpickr.min.js') }}"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -343,18 +357,9 @@
 
     $('#new-cons_filter input').attr('id', 'newConsSearch');
 
-    $('#nupSearch').on('keyup', function () {
-        const val = this.value.trim();
-
-        if (val === '') {
-            // clear search
-            newcs.column(5).search('').draw();
-        } else {
-            // exact match using regex
-            newcs.column(5)
-                .search('^' + val + '$', true, false)
-                .draw();
-        }
+    // NUP range filter
+    $('#nupMin, #nupMax').on('input', function () {
+        newcs.draw();
     });
 
 
@@ -383,7 +388,8 @@
         url: "{{ route('siman.datatable') }}",
         data: function (d) {
             d.itemSearch   = $('#itemSearch').val();
-            // d.nupSearch = $('#nupSearch').val();
+            d.nupMin = $('#nupMin').val();
+            d.nupMax = $('#nupMax').val();
             // d.bmnSearch    = $('#bmnSearch').val();
 
             //  DATE RANGE

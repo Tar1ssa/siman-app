@@ -999,6 +999,7 @@ class CompareController extends Controller
                     'di.no_bahi',
                     'di.tgl_bahi',
                     DB::raw("'INTERNAL_ONLY' as status"),
+                    'di.label'
                 ])
                 ->orderBy('b.kode_barang')
                 ->cursor();
@@ -1070,6 +1071,7 @@ class CompareController extends Controller
                 'No BAHI',
                 'Tgl BAHI',
                 'Status',
+                'Label',
             ]));
             $rowCount = 0;
             foreach ($rows as $row) {
@@ -1097,6 +1099,7 @@ class CompareController extends Controller
                     $this->sanitizeForExcel($row->no_bahi),
                     $this->sanitizeForExcel($row->tgl_bahi),
                     $this->sanitizeForExcel($row->status),
+                    $this->sanitizeForExcel($row->label),
                 ]));
                 $rowCount++;
             }

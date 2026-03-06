@@ -32,7 +32,23 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h3>View Data</h3>
-                        <a href="{{route('internal.edit', $internal->id)}}" class="btn btn-shadow btn-warning">Edit Data BMN</a>
+                        @if ($internal->status === 'locked' && $internal->is_requested !== 1 && !auth()->user()->isAdmin())
+                            <span class="badge bg-danger">Data Terkunci</span>
+                                <form action="{{ route('internal.requestUnlock', $internal->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn btn-shadow btn-warning">Request Unlock</button>
+                                </form>
+                        @elseif ($internal->is_requested === 1 && !auth()->user()->isAdmin())
+                            <div class="d-flex gap-2">
+                                <a href="https://wa.me/{{ $adminPhone }}?text={{ urlencode('Tolong buka data internal berikut'.' NUP : ' . $internal->nup . ' Nama - Kode barang : '. $internal->barang->nama_barang .' - '. $internal->barang->kode_barang .' requested to unlock by ' . auth()->user()->name) }}" target="_blank" class="btn btn-shadow btn-success">
+                                    <i class="ti ti-brand-whatsapp"></i> Chat Admin
+                                </a>
+                            </div>
+                            <span class="badge bg-warning">Menunggu Persetujuan</span>
+                        @else
+                            <a href="{{route('internal.edit', $internal->id)}}" class="btn btn-shadow btn-warning">Edit Data BMN</a>
+                        @endif
                     </div>
                     <div class="card-body ">
 
@@ -44,6 +60,7 @@
                                 <ul class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                     <li><a class="nav-link active" id="v-pills-detail-tab" data-bs-toggle="pill" href="#v-pills-detail" role="tab" aria-controls="v-pills-detail" aria-selected="true">Detail BMN</a></li>
                                     <li><a class="nav-link" id="v-pills-foto-tab" data-bs-toggle="pill" href="#v-pills-foto" role="tab" aria-controls="v-pills-foto" aria-selected="false">Foto</a></li>
+                                    <li><a class="nav-link" id="v-pills-dokumen-tab" data-bs-toggle="pill" href="#v-pills-dokumen" role="tab" aria-controls="v-pills-dokumen" aria-selected="false">Dokumen</a></li>
                                     <li><a class="nav-link" id="v-pills-pengguna-tab" data-bs-toggle="pill" href="#v-pills-pengguna" role="tab" aria-controls="v-pills-pengguna" aria-selected="false">Pengguna</a></li>
                                     <li><a class="nav-link" id="v-pills-identitas-tab" data-bs-toggle="pill" href="#v-pills-identitas" role="tab" aria-controls="v-pills-identitas" aria-selected="false">Identitas</a></li>
                                     <li><a class="nav-link" id="v-pills-bast-tab" data-bs-toggle="pill" href="#v-pills-bast" role="tab" aria-controls="v-pills-bast" aria-selected="false">BAST</a></li>
@@ -84,6 +101,10 @@
                                             </select>
                                         </div>
                                         <div class="mb-3">
+                                            <label for="nup" class="form-label">NUP</label>
+                                            <input readonly type="number" name="nup" id="nup" class="form-control" value="{{ $internal->nup }}">
+                                        </div>
+                                        <div class="mb-3">
                                             <label for="unitkerja_id" class="form-label">Unit Kerja</label>
                                             <select
                                                 disabled
@@ -106,7 +127,7 @@
                                         </div> --}}
                                         <div class="col-md-4 mb-3">
                                             <label for="tgl_perolehan" class="form-label">Tanggal Perolehan</label>
-                                            <input readonly type="date" name="tgl_perolehan" id="tgl_perolehan" class="form-control" value="{{ \Carbon\Carbon::parse($internal->tgl_perolehan)->format('Y-m-d') }}">
+                                            <input readonly type="date" name="tgl_perolehan" id="tgl_perolehan" class="form-control" value="{{ $internal->tgl_perolehan ? \Carbon\Carbon::parse($internal->tgl_perolehan)->format('Y-m-d') : '' }}">
                                         </div>
                                         <div class=" mb-3">
                                             <label for="merk" class="form-label">Merk</label>
@@ -156,7 +177,10 @@
 
                                                     <option value="{{ $keylokasi->id }}" {{ $internal->lokasi_id == $keylokasi->id ? 'selected' : '' }}>{{ $keylokasi->unitKerja->name }} - {{ $keylokasi->name }}</option>
                                                 @endforeach
+                                                <option value="" {{ $internal->lokasi_id === null ? 'selected' : '' }}>Lainnya</option>
                                             </select>
+                                            <label for="otherLokasiInput" id="otherLokasiLabel" class="form-label mt-2" style="display: none;">Keterangan Lokasi</label>
+                                            <input readonly value="{{$internal->ket_lokasi}}" name="ketLokasi" type="text" id="otherLokasiInput" class="form-control mt-2" placeholder="Masukkan keterangan lokasi" >
                                         </div>
                                         <div class="mb-3" style="height: 20vh"></div>
                                     </div>
@@ -233,14 +257,49 @@
                                         <div class="mb-3" style="height: 5vh"></div>
                                     </div>
 
+                                    <div class="tab-pane fade" id="v-pills-dokumen" role="tabpanel" aria-labelledby="v-pills-dokumen-tab">
+                                        <h4 class="fw-bold mb-3">Dokumen</h4>
+                                        <hr>
+
+                                        <table id="documentTable" border="1" class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th style="max-width: 150px;
+                                                            white-space: nowrap;
+                                                            overflow: hidden;
+                                                            text-overflow: ellipsis;
+                                                            word-wrap: break-word; ">Filename</th>
+                                                    <th>Title</th>
+                                                    <th>Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ( $internalDocuments as $document )
+                                                    <tr>
+                                                        <td style="max-width: 150px;
+                                                            white-space: nowrap;
+                                                            overflow: hidden;
+                                                            text-overflow: ellipsis;
+                                                            word-wrap: break-word;">
+                                                            <a href="{{ asset( $document->path) }}" target="_blank">{{ basename($document->filename) }}</a>
+                                                        </td>
+                                                        <td>{{ $document->title }}</td>
+                                                        <td>{{ $document->description }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+
+                                        <div class="mb-3" style="height: 5vh"></div>
+                                    </div>
+
                                     <div class="tab-pane fade" id="v-pills-pengguna" role="tabpanel" aria-labelledby="v-pills-pengguna-tab">
 
                                         <h4 class="fw-bold mb-3">Pengguna</h4>
                                         <hr>
                                         <!-- Image Upload -->
-                                        <div class="mb-3">
+                                        {{-- <div class="mb-3">
                                             <label for="profileImage" class="form-label">Foto Pengguna</label>
-                                            {{-- <input class="form-control" type="file" id="profileImage" accept="image/*" name="profileImage" > --}}
                                         </div>
                                         <div class="mt-3 mb-3">
                                             @if (empty($internal->profile_image))
@@ -248,7 +307,7 @@
                                                 @else
                                                     <img id="preview" src="{{ asset( $internal->profile_image_path) }}" alt="Image Preview" class="img-thumbnail" style="max-width: 200px;">
                                                 @endif
-                                        </div>
+                                        </div> --}}
 
                                         <!-- Name -->
                                         <div class="mb-3">
@@ -269,10 +328,13 @@
 
                                                     <option {{ $internal->pengguna_unitkerja_id == $keyunitkerja->id ? 'selected' : '' }} value="{{ $keyunitkerja->id }}" >{{ $keyunitkerja->name }}</option>
                                                 @endforeach
+                                                <option {{ $internal->pengguna_unitkerja_id === null ? 'selected' : '' }} value="" >Lainnya</option>
                                             </select>
+                                            <label for="otherUnitKerjaInput" id="otherUnitKerjaLabel" class="form-label mt-2" >Keterangan Unit Penugasan Eselon 2</label>
+                                            <input readonly value="{{ $internal->ket_penugasan }}" name="otherUnitKerja" type="text" id="otherUnitKerjaInput" class="form-control mt-2" placeholder="Masukkan keterangan unit penugasan eselon 2" >
                                         </div>
                                         <div class="mb-3">
-                                            <label for="unit_teknis_id" class="form-label">Unit Teknis</label>
+                                            <label for="unit_teknis_id" class="form-label">Unit Pokja</label>
                                             <select
                                                 class="form-control"
                                                 data-penggunaunitteknis
@@ -280,12 +342,15 @@
                                                 id="penggunaunitteknisSelect"
                                                 disabled
                                                 >
-                                                <option value="" selected disabled>--Pilih Unit Teknis--</option>
+                                                <option value="" selected disabled>--Pilih Unit Pokja--</option>
                                                 @foreach ($unitteknis as $keyunitteknis)
 
                                                     <option {{ $internal->unit_teknis_id == $keyunitteknis->id ? 'selected' : '' }} value="{{ $keyunitteknis->id }}" >{{ $keyunitteknis->name }}</option>
                                                 @endforeach
+                                                <option {{ $internal->unit_teknis_id === null ? 'selected' : '' }} value="" >Lainnya</option>
                                             </select>
+                                            <label for="otherUnitTeknisInput" id="otherUnitTeknisLabel" class="form-label mt-2" >Keterangan Unit Pokja</label>
+                                            <input readonly value="{{ $internal->ket_unit_teknis }}" name="otherUnitTeknis" type="text" id="otherUnitTeknisInput" class="form-control mt-2" placeholder="Masukkan keterangan unit pokja" >
                                         </div>
 
                                             <div class="mb-3">
@@ -390,7 +455,7 @@
 </div>
 
     <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
-    <script src="{{asset('https://cdn.jsdelivr.net/npm/autonumeric@4.6.0')}}"></script>
+    <script src="{{asset('/assets/autonumeric/dist/autoNumeric.min.js')}}"></script>
 
 
     <script>

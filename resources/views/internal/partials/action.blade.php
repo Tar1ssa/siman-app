@@ -1,14 +1,14 @@
 
 
-<div class="">
+<div class="d-flex gap-1">
     {{-- Edit --}}
-    <a target="_blank" href="{{ route('internal.show', $row->id) }}"
+    <a title="Lihat detail" target="_blank" href="{{ route('internal.show', $row->id) }}"
         class="btn btn-sm btn-shadow btn-success fs-6">
         <i class="ti ti-eye fs-6"></i>
 
     </a>
 
-    <a target="_blank" href="{{ route('internal.bast', $row->id) }}"
+    <a title="Generate BAST" target="_blank" href="{{ route('internal.bast', $row->id) }}"
         class="btn btn-sm btn-shadow btn-primary fs-6">
         <i class="bi bi-file-pdf fs-6"></i>
 
@@ -21,12 +21,22 @@
         Show
     </button> --}}
 
+     @if(auth()->user()->isAdmin())
+    <form action="{{ route('internal.lock', $row->id) }}" method="POST">
+        @csrf
+        @method('PUT')
+        <button title="kunci data" type="submit" class="btn btn-sm btn-warning">
+            <i class="fas fa-lock"></i>
+        </button>
+    </form>
+    @endif
+
     {{-- Delete --}}
     <form onclick="return confirm('Yakin ingin menghapus {{ $row->barang->nama_barang }}, NUP: {{ $row->nup }}, {{$row->merk}} {{$row->tipe}} ?')" action="{{ route('internal.destroy', $row->id) }}" method="post" class="d-inline">
         @csrf
         @method('DELETE')
 
-        <button class="btn btn-sm btn-shadow btn-danger fs-6"><i class="ti ti-trash fs-6"></i></button>
+        <button title="Hapus data" class="btn btn-sm btn-shadow btn-danger fs-6"><i class="ti ti-trash fs-6"></i></button>
     </form>
     {{-- <button
         class="btn btn-sm btn-danger btn-delete"

@@ -45,13 +45,14 @@
                                 <ul class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                     <li><a class="nav-link active" id="v-pills-detail-tab" data-bs-toggle="pill" href="#v-pills-detail" role="tab" aria-controls="v-pills-detail" aria-selected="true">Detail BMN</a></li>
                                     <li><a class="nav-link" id="v-pills-foto-tab" data-bs-toggle="pill" href="#v-pills-foto" role="tab" aria-controls="v-pills-foto" aria-selected="false">Foto</a></li>
+                                    <li><a class="nav-link" id="v-pills-dokumen-tab" data-bs-toggle="pill" href="#v-pills-dokumen" role="tab" aria-controls="v-pills-dokumen" aria-selected="false">Dokumen</a></li>
                                     <li><a class="nav-link" id="v-pills-pengguna-tab" data-bs-toggle="pill" href="#v-pills-pengguna" role="tab" aria-controls="v-pills-pengguna" aria-selected="false">Pengguna</a></li>
                                     <li><a class="nav-link" id="v-pills-identitas-tab" data-bs-toggle="pill" href="#v-pills-identitas" role="tab" aria-controls="v-pills-identitas" aria-selected="false">Identitas</a></li>
                                     <li><a class="nav-link" id="v-pills-bast-tab" data-bs-toggle="pill" href="#v-pills-bast" role="tab" aria-controls="v-pills-bast" aria-selected="false">BAST</a></li>
 
                                 </ul>
                             </div>
-                            <div class="col-md-10 col-sm-12 overflow-y-scroll" style="max-height: 60vh; ">
+                            <div class="col-md-10 col-sm-12 overflow-y-scroll" style="max-height: 60vh;">
                                 <div class="tab-content" id="v-pills-tabContent">
 
                                     <div class="tab-pane fade show active" id="v-pills-detail" role="tabpanel" aria-labelledby="v-pills-detail-tab">
@@ -60,7 +61,7 @@
                                             <h4 class="fw-bold mb-3">Detail BMN</h4>
                                             <hr>
                                             <label for="satker" class="form-label">Kode Satker*</label>
-                                            <select required class="form-control" name="satker_id" id="satker">
+                                            <select  class="form-control" name="satker_id" id="satker" value="{{ old('satker_id') }}">
                                                 <option value="" disabled selected>-- Pilih kode satker --</option>
                                                 @foreach ($satker as $keysatker)
 
@@ -71,11 +72,12 @@
                                         <div class="mb-3">
                                             <label for="barang" class="form-label">Kode Barang*</label>
                                             <select
-                                                
+
                                                 class="form-control"
                                                 data-barang
                                                 name="barang_id"
                                                 id="barangSelect"
+                                                value="{{ old('barang_id') }}"
                                                 >
                                                 <option value="" selected disabled>--Pilih Kode Barang--</option>
                                                 @foreach ($barang as $keybarang)
@@ -87,11 +89,12 @@
                                         <div class="mb-3">
                                             <label for="unitkerja_id" class="form-label">Unit Kerja*</label>
                                             <select
-                                                
+
                                                 class="form-control"
                                                 data-unitkerja
                                                 name="unitkerja_id"
                                                 id="unitkerjaSelect"
+                                                value="{{ old('unitkerja_id') }}"
                                                 >
                                                 <option value="" selected disabled>--Pilih Unit Kerja--</option>
                                                 @foreach ($unitkerja as $keyunitkerja)
@@ -107,27 +110,27 @@
                                         </div> --}}
                                         <div class="col-md-4 mb-3">
                                             <label for="tgl_perolehan" class="form-label">Tanggal Perolehan*</label>
-                                            <input required type="date" name="tgl_perolehan" id="tgl_perolehan" class="form-control" value="{{ old('tgl_perolehan') }}">
+                                            <input  type="date" value="{{ old('tgl_perolehan') }}" name="tgl_perolehan" id="tgl_perolehan" class="form-control">
                                         </div>
                                         <div class=" mb-3">
                                             <label for="merk" class="form-label">Merk</label>
-                                            <input type="text" name="merk" id="merk" class="form-control" value="{{ old('merk') }}">
+                                            <input type="text" value="{{ old('merk') }}" name="merk" id="merk" class="form-control">
                                         </div>
                                         <div class=" mb-3">
                                             <label for="tipe" class="form-label">Tipe</label>
-                                            <input type="text" name="tipe" id="tipe" class="form-control" value="{{ old('tipe') }}">
+                                            <input type="text" value="{{ old('tipe') }}" name="tipe" id="tipe" class="form-control">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label for="jumlah" class="form-label">Jumlah*</label>
-                                            <input required type="number" name="jumlah" id="jumlah" class="form-control" value="{{ old('jumlah') }}">
+                                            <input  type="number" value="{{ old('jumlah') }}" name="jumlah" id="jumlah" class="form-control">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label for="nilai_perolehan" class="form-label">Nilai Perolehan*</label>
-                                            <input required type="text" name="nilai_perolehan" id="nilai_perolehan" class="form-control" value="{{ old('nilai_perolehan') }}">
+                                            <input  type="text" value="{{ old('nilai_perolehan') }}" name="nilai_perolehan" id="nilai_perolehan" class="form-control">
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label for="kondisi" class="form-label">Kondisi*</label>
-                                            <select required name="kondisi" id="kondisi" class="form-control">
+                                            <select  name="kondisi" id="kondisi" class="form-control" value="{{ old('kondisi') }}">
                                                 <option value="" selected disabled>--Pilih Kondisi--</option>
                                                 <option value="B">Baik</option>
                                                 <option value="RR">Rusak Ringan</option>
@@ -140,7 +143,7 @@
                                         </div> --}}
                                         <div class="col-md-4 mb-3">
                                             <label for="pembukuan" class="form-label">Pembukuan</label>
-                                            <select name="pembukuan" id="pembukuan" class="form-control">
+                                            <select name="pembukuan" id="pembukuan" class="form-control" value="{{ old('pembukuan') }}">
                                                 <option value="" selected disabled>--Pilih Pembukuan--</option>
                                                 <option value="Perolehan APBN">Perolehan APBN</option>
                                                 <option value="Hibah">Hibah</option>
@@ -149,18 +152,22 @@
                                         <div class="mb-4">
                                             <label for="lokasi_id" class="form-label">Lokasi/Ruang*</label>
                                             <select
-                                                
+
                                                 class="form-control"
                                                 data-lokasi
                                                 name="lokasi_id"
                                                 id="lokasiSelect"
+                                                value="{{ old('lokasi_id') }}"
                                                 >
                                                 <option value="" selected disabled>--Pilih Lokasi/Ruang--</option>
                                                 @foreach ($lokasi as $keylokasi)
 
                                                     <option value="{{ $keylokasi->id }}" >{{ $keylokasi->unitKerja->name }} - {{ $keylokasi->name }}</option>
                                                 @endforeach
+                                                <option id="other-lokasi" value="">Lainnya</option>
                                             </select>
+                                            <label for="otherLokasiInput" id="otherLokasiLabel" class="form-label" style="display: none;">Keterangan Lokasi</label>
+                                            <input name="ketLokasi" value="{{ old('ketLokasi') }}" type="text" id="otherLokasiInput" class="form-control mt-2" placeholder="Masukkan keterangan lokasi" style="display: none;">
                                         </div>
                                         <div class="mb-3" style="height: 20vh"></div>
                                     </div>
@@ -205,8 +212,46 @@
                                         <div class="mb-3">
 
                                             <label for="link_dokumentasi">Link Dokumentasi</label>
-                                            <input type="text" name="link_dokumentasi" id="link_dokumentasi" class="form-control">
+                                            <input type="text" value="{{ old('link_dokumentasi') }}" name="link_dokumentasi" id="link_dokumentasi" class="form-control">
                                         </div>
+                                        <div class="mb-3" style="height: 5vh"></div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="v-pills-dokumen" role="tabpanel" aria-labelledby="v-pills-dokumen-tab">
+
+                                        <h4 class="fw-bold mb-3">Dokumen</h4>
+                                        <hr>
+
+                                        <form id="documentForm" enctype="multipart/form-data" class="mb-3">
+                                            <div class="row mb-3">
+
+                                                <div class="col-md-6">
+
+                                                    <input type="file" id="documentInput" accept=".pdf" class="form-control">
+                                                </div>
+                                                <div class="col-md-6">
+
+                                                    <button type="button" id="addDocument" class="btn btn-shadow btn-primary">Tambah Dokumen</button>
+                                                </div>
+                                            </div>
+
+                                            <table id="documentTable" border="1" class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="max-width: 150px;
+                                                                white-space: nowrap;
+                                                                overflow: hidden;
+                                                                text-overflow: ellipsis;
+                                                                word-wrap: break-word; ">Filename</th>
+                                                        <th>Title</th>
+                                                        <th>Description</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+
+                                        </form>
                                         <div class="mb-3" style="height: 5vh"></div>
                                     </div>
 
@@ -216,59 +261,67 @@
                                         <hr>
 
                                         <!-- Image Upload -->
-                                        <div class="mb-3">
+                                        {{-- <div class="mb-3">
                                             <label for="profileImage" class="form-label">Upload Foto Pengguna</label>
                                             <input class="form-control" type="file" id="profileImage" accept="image/*" name="profileImage">
                                         </div>
                                         <div class="mt-3 mb-3">
                                             <img id="preview" src="" alt="Image Preview" class="img-thumbnail" style="max-width: 200px; display:none;">
-                                        </div>
+                                        </div> --}}
 
                                         <!-- Name -->
                                         <div class="mb-3">
                                             <label for="name" class="form-label">Nama Lengkap</label>
-                                            <input type="text" name="name" class="form-control" id="name" placeholder="Masukkan nama lengkap" value="{{ old('nama_pengguna') }}">
+                                            <input type="text" value="{{ old('nama_pengguna') }}" name="name" class="form-control" id="name" placeholder="Masukkan nama lengkap">
                                         </div> <!-- Address -->
                                         <div class="mb-3">
-                                            <label for="pengguna_unitkerja_id" class="form-label">Unit Penugasan/PokJa</label>
+                                            <label for="pengguna_unitkerja_id" class="form-label">Unit Penugasan Eselon 2</label>
                                             <select
                                                 class="form-control"
                                                 data-penggunaunitkerja
                                                 name="pengguna_unitkerja_id"
                                                 id="penggunaunitkerjaSelect"
+                                                value="{{ old('pengguna_unitkerja_id') }}"
                                                 >
-                                                <option value="" selected disabled>--Pilih Unit Penugasan/PokJa--</option>
+                                                <option value="" selected disabled>--Pilih Unit Penugasan Eselon 2--</option>
                                                 @foreach ($unitkerja as $keyunitkerja)
 
                                                     <option value="{{ $keyunitkerja->id }}" >{{ $keyunitkerja->name }}</option>
                                                 @endforeach
+                                                <option id="other-unitkerja" value="">Lainnya</option>
                                             </select>
+                                            <label for="otherUnitKerjaInput" id="otherUnitKerjaLabel" class="form-label" style="display: none;">Keterangan Unit Penugasan Eselon 2</label>
+                                            <input type="text" value="{{ old('ket_penugasan') }}" name="ket_penugasan" id="otherUnitKerjaInput" class="form-control" placeholder="Masukkan Keterangan Unit Penugasan Eselon 2" style="display: none;">
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="unit_teknis_id" class="form-label">Unit Teknis</label>
+                                            <label for="unit_teknis_id" class="form-label">Unit Pokja</label>
                                             <select
                                                 class="form-control"
                                                 data-penggunaunitteknis
                                                 name="unit_teknis_id"
                                                 id="penggunaunitteknisSelect"
+                                                value ="{{ old('unit_teknis_id') }}"
                                                 >
-                                                <option value="" selected disabled>--Pilih Unit Teknis--</option>
+                                                <option value="" selected disabled>--Pilih Unit Pokja--</option>
                                                 @foreach ($unitteknis as $keyunitteknis)
 
                                                     <option value="{{ $keyunitteknis->id }}" >{{ $keyunitteknis->name }}</option>
                                                 @endforeach
+                                                <option id="other-unitteknis" value="">Lainnya</option>
                                             </select>
+                                            <label for="otherUnitTeknisInput" id="otherUnitTeknisLabel" class="form-label" style="display: none;">Keterangan Unit Pokja</label>
+                                            <input type="text" value="{{ old('ket_unit_teknis') }}" name="ket_unit_teknis" id="otherUnitTeknisInput" class="form-control" placeholder="Masukkan Keterangan Unit Pokja" style="display: none;">
                                         </div>
 
                                             <div class="mb-3">
                                                 <label for="nip_pengguna" class="form-label">NIP</label>
-                                                <input type="text" name="nip_pengguna" id="nip_pengguna" class="form-control" placeholder="Masukkan NIP" value="{{ old('nip_pengguna') }}">
+                                                <input type="text" value="{{ old('nip_pengguna') }}" name="nip_pengguna" id="nip_pengguna" class="form-control" placeholder="Masukkan NIP">
                                             </div>
 
                                         <div class="mb-3">
                                             <label for="jabatan_pengguna" class="form-label">Jabatan</label>
-                                            <input type="text" name="jabatan_pengguna" id="jabatan_pengguna" class="form-control" placeholder="Masukkan jabatan" value="{{ old('jabatan_pengguna') }}">
+                                            <input type="text" value="{{ old('jabatan_pengguna') }}" name="jabatan_pengguna" id="jabatan_pengguna" class="form-control" placeholder="Masukkan jabatan">
                                         </div>
 
                                         <div class="mb-3">
@@ -285,7 +338,7 @@
 
                                         <div class="mb-3">
                                             <label for="identitas_kategori" class="form-label">Kategori identitas*</label>
-                                            <select data-kategori class="form-control" id="identitas_kategori" name="kategori_id">
+                                            <select data-kategori value="{{ old('kategori_id') }}" class="form-control" id="identitas_kategori" name="kategori_id">
                                                 <option value="">-- Pilih Kategori --</option>
                                                 @foreach($identitasKategori as $cat)
                                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -296,7 +349,7 @@
                                         <div class="mb-3">
 
                                             <label class="form-label">identitas*</label>
-                                            <select  data-identitas  class="form-control" id="identitas" name="identitas_id">
+                                            <select  data-identitas value="{{ old('identitas_id') }}" class="form-control" id="identitas" name="identitas_id">
                                                 {{-- <option value="">-- Pilih identitas --</option> --}}
                                                 {{-- @foreach($identitas as $cat)
                                                     <option value="{{ $cat->id }}">{{ $cat->name }}</option>
@@ -326,15 +379,15 @@
 
                                         <div class="mb-3">
                                             <label for="nama_pihak_pertama" class="form-label">Nama Pihak Pertama</label>
-                                            <input type="text" name="nama_pihak_pertama" id="nama_pihak_pertama" class="form-control" placeholder="Masukkan nama pihak pertama" value="{{ old('nama_pihak_pertama') }}">
+                                            <input type="text" value="{{ old('nama_pihak_pertama') }}" name="nama_pihak_pertama" id="nama_pihak_pertama" class="form-control" placeholder="Masukkan nama pihak pertama">
                                         </div>
                                         <div class="mb-3">
                                             <label for="nip_pihak_pertama" class="form-label">NIP Pihak Pertama</label>
-                                            <input type="text" name="nip_pihak_pertama" id="nip_pihak_pertama" class="form-control" placeholder="Masukkan NIP pihak pertama" value="{{ old('nip_pihak_pertama') }}">
+                                            <input type="text" value="{{ old('nip_pihak_pertama') }}" name="nip_pihak_pertama" id="nip_pihak_pertama" class="form-control" placeholder="Masukkan NIP pihak pertama">
                                         </div>
                                         <div class="mb-3">
                                             <label for="jabatan_pihak_pertama" class="form-label">Jabatan Pihak Pertama</label>
-                                            <input type="text" name="jabatan_pihak_pertama" id="jabatan_pihak_pertama" class="form-control" placeholder="Masukkan jabatan pihak pertama" value="{{ old('jabatan_pihak_pertama') }}">
+                                            <input type="text" value="{{ old('jabatan_pihak_pertama') }}" name="jabatan_pihak_pertama" id="jabatan_pihak_pertama" class="form-control" placeholder="Masukkan jabatan pihak pertama">
                                         </div>
                                         <div class="mb-3">
                                             <label for="alamat_pihak_pertama" class="form-label">Alamat Pihak Pertama</label>
@@ -357,7 +410,9 @@
 </div>
 
     <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
-    <script src="{{asset('https://cdn.jsdelivr.net/npm/autonumeric@4.6.0')}}"></script>
+    <script src="{{asset('/assets/autonumeric/dist/autoNumeric.min.js')}}"></script>
+
+
 
     <script>
         document.addEventListener('change', function (e) {
@@ -418,6 +473,7 @@
     {{-- Image Upload Script --}}
     <script>
         let tempImages = [];
+        let tempDocuments = [];
 
         document.getElementById('addImage').addEventListener('click', function() {
             const input = document.getElementById('imageInput');
@@ -430,6 +486,19 @@
                     isCover: false
                 });
                 renderTable();
+            }
+        });
+
+        document.getElementById('addDocument').addEventListener('click', function() {
+            const input = document.getElementById('documentInput');
+            if (input.files.length > 0) {
+                const file = input.files[0];
+                tempDocuments.push({
+                    file: file,
+                    title: '',
+                    description: ''
+                });
+                renderDocumentTable();
             }
         });
 
@@ -460,6 +529,27 @@
             });
         }
 
+        function renderDocumentTable() {
+            const tbody = document.querySelector('#documentTable tbody');
+            tbody.innerHTML = '';
+
+            tempDocuments.forEach((item, index) => {
+                const row = `
+                    <tr>
+                        <td style="max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; word-wrap: break-word;">${item.file.name}</td>
+                        <td><input class="form-control" type="text" value="${item.title}"
+                                oninput="updateDocumentTitle(${index}, this.value)"></td>
+                        <td><input class="form-control" type="text" value="${item.description}"
+                                oninput="updateDocumentDescription(${index}, this.value)"></td>
+                        <td>
+                            <button onclick="deleteDocument(${index})" class="btn btn-shadow btn-danger">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
         function updateTitle(index, value) {
             tempImages[index].title = value;
         }
@@ -476,6 +566,19 @@
         function deleteImage(index) {
             tempImages.splice(index, 1);
             renderTable();
+        }
+
+        function updateDocumentTitle(index, value) {
+            tempDocuments[index].title = value;
+        }
+
+        function updateDocumentDescription(index, value) {
+            tempDocuments[index].description = value;
+        }
+
+        function deleteDocument(index) {
+            tempDocuments.splice(index, 1);
+            renderDocumentTable();
         }
 
         document.getElementById('imageForm').addEventListener('submit', function(e) {
@@ -540,6 +643,13 @@
                     formData.append(`titles[${index}]`, item.title);
                     formData.append(`descriptions[${index}]`, item.description);
                     formData.append(`isCover[${index}]`, item.isCover ? 1 : 0);
+                });
+
+                // Append documents
+                tempDocuments.forEach((item, index) => {
+                    formData.append(`documents[${index}]`, item.file);
+                    formData.append(`documentTitles[${index}]`, item.title);
+                    formData.append(`documentDescriptions[${index}]`, item.description);
                 });
 
                 // Submit via fetch
@@ -660,7 +770,7 @@
             var unitelement = UnitTeknisSelect[i];
             new Choices(unitelement, {
                 placeholderValue: 'This is a placeholder set in the config',
-                searchPlaceholderValue: 'Cari unit teknis',
+                searchPlaceholderValue: 'Cari Unit Pokja',
                 position: 'bottom'
 
             });
@@ -683,10 +793,54 @@
             new Choices(lokasielement, {
                 placeholderValue: 'This is a placeholder set in the config',
                 searchPlaceholderValue: 'Cari lokasi',
-                position: 'top'
+                // position: 'top'
 
             });
             }
+
+            const selectLokasi = document.getElementById("lokasiSelect");
+            selectLokasi.addEventListener("change", function () {
+                const selectedOption = selectLokasi.options[selectLokasi.selectedIndex];
+
+                if (selectedOption.value === null || selectedOption.value === "") {
+                    // Tampilkan input teks
+                    document.getElementById("otherLokasiLabel").style.display = "block";
+                    document.getElementById("otherLokasiInput").style.display = "block";
+                } else {
+                    // Sembunyikan input teks
+                    document.getElementById("otherLokasiLabel").style.display = "none";
+                    document.getElementById("otherLokasiInput").style.display = "none";
+                }
+            });
+
+            const selectUnitTeknis = document.getElementById("penggunaunitteknisSelect");
+            selectUnitTeknis.addEventListener("change", function () {
+                const selectedOption = selectUnitTeknis.options[selectUnitTeknis.selectedIndex];
+                if (selectedOption.value === null || selectedOption.value === "") {
+                    // Tampilkan input teks
+                    document.getElementById("otherUnitTeknisLabel").style.display = "block";
+                    document.getElementById("otherUnitTeknisInput").style.display = "block";
+                } else {
+                    // Sembunyikan input teks
+                    document.getElementById("otherUnitTeknisLabel").style.display = "none";
+                    document.getElementById("otherUnitTeknisInput").style.display = "none";
+                }
+            })
+
+            const selectUnitKerja = document.getElementById("penggunaunitkerjaSelect");
+            selectUnitKerja.addEventListener("change", function () {
+                const selectedOption = selectUnitKerja.options[selectUnitKerja.selectedIndex];
+                if (selectedOption.value === null || selectedOption.value === "") {
+                    // Tampilkan input teks
+                    document.getElementById("otherUnitKerjaLabel").style.display = "block";
+                    document.getElementById("otherUnitKerjaInput").style.display = "block";
+                } else {
+                    // Sembunyikan input teks
+                    document.getElementById("otherUnitKerjaLabel").style.display = "none";
+                    document.getElementById("otherUnitKerjaInput").style.display = "none";
+                }
+            })
+
         })
     </script>
 

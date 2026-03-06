@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\bmn;
+use App\Models\User;
 use App\Models\Barang;
 use App\Models\satker;
 use App\Models\Pengguna;
@@ -17,24 +17,27 @@ use App\Models\LokasiRuang;
 use Illuminate\Support\Str;
 use App\Models\DataInternal;
 use App\Models\FotoInternal;
+use App\Models\DocumentInternal;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use OpenSpout\Common\Entity\Row;
 use App\Models\IdentitasKategori;
+use OpenSpout\Writer\XLSX\Writer;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use OpenSpout\Common\Entity\Style\Color;
+use OpenSpout\Common\Entity\Style\Style;
 use RealRashid\SweetAlert\Facades\Alert;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use OpenSpout\Writer\XLSX\Writer;
-use OpenSpout\Common\Entity\Row;
-use OpenSpout\Common\Entity\Style\Style;
-use OpenSpout\Common\Entity\Style\Color;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class InternalController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
@@ -407,6 +410,9 @@ class InternalController extends Controller
                             'label' => $batchLabel
                         ]);
 
+                        // Auto-lock data if conditions are met
+                        $insertData->autoLock();
+
                         $inserted++;
                 }
             }
@@ -524,6 +530,7 @@ class InternalController extends Controller
         ])->findOrFail($id);
         $identitas = Identitas::get() ?? collect();
         $internalImages = FotoInternal::where('data_internal_id', $id)->get() ?? collect();
+        $internalDocuments = DocumentInternal::where('data_internal_id', $id)->get() ?? collect();
         $satker = satker::all() ?? collect();
         $title = 'Show Data Internal';
         $barang = Barang::get() ?? collect();
@@ -531,7 +538,7 @@ class InternalController extends Controller
         $lokasi = LokasiRuang::get() ?? collect();
         $unitkerja = UnitKerja::get() ?? collect();
         $unitteknis = UnitTeknis::get() ?? collect();
-        return view('internal.view', compact('internal', 'satker', 'title', 'barang', 'unitkerja', 'internalImages', 'lokasi','identitas', 'unitteknis', 'identitasKategori'));
+        return view('internal.view', compact('internal', 'satker', 'title', 'barang', 'unitkerja', 'internalImages', 'internalDocuments', 'lokasi','identitas', 'unitteknis', 'identitasKategori'));
     }
 
     /**
@@ -551,14 +558,20 @@ class InternalController extends Controller
             'dataAtribut'
         ])->findOrFail($id);
 
+        $user = Auth::user();
+        $levelName = strtolower($user->level->level_name ?? '');
         // Check if user can access this data based on unitKerja
         if (!$this->canAccessDataInternal($internal)) {
             Alert::error('Error', 'Anda tidak memiliki akses.');
             return redirect()->route('internal.index');
+        } elseif ($internal->status === 'locked' && $levelName !== 'administrator') {
+            Alert::warning('Terkunci', 'Data ini terkunci dan tidak dapat diedit.');
+            return redirect()->back();
         }
 
         $identitas = $internal->identitas ? Identitas::where('kategori_id', $internal->identitas->kategori_id)->get() : collect();
         $internalImages = FotoInternal::where('data_internal_id', $id)->get() ?? collect();
+        $internalDocuments = DocumentInternal::where('data_internal_id', $id)->get() ?? collect();
         $satker = satker::all() ?? collect();
         $title = 'Edit Data Internal';
         $barang = Barang::get() ?? collect();
@@ -569,13 +582,18 @@ class InternalController extends Controller
             $lokasi = LokasiRuang::with('unitKerja')->get();
         } else {
             $unitkerja = UnitKerja::where('id', $user->unit_kerja_id)->get();
-            $lokasi = LokasiRuang::with('unitKerja')->where('unit_kerja_id', $user->unit_kerja_id)->get();
+            $lokasi = LokasiRuang::with('unitKerja')
+                ->whereHas('unitKerja', function ($q) use ($user) {
+                    $q->where('id', $user->unit_kerja_id)
+                    ->orWhere('nameId', 'tanpaunitkerja');
+                })
+                ->get();
         }
 
         $unitteknis = UnitTeknis::get() ?? collect();
         $identitasKategori = IdentitasKategori::get() ?? collect();
         $dataAtribut = $internal->dataAtribut ? $internal->dataAtribut->keyBy('atributs_id') : collect();
-        return view('internal.edit', compact('internal', 'satker', 'title', 'barang', 'unitkerja', 'internalImages', 'lokasi', 'identitas', 'dataAtribut','unitteknis', 'identitasKategori'));
+        return view('internal.edit', compact('internal', 'satker', 'title', 'barang', 'unitkerja', 'internalImages', 'internalDocuments', 'lokasi', 'identitas', 'dataAtribut','unitteknis', 'identitasKategori'));
     }
 
     public function addImage(Request $request)
@@ -583,13 +601,13 @@ class InternalController extends Controller
         DB::beginTransaction();
         try {
             $validated = $request->validate([
-                'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240', // max 10MB
+                'image' => 'required|image|mimes:jpg,jpeg,png,webp|max:15240', // max 10MB
                 'title' => 'nullable|string|max:255',
                 'description' => 'nullable|string|max:500',
             ]);
 
             /** If checked → true, if not sent → false */
-            $isCover = $request->has('isCover');
+            $isCover = $request->has('is_cover');
 
             /** Optional: ensure only ONE cover per data_internal */
             if ($isCover) {
@@ -608,12 +626,125 @@ class InternalController extends Controller
             $file = $request->file('image');
             $unitKerjaName = Str::slug($dataInternalId->unitKerja->name ?? 'tanpa-unit-kerja');
             $barangName = Str::slug($dataInternalId->barang->nama_barang ?? 'tanpa-nama-barang');
-            $nup = $dataInternalId->nup ?? 'nonup';
-            $filename = $file->storeAs(
-                    'foto_internals/'. $unitKerjaName,
-                    "internal-{$barangName}-{$nup}-{$dataInternalId->merk}-{$dataInternalId->tipe}-{$validated['title']}-". time() .Str::uuid()."." .$file->getClientOriginalExtension() ,
-                    'public'
-                );
+            $nup = $dataInternalId->nup;
+
+            // Adaptive compression to target 2MB using native PHP
+            $originalPath = $file->getRealPath();
+            $extension = strtolower($file->getClientOriginalExtension());
+            $quality = 80;
+
+            // Load image based on type
+            switch ($extension) {
+                case 'jpg':
+                case 'jpeg':
+                    $image = imagecreatefromjpeg($originalPath);
+                    break;
+                case 'png':
+                    $image = imagecreatefrompng($originalPath);
+                    break;
+                case 'gif':
+                    $image = imagecreatefromgif($originalPath);
+                    break;
+                default:
+                    // For unsupported formats, just store as is
+                    $filename = 'foto_internals/' . $unitKerjaName . "/internal-{$barangName}-{$nup}-{$dataInternalId->merk}-{$dataInternalId->tipe}-{$validated['title']}-" . time() . Str::uuid() . "." . $extension;
+                    Storage::disk('public')->put($filename, file_get_contents($originalPath));
+                    $path = Storage::url($filename);
+                    FotoInternal::create([
+                        'data_internal_id' => $dataInternalId->id,
+                        'filename' => $filename,
+                        'path' => $path,
+                        'title' => $validated['title'] ?? null,
+                        'description' => $validated['description'] ?? null,
+                        'is_cover' => $isCover,
+                    ]);
+                    DB::commit();
+                    Alert::success('Sukses', 'Gambar berhasil ditambahkan.');
+                    return redirect()->back()->with('success', 'Gambar berhasil ditambahkan.');
+            }
+
+            // Get original dimensions
+            $width = imagesx($image);
+            $height = imagesy($image);
+
+            // Check original file size - skip compression if already 2MB or below
+            $originalSizeMB = filesize($file->getRealPath()) / 1024 / 1024;
+
+            if ($originalSizeMB <= 2.0) {
+                // File is already small enough, store as-is
+                $filename = 'foto_internals/' . $unitKerjaName . "/internal-{$barangName}-{$nup}-{$dataInternalId->merk}-{$dataInternalId->tipe}-{$validated['title']}-" . time() . Str::uuid() . "." . $extension;
+                Storage::disk('public')->put($filename, file_get_contents($originalPath));
+                $path = Storage::url($filename);
+                FotoInternal::create([
+                    'data_internal_id' => $dataInternalId->id,
+                    'filename' => $filename,
+                    'path' => $path,
+                    'title' => $validated['title'] ?? null,
+                    'description' => $validated['description'] ?? null,
+                    'is_cover' => $isCover,
+                ]);
+                DB::commit();
+                Alert::success('Sukses', 'Gambar berhasil ditambahkan.');
+                return redirect()->back()->with('success', 'Gambar berhasil ditambahkan.');
+            }
+
+            // Compress to target size (2MB max)
+            $targetSizeMB = 2.0;
+            $compressed = null;
+            $finalExtension = $extension;
+
+            // First, try PNG compression with maximum level
+            if ($extension === 'png') {
+                ob_start();
+                imagepng($image, null, 9); // Maximum PNG compression
+                $compressed = ob_get_clean();
+                $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                // If PNG is still too big, convert to JPEG
+                if ($sizeMB > $targetSizeMB) {
+                    $quality = 85; // Start with good JPEG quality
+                    $minQuality = 40;
+
+                    do {
+                        ob_start();
+                        imagejpeg($image, null, $quality);
+                        $compressed = ob_get_clean();
+                        $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                        if ($sizeMB <= $targetSizeMB || $quality <= $minQuality) {
+                            break;
+                        }
+                        $quality -= 10;
+                    } while ($quality >= $minQuality);
+
+                    $finalExtension = 'jpg'; // Converted to JPEG
+                }
+            } else {
+                // For JPEG and other formats, use quality-based compression
+                $quality = 85; // Start with good quality
+                $minQuality = 40;
+
+                do {
+                    ob_start();
+                    imagejpeg($image, null, $quality);
+                    $compressed = ob_get_clean();
+                    $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                    if ($sizeMB <= $targetSizeMB || $quality <= $minQuality) {
+                        break;
+                    }
+                    $quality -= 10;
+                } while ($quality >= $minQuality);
+
+                $finalExtension = 'jpg'; // Ensure JPEG output
+            }
+
+            $filename = 'foto_internals/' . $unitKerjaName . "/internal-{$barangName}-{$nup}-{$dataInternalId->merk}-{$dataInternalId->tipe}-{$validated['title']}-" . time() . Str::uuid() . "." . $finalExtension;
+            Storage::disk('public')->put($filename, $compressed);
+
+            // $this->imageDestroy($image);
+
+            $path = Storage::url($filename);
 
             $path = Storage::url($filename);
             FotoInternal::create([
@@ -648,7 +779,7 @@ class InternalController extends Controller
             ]);
 
             /** If checked → true, if not sent → false */
-            $isCover = $request->has('isCover');
+            $isCover = $request->has('is_cover');
 
             $imageId = $id;
             $image = FotoInternal::findOrFail($imageId);
@@ -715,8 +846,125 @@ class InternalController extends Controller
                 return redirect()->back()->with('error', 'Invalid image ID.');
             }
         }
+    }
 
+    public function addDocument(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $validated = $request->validate([
+                'document' => 'required|file|mimes:pdf|max:5120', // max 5MB
+                'title' => 'nullable|string|max:255',
+                'description' => 'nullable|string|max:500',
+            ]);
 
+            $dataInternalId = DataInternal::with('unitKerja')->findOrFail($request->internal_id);
+
+            // Check if user can access this data based on unitKerja
+            if (!$this->canAccessDataInternal($dataInternalId)) {
+                throw new \Exception('Anda tidak memiliki akses.');
+            }
+
+            $file = $request->file('document');
+            $unitKerjaName = Str::slug($dataInternalId->unitKerja->name ?? 'tanpa-unit-kerja');
+            $barangName = Str::slug($dataInternalId->barang->nama_barang ?? 'tanpa-nama-barang');
+            $nup = $dataInternalId->nup;
+
+            $extension = strtolower($file->getClientOriginalExtension());
+
+            $filename = 'documents/' . $unitKerjaName . "/internal-{$barangName}-{$nup}-{$dataInternalId->merk}-{$dataInternalId->tipe}-{$validated['title']}-" . time() . Str::uuid() . "." . $extension;
+            Storage::disk('public')->put($filename, file_get_contents($file->getRealPath()));
+            $path = Storage::url($filename);
+
+            DocumentInternal::create([
+                'data_internal_id' => $dataInternalId->id,
+                'filename' => $filename,
+                'path' => $path,
+                'title' => $validated['title'] ?? null,
+                'description' => $validated['description'] ?? null,
+            ]);
+
+            DB::commit();
+            Alert::success('Sukses', 'Dokumen berhasil ditambahkan.');
+            return redirect()->back()->with('success', 'Dokumen berhasil ditambahkan.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Gagal menambahkan dokumen: ' . $th->getMessage()], 500);
+            } else {
+                Alert::error('Gagal', 'Gagal menambahkan dokumen: ' . $th->getMessage());
+                return redirect()->back()->with('error', 'Gagal menambahkan dokumen: ' . $th->getMessage());
+            }
+        }
+    }
+
+    public function updateDocument(Request $request, string $id)
+    {
+        DB::beginTransaction();
+        try {
+            $validated = $request->validate([
+                'title' => 'nullable|string|max:255',
+                'description' => 'nullable|string|max:500',
+            ]);
+
+            $documentId = $id;
+            $document = DocumentInternal::findOrFail($documentId);
+
+            // Check if user can access the parent DataInternal
+            $dataInternal = DataInternal::findOrFail($document->data_internal_id);
+            if (!$this->canAccessDataInternal($dataInternal)) {
+                throw new \Exception('Anda tidak memiliki akses.');
+            }
+
+            $document->title = $validated['title'] ?? null;
+            $document->description = $validated['description'] ?? null;
+            $document->save();
+            DB::commit();
+            Alert::success('Sukses', 'Dokumen berhasil diperbarui.');
+            return redirect()->back()->with('success', 'Dokumen berhasil diperbarui.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Gagal memperbarui dokumen: ' . $th->getMessage()], 500);
+            } else {
+                Alert::error('Gagal', 'Gagal memperbarui dokumen: ' . $th->getMessage());
+                return redirect()->back()->with('error', 'Gagal memperbarui dokumen: ' . $th->getMessage());
+            }
+        }
+    }
+
+    public function documentDestroy(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $documentId = $request->id;
+            $document = DocumentInternal::findOrFail($documentId);
+
+            // Check if user can access the parent DataInternal
+            $dataInternal = DataInternal::findOrFail($document->data_internal_id);
+            if (!$this->canAccessDataInternal($dataInternal)) {
+                throw new \Exception('Anda tidak memiliki akses.');
+            }
+
+            // Delete the document file from storage
+            if (Storage::disk('public')->exists($document->filename)) {
+                Storage::disk('public')->delete($document->filename);
+            }
+
+            // Delete the database record
+            $document->delete();
+            DB::commit();
+            Alert::success('Sukses', 'Dokumen berhasil dihapus.');
+            return redirect()->back()->with('success', 'Dokumen berhasil dihapus.');
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Gagal menghapus dokumen: ' . $th->getMessage()], 500);
+            } else {
+                Alert::error('Gagal', 'Gagal menghapus dokumen: ' . $th->getMessage());
+                return redirect()->back()->with('error', 'Invalid document ID.');
+            }
+        }
     }
 
     /**
@@ -731,7 +979,7 @@ class InternalController extends Controller
                 'satker_id' => 'required|exists:satkers,id',
                 'barang_id' => 'required|exists:barangs,id',
                 'unitkerja_id' => 'required|exists:unit_kerjas,id',
-                'lokasi_id' => 'required|exists:lokasi_ruangs,id',
+
                 'tgl_perolehan' => 'required|date',
                 'merk' => 'nullable|string',
                 'tipe' => 'nullable|string',
@@ -751,6 +999,9 @@ class InternalController extends Controller
                 'nip_pihak_pertama' => 'nullable|string',
                 'jabatan_pihak_pertama' => 'nullable|string',
                 'alamat_pihak_pertama' => 'nullable|string',
+                'ketLokasi' => 'nullable|string',
+                'ket_penugasan' => 'nullable|string',
+                'ket_unit_teknis' => 'nullable|string',
 
             ]);
 
@@ -758,6 +1009,13 @@ class InternalController extends Controller
 
 
             $dataInternal = DataInternal::findOrFail($id);
+
+            // Check if data is locked and user is not admin
+            $user = Auth::user();
+            $levelName = strtolower($user->level->level_name ?? '');
+            if ($dataInternal->isLocked() && $levelName !== 'administrator') {
+                throw new \Exception('Data ini telah terkunci dan hanya dapat diubah oleh administrator.');
+            }
 
             // Check if user can access this data based on unitKerja
             if (!$this->canAccessDataInternal($dataInternal)) {
@@ -804,18 +1062,21 @@ class InternalController extends Controller
                 }
             }
 
+            // Handle FotoInternal images when barang_id changes
+            $barangChanged = $dataInternal->barang_id != $validated['barang_id'];
 
+            $oldBarang = $dataInternal->barang;
 
-            $nupMax = DataInternal::where('barang_id', $validated['barang_id'])->max('nup');
-            $nup = $nupMax ? $nupMax + 1 : 1;
+            // $nupMax = DataInternal::where('barang_id', $validated['barang_id'])->max('nup');
+            // $nup = $nupMax ? $nupMax + 1 : 1;
             $dataInternal->identitas_id = $identitas->id;
             $dataInternal->satker_id = $validated['satker_id'];
             $dataInternal->barang_id = $validated['barang_id'];
             $dataInternal->unit_kerja_id = $validated['unitkerja_id'];
             $dataInternal->pengguna_unitkerja_id = $validated['pengguna_unitkerja_id'] ?: null;
             $dataInternal->unit_teknis_id = $validated['unit_teknis_id'] ?: null;
-            $dataInternal->lokasi_id = $validated['lokasi_id'];
-            $dataInternal->nup = $nup;
+            $dataInternal->lokasi_id = $validated['lokasi_id'] ?? null;
+            // $dataInternal->nup = $nup;
             $dataInternal->tgl_perolehan = $validated['tgl_perolehan'];
             $dataInternal->merk = $validated['merk']?? null;
             $dataInternal->tipe = $validated['tipe']?? null;
@@ -832,6 +1093,9 @@ class InternalController extends Controller
             $dataInternal->nip_pihak_pertama = $validated['nip_pihak_pertama']?? null;
             $dataInternal->jabatan_pihak_pertama = $validated['jabatan_pihak_pertama']?? null;
             $dataInternal->alamat_pihak_pertama = $validated['alamat_pihak_pertama']?? null;
+            $dataInternal->ket_lokasi = $validated['ketLokasi']?? null;
+            $dataInternal->ket_penugasan = $validated['ket_penugasan']?? null;
+            $dataInternal->ket_unit_teknis = $validated['ket_unit_teknis']?? null;
 
 
             if (isset($validated['profileImage'])) {
@@ -881,6 +1145,87 @@ class InternalController extends Controller
                         Log::warning("Unexpected foto internal path format: {$oldPath}");
                     }
                 }
+
+                $documentInternals = DocumentInternal::where('data_internal_id', $dataInternal->id)->get();
+                Log::info("Found {$documentInternals->count()} document internal records to move");
+
+                foreach ($documentInternals as $documentInternal) {
+                    $oldPath = $documentInternal->filename;
+
+                    // Extract the unit kerja folder name from the existing path
+                    // Path structure: documents/unit-kerja-name/filename
+                    $pathParts = explode('/', $oldPath);
+                    if (count($pathParts) >= 3 && $pathParts[0] === 'documents') {
+                        $oldUnitKerjaNameFromPath = $pathParts[1]; // The folder name after documents/
+
+                        // Only move if the folder names are different
+                        if ($oldUnitKerjaNameFromPath !== $newUnitKerjaName) {
+                            $newPath = str_replace("documents/{$oldUnitKerjaNameFromPath}", "documents/{$newUnitKerjaName}", $oldPath);
+
+                            Log::info("Moving document internal from {$oldPath} to {$newPath}");
+
+                            // Move the file in storage
+                            if (Storage::disk('public')->exists($oldPath)) {
+                                Storage::disk('public')->move($oldPath, $newPath);
+                                $documentInternal->filename = $newPath;
+                                $documentInternal->path = Storage::url($newPath);
+                                $documentInternal->save();
+                                Log::info("Successfully moved document internal {$documentInternal->id}");
+                            } else {
+                                // Log warning if file doesn't exist
+                                Log::warning("DocumentInternal file not found: {$oldPath}");
+                            }
+                        } else {
+                            Log::info("Unit kerja folder names are the same ({$oldUnitKerjaNameFromPath}), no need to move file");
+                        }
+                    } else {
+                        Log::warning("Unexpected document internal path format: {$oldPath}");
+                    }
+                }
+            }
+
+
+            if ($barangChanged) {
+
+                // Calculate next NUP as max + 1 for the new barang_id, excluding current record
+                $nupMax = DataInternal::where('barang_id', $validated['barang_id'])->max('nup');
+                $newNup = $nupMax ? $nupMax + 1 : 1;
+
+                $oldNup = $dataInternal->nup;
+                $dataInternal->nup = $newNup;
+
+                $newUnitKerja = UnitKerja::findOrFail($dataInternal->unit_kerja_id);
+                $unitKerjaName = Str::slug($newUnitKerja->name ?? 'tanpa-unit-kerja');
+                $newBarang = Barang::findOrFail($validated['barang_id']);
+                $barangName = Str::slug($newBarang->nama_barang ?? 'tanpa-nama-barang');
+
+                $fotoInternals = FotoInternal::where('data_internal_id', $dataInternal->id)->get();
+                foreach ($fotoInternals as $fotoInternal) {
+                    $finalExtension = pathinfo($fotoInternal->filename, PATHINFO_EXTENSION);
+                    $filename = 'foto_internals/' . $unitKerjaName . "/internal-{$barangName}-{$newNup}-{$dataInternal->merk}-{$dataInternal->tipe}-{$fotoInternal->title}-" . time() . Str::uuid() . "." . $finalExtension;
+                    $oldPath = $fotoInternal->filename;
+                    $newPath = $filename;
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->move($oldPath, $newPath);
+                        $fotoInternal->filename = $newPath;
+                        $fotoInternal->path = Storage::url($newPath);
+                        $fotoInternal->save();
+                    }
+                }
+
+                $documentInternals = DocumentInternal::where('data_internal_id', $dataInternal->id)->get();
+                foreach ($documentInternals as $documentInternal) {
+                    $finalExtension = pathinfo($documentInternal->filename, PATHINFO_EXTENSION);
+                    $filename = 'documents/' . $unitKerjaName . "/internal-{$barangName}-{$newNup}-{$dataInternal->merk}-{$dataInternal->tipe}-{$documentInternal->title}-" . time() . Str::uuid() . "." . $finalExtension;
+                    $oldPath = $documentInternal->filename;
+                    $newPath = $filename;
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->move($oldPath, $newPath);
+                        $documentInternal->filename = $newPath;
+                        $documentInternal->path = Storage::url($newPath);
+                        $documentInternal->save();
+                    }
+                }
             }
 
             $activeAttributeIds = $identitas->atribut->pluck('id')->toArray();
@@ -915,6 +1260,10 @@ class InternalController extends Controller
             }
 
             $dataInternal->save();
+
+            // Auto-lock data if conditions are met
+            $dataInternal->autoLock();
+
             DB::commit();
 
 
@@ -972,6 +1321,15 @@ class InternalController extends Controller
                     }
                     // Delete the database record
                     $image->delete();
+            }
+            $documents = DocumentInternal::where('data_internal_id', $id)->get();
+            foreach ($documents as $document) {
+                // Delete the document file from storage
+                if (Storage::disk('public')->exists($document->filename)) {
+                    Storage::disk('public')->delete($document->filename);
+                }
+                // Delete the database record
+                $document->delete();
             }
             $Data->delete();
             DB::commit();
@@ -1044,8 +1402,16 @@ class InternalController extends Controller
                 'tgl_bahi',
                 'batch',
                 'label',
-                'identitas_id'
-            ]);
+                'identitas_id',
+                'status'
+            ])
+            // ->whereNot('status', 'locked')
+            ; // Exclude locked records from regular datatable
+
+        // Filter for locked data only if requested (for debugging/admin purposes)
+        if ($request->boolean('locked_only')) {
+            $query->where('status', 'locked');
+        }
 
         return DataTables::eloquent($query)
             ->addIndexColumn()
@@ -1109,6 +1475,18 @@ class InternalController extends Controller
             ->editColumn('nilai_buku', fn ($row) =>
                 'Rp. ' . number_format($row->nilai_buku, 2, ',', '.')
             )
+            ->addColumn('status', function ($row) {
+                if ($row->status === 'locked') {
+                    return '<span class="badge bg-danger">Terkunci</span>';
+                } elseif ($row->status === 'unlocked') {
+                    return '<span class="badge bg-warning">Dibuka</span>';
+                } else {
+                    return '<span class="badge bg-secondary">Draft</span>';
+                }
+            })
+            ->addColumn('foto_count', function ($row) {
+                return $row->fotoInternals->count();
+            })
             ->addColumn('action', function ($row) {
                 return view('internal.partials.action', compact('row'))->render();
             })
@@ -1207,6 +1585,11 @@ class InternalController extends Controller
                     $query->where('nup', '<=', $request->nupMax);
                 }
 
+                // status filter
+                if ($request->filled('statusSearch')) {
+                    $query->where('status', $request->statusSearch);
+                }
+
                 if ($search = $request->input('search.value')) {
                     $query->where(function ($q) use ($search) {
                         $q
@@ -1223,7 +1606,7 @@ class InternalController extends Controller
                     });
                 }
             })
-            ->rawColumns(['action', 'identitas', 'foto_barang'])
+            ->rawColumns(['action', 'status', 'identitas', 'foto_barang'])
             ->make(true);
     }
 
@@ -1238,8 +1621,13 @@ class InternalController extends Controller
             $lokasi = LokasiRuang::with('unitKerja')->get();
         } else {
             $unitkerja = UnitKerja::where('id', $user->unit_kerja_id)->get();
-            $lokasi = LokasiRuang::with('unitKerja')->where('unit_kerja_id', $user->unit_kerja_id)->get();
-        }
+            $lokasi = LokasiRuang::with('unitKerja')
+                ->whereHas('unitKerja', function ($q) use ($user) {
+                    $q->where('id', $user->unit_kerja_id)
+                    ->orWhere('nameId', 'tanpaunitkerja');
+                })
+                ->get();
+            }
         $unitteknis = UnitTeknis::get();
         $satker = satker::get();
         $identitasKategori = IdentitasKategori::with('identitas')->get();
@@ -1266,7 +1654,7 @@ class InternalController extends Controller
                 'satker_id' => 'required|exists:satkers,id',
                 'barang_id' => 'required|exists:barangs,id',
                 'unitkerja_id' => 'required|exists:unit_kerjas,id',
-                'lokasi_id' => 'required|exists:lokasi_ruangs,id',
+                // 'lokasi_id' => 'required|exists:lokasi_ruangs,id',
                 'pengguna_unitkerja_id' => 'nullable|exists:unit_kerjas,id',
                 'unit_teknis_id' => 'nullable|exists:unit_teknis,id',
                 'tgl_perolehan' => 'required|date',
@@ -1280,20 +1668,28 @@ class InternalController extends Controller
                 'profileImage' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'name' => 'nullable|string',
                 'images' => 'nullable|array',
-                'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:20048',
                 'titles' => 'nullable|array',
                 'titles.*' => 'nullable|string',
                 'descriptions' => 'nullable|array',
                 'descriptions.*' => 'nullable|string',
                 'isCover' => 'nullable|array',
                 'isCover.*' => 'boolean',
-                'nip_pengguna' => 'nullable|string',
+                'documents' => 'nullable|array',
+                'documents.*' => 'file|mimes:pdf|max:5120',
+                'documentTitles' => 'nullable|array',
+                'documentTitles.*' => 'nullable|string',
+                'documentDescriptions' => 'nullable|array',
+                'documentDescriptions.*' => 'nullable|string',
                 'jabatan_pengguna' => 'nullable|string',
                 'alamat_pengguna' => 'nullable|string',
                 'nama_pihak_pertama' => 'nullable|string',
                 'nip_pihak_pertama' => 'nullable|string',
                 'jabatan_pihak_pertama' => 'nullable|string',
                 'alamat_pihak_pertama' => 'nullable|string',
+                'ketLokasi' => 'nullable|string',
+                'ket_penugasan' => 'nullable|string',
+                'ket_unit_teknis' => 'nullable|string',
             ]);
 
             // Handle profile image upload if provided
@@ -1303,8 +1699,101 @@ class InternalController extends Controller
                 $unitKerjaId = UnitKerja::findOrFail($validated['unitkerja_id']);
                 $unitKerjaName = Str::slug($unitKerjaId->name ?? 'tanpa-unit-kerja');
 
-                $profileImagePath = $request->file('profileImage')->storeAs('profile_images/'. $unitKerjaName, "profile-image-{$validated['merk']}-{$validated['tipe']}-{$validated['name']}". time().Str::uuid() .".". $request->file('profileImage')->getClientOriginalExtension(), 'public');
-                $profileImageUrl = Storage::url($profileImagePath);
+                $file = $request->file('profileImage');
+                $originalPath = $file->getRealPath();
+                $extension = strtolower($file->getClientOriginalExtension());
+                $quality = 80;
+
+                // Load image based on type
+                switch ($extension) {
+                    case 'jpg':
+                    case 'jpeg':
+                        $image = imagecreatefromjpeg($originalPath);
+                        break;
+                    case 'png':
+                        $image = imagecreatefrompng($originalPath);
+                        break;
+                    case 'gif':
+                        $image = imagecreatefromgif($originalPath);
+                        break;
+                    default:
+                        // For unsupported formats, just store as is
+                        $profileImagePath = $file->storeAs('profile_images/'. $unitKerjaName, "profile-image-{$validated['merk']}-{$validated['tipe']}-{$validated['name']}". time().Str::uuid() .".". $extension, 'public');
+                        $profileImageUrl = Storage::url($profileImagePath);
+                        break;
+                }
+
+                if (isset($image)) {
+                    // Get original dimensions
+                    $width = imagesx($image);
+                    $height = imagesy($image);
+
+                    // Check original file size - skip compression if already 2MB or below
+                    $originalSizeMB = filesize($file->getRealPath()) / 1024 / 1024;
+
+                    if ($originalSizeMB <= 2.0) {
+                        // File is already small enough, store as-is
+                        $profileImagePath = $file->storeAs('profile_images/'. $unitKerjaName, "profile-image-{$validated['merk']}-{$validated['tipe']}-{$validated['name']}". time().Str::uuid() .".". $extension, 'public');
+                        $profileImageUrl = Storage::url($profileImagePath);
+                    } else {
+                        // Compress to target size (2MB max)
+                        $targetSizeMB = 2.0;
+                        $compressed = null;
+                        $finalExtension = $extension;
+
+                        // First, try PNG compression with maximum level
+                        if ($extension === 'png') {
+                            ob_start();
+                            imagepng($image, null, 9); // Maximum PNG compression
+                            $compressed = ob_get_clean();
+                            $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                            // If PNG is still too big, convert to JPEG
+                            if ($sizeMB > $targetSizeMB) {
+                                $quality = 85; // Start with good JPEG quality
+                                $minQuality = 40;
+
+                                do {
+                                    ob_start();
+                                    imagejpeg($image, null, $quality);
+                                    $compressed = ob_get_clean();
+                                    $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                                    if ($sizeMB <= $targetSizeMB || $quality <= $minQuality) {
+                                        break;
+                                    }
+                                    $quality -= 10;
+                                } while ($quality >= $minQuality);
+
+                                $finalExtension = 'jpg'; // Converted to JPEG
+                            }
+                        } else {
+                            // For JPEG and other formats, use quality-based compression
+                            $quality = 85; // Start with good quality
+                            $minQuality = 40;
+
+                            do {
+                                ob_start();
+                                imagejpeg($image, null, $quality);
+                                $compressed = ob_get_clean();
+                                $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                                if ($sizeMB <= $targetSizeMB || $quality <= $minQuality) {
+                                    break;
+                                }
+                                $quality -= 10;
+                            } while ($quality >= $minQuality);
+
+                            $finalExtension = 'jpg'; // Ensure JPEG output
+                        }
+
+                        $profileImagePath = 'profile_images/' . $unitKerjaName . "/profile-image-{$validated['merk']}-{$validated['tipe']}-{$validated['name']}-" . time() . Str::uuid() . "." . $finalExtension;
+                        Storage::disk('public')->put($profileImagePath, $compressed);
+                        $profileImageUrl = Storage::url($profileImagePath);
+
+                        imagedestroy($image);
+                    }
+                }
             }
 
             $nupMax = DataInternal::where('barang_id', $validated['barang_id'])->max('nup');
@@ -1344,6 +1833,9 @@ class InternalController extends Controller
                 'nip_pihak_pertama' => $validated['nip_pihak_pertama']?? null,
                 'jabatan_pihak_pertama' => $validated['jabatan_pihak_pertama']?? null,
                 'alamat_pihak_pertama' => $validated['alamat_pihak_pertama']?? null,
+                'ket_lokasi' => $validated['ketLokasi']?? null,
+                'ket_penugasan' => $validated['ket_penugasan']?? null,
+                'ket_unit_teknis' => $validated['ket_unit_teknis']?? null,
                 // 'batch' => (DataInternal::max('batch') ?? 0) + 1,
                 'label' => 'Manual Entry',
 
@@ -1355,12 +1847,126 @@ class InternalController extends Controller
                     $dataInternalId = DataInternal::with('unitKerja')->findOrFail($dataInternal->id);
                     $unitKerjaName = Str::slug($dataInternalId->unitKerja->name ?? 'tanpa-unit-kerja');
                     $barangName = Str::slug($dataInternalId->barang->nama_barang ?? 'tanpa-nama-barang');
-                    $filename = $file->storeAs(
+
+                    $originalPath = $file->getRealPath();
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $quality = 80;
+
+                    // Load image based on type
+                    switch ($extension) {
+                        case 'jpg':
+                        case 'jpeg':
+                            $image = imagecreatefromjpeg($originalPath);
+                            break;
+                        case 'png':
+                            $image = imagecreatefrompng($originalPath);
+                            break;
+                        case 'gif':
+                            $image = imagecreatefromgif($originalPath);
+                            break;
+                        default:
+                            // For unsupported formats, just store as is
+                            $filename = $file->storeAs(
+                                'foto_internals/'. $unitKerjaName,
+                                "internal-{$barangName}-{$nup}-{$validated['merk']}-{$validated['tipe']}-{$validated['titles'][$index]}-"
+                                . time() .Str::uuid()."." .$extension,
+                                'public'
+                            );
+                            $path = Storage::url($filename);
+                            FotoInternal::create([
+                                'data_internal_id' => $dataInternal->id,
+                                'filename' => $filename,
+                                'path' => $path,
+                                'title' => $request->input("titles.{$index}", ''),
+                                'description' => $request->input("descriptions.{$index}", ''),
+                                'is_cover' => $request->input("isCover.{$index}", false),
+                            ]);
+                            continue 2;
+                    }
+
+                    // Get original dimensions
+                    $width = imagesx($image);
+                    $height = imagesy($image);
+
+                    // Check original file size - skip compression if already 2MB or below
+                    $originalSizeMB = filesize($file->getRealPath()) / 1024 / 1024;
+
+                    if ($originalSizeMB <= 2.0) {
+                        // File is already small enough, store as-is
+                        $filename = $file->storeAs(
                             'foto_internals/'. $unitKerjaName,
                             "internal-{$barangName}-{$nup}-{$validated['merk']}-{$validated['tipe']}-{$validated['titles'][$index]}-"
-                            . time() .Str::uuid()."." .$file->getClientOriginalExtension(),
+                            . time() .Str::uuid()."." .$extension,
                             'public'
                         );
+                        $path = Storage::url($filename);
+                        FotoInternal::create([
+                            'data_internal_id' => $dataInternal->id,
+                            'filename' => $filename,
+                            'path' => $path,
+                            'title' => $request->input("titles.{$index}", ''),
+                            'description' => $request->input("descriptions.{$index}", ''),
+                            'is_cover' => $request->input("isCover.{$index}", false),
+                        ]);
+                        continue;
+                    }
+
+                    // Compress to target size (2MB max)
+                    $targetSizeMB = 2.0;
+                    $compressed = null;
+                    $finalExtension = $extension;
+
+                    // First, try PNG compression with maximum level
+                    if ($extension === 'png') {
+                        ob_start();
+                        imagepng($image, null, 9); // Maximum PNG compression
+                        $compressed = ob_get_clean();
+                        $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                        // If PNG is still too big, convert to JPEG
+                        if ($sizeMB > $targetSizeMB) {
+                            $quality = 85; // Start with good JPEG quality
+                            $minQuality = 40;
+
+                            do {
+                                ob_start();
+                                imagejpeg($image, null, $quality);
+                                $compressed = ob_get_clean();
+                                $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                                if ($sizeMB <= $targetSizeMB || $quality <= $minQuality) {
+                                    break;
+                                }
+                                $quality -= 10;
+                            } while ($quality >= $minQuality);
+
+                            $finalExtension = 'jpg'; // Converted to JPEG
+                        }
+                    } else {
+                        // For JPEG and other formats, use quality-based compression
+                        $quality = 85; // Start with good quality
+                        $minQuality = 40;
+
+                        do {
+                            ob_start();
+                            imagejpeg($image, null, $quality);
+                            $compressed = ob_get_clean();
+                            $sizeMB = strlen($compressed) / 1024 / 1024;
+
+                            if ($sizeMB <= $targetSizeMB || $quality <= $minQuality) {
+                                break;
+                            }
+                            $quality -= 10;
+                        } while ($quality >= $minQuality);
+
+                        $finalExtension = 'jpg'; // Ensure JPEG output
+                    }
+
+                    $filename = 'foto_internals/' . $unitKerjaName . "/internal-{$barangName}-{$nup}-{$validated['merk']}-{$validated['tipe']}-{$validated['titles'][$index]}-" . time() . Str::uuid() . "." . $finalExtension;
+                    Storage::disk('public')->put($filename, $compressed);
+
+                    imagedestroy($image);
+
                     $path = Storage::url($filename);
                     FotoInternal::create([
                         'data_internal_id' => $dataInternal->id,
@@ -1369,6 +1975,31 @@ class InternalController extends Controller
                         'title' => $request->input("titles.{$index}", ''),
                         'description' => $request->input("descriptions.{$index}", ''),
                         'is_cover' => $request->input("isCover.{$index}", false),
+                    ]);
+                }
+            }
+
+            // Handle multiple documents
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $index => $file) {
+                    $dataInternalId = DataInternal::with('unitKerja')->findOrFail($dataInternal->id);
+                    $unitKerjaName = Str::slug($dataInternalId->unitKerja->name ?? 'tanpa-unit-kerja');
+                    $barangName = Str::slug($dataInternalId->barang->nama_barang ?? 'tanpa-nama-barang');
+
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $filename = $file->storeAs(
+                        'documents/'. $unitKerjaName,
+                        "document-{$barangName}-{$nup}-{$validated['merk']}-{$validated['tipe']}-{$validated['documentTitles'][$index]}-"
+                        . time() . Str::uuid() . "." . $extension,
+                        'public'
+                    );
+                    $path = Storage::url($filename);
+                    DocumentInternal::create([
+                        'data_internal_id' => $dataInternal->id,
+                        'filename' => $filename,
+                        'path' => $path,
+                        'title' => $request->input("documentTitles.{$index}", ''),
+                        'description' => $request->input("documentDescriptions.{$index}", ''),
                     ]);
                 }
             }
@@ -1389,6 +2020,9 @@ class InternalController extends Controller
                 ...$payload
             ]);
             }
+
+            // Auto-lock data if conditions are met
+            $dataInternal->autoLock();
 
             DB::commit();
 
@@ -1568,6 +2202,7 @@ class InternalController extends Controller
                 25, // Link LHI
                 15, // No BAHI
                 15, // Tgl BAHI
+                15, // Label
             ];
 
             // Create data row style
@@ -1598,6 +2233,7 @@ class InternalController extends Controller
                 'Link LHI',
                 'No BAHI',
                 'Tgl BAHI',
+                'Label'
             ], $headerStyle);
             $writer->addRow($headerRow);
 
@@ -1651,6 +2287,7 @@ class InternalController extends Controller
                     $this->sanitizeForExcel($row->link_lhi),
                     $this->sanitizeForExcel($row->no_bahi),
                     $this->sanitizeForExcel($row->tgl_bahi),
+                    $this->sanitizeForExcel($row->label),
                 ], $dataStyle);
                 $writer->addRow($dataRow);
             }
@@ -1737,6 +2374,7 @@ class InternalController extends Controller
                     'di.link_lhi',
                     'di.no_bahi',
                     'di.tgl_bahi',
+                    'di.label'
                 ])
                 ->orderBy('b.kode_barang')
                 ->cursor(); // streaming

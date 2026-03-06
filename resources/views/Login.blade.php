@@ -24,7 +24,7 @@
 <!-- [Material Icons] https://fonts.google.com/icons -->
 <link rel="stylesheet" href="{{asset('/assets/dist/assets/fonts/material.css')}}" >
 <!-- [Bootstrap Icons] https://icons.getbootstrap.com -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{{asset('/assets/bootstrap-icons/font/bootstrap-icons.css')}}">
 <!-- [Template CSS Files] -->
 <link rel="stylesheet" href="{{asset('/assets/dist/assets/css/style.css')}}" id="main-style-link" >
 <link rel="stylesheet" href="{{asset('/assets/dist/assets/css/style-preset.css')}}" >

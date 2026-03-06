@@ -3,7 +3,7 @@
 @section('dependencies')
 <link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/responsive.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{{ asset('/assets/flatpickr/dist/flatpickr.min.css') }}">
 
 @endsection
 @section('content')
@@ -249,14 +249,14 @@
 
 
      <!-- datatable Js -->
-    <script src="{{ asset('https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js') }}"></script>
+    <script src="{{ asset('/assets/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/responsive.bootstrap5.min.js') }}"></script>
 
     <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{{ asset('/assets/flatpickr/dist/flatpickr.min.js') }}"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

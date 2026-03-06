@@ -16,16 +16,18 @@ use App\Http\Controllers\InternalController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentitasController;
 use App\Http\Controllers\UnitKerjaController;
+use App\Http\Controllers\LockedDataController;
 use App\Http\Controllers\UnitTeknisController;
-use App\Http\Controllers\IdentitasKategoriController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\IdentitasKategoriController;
 
 Route::get('/', function () {
     return view('login');
 });
 
 Route::get('login', [LoginController::class, 'login'])->name('login');
-Route::post('actionLogin', [LoginController::class, 'actionLogin'])->name('actionLogin');
+Route::post('actionLogin', [LoginController::class, 'actionLogin'])->middleware('throttle:5,1')->name('actionLogin');
 
 Route::middleware('auth')->group(function () {
 
@@ -56,19 +58,38 @@ Route::middleware('auth')->group(function () {
         Route::resource('unitkerja', UnitKerjaController::class);
         Route::resource('unitteknis', UnitTeknisController::class);
         Route::resource('user', UserController::class);
+
+        Route::get('/internal/locked', [LockedDataController::class, 'index'])
+            ->name('internal.locked');
+        Route::get('/internal/locked/datatable', [LockedDataController::class, 'datatable'])
+            ->name('internal.locked.datatable');
+        Route::put('/internal/{id}/lock', [LockedDataController::class, 'lock'])
+            ->name('internal.lock');
+        Route::put('/internal/{id}/unlock', [LockedDataController::class, 'unlock'])
+            ->name('internal.unlock');
+        Route::put('/internal/{id}/reject-request', [LockedDataController::class, 'rejectRequest'])
+            ->name('internal.reject-request');
+
+
+        Route::get('/activity-logs/datatable', [ActivityLogController::class, 'datatable'])
+            ->name('activity-logs.datatable');
+        Route::get('/activity-logs/export', [ActivityLogController::class, 'export'])
+            ->name('activity-logs.export');
+        Route::post('/activity-logs/cleanup', [ActivityLogController::class, 'cleanup'])
+            ->name('activity-logs.cleanup');
+        Route::resource('activity-logs', ActivityLogController::class);
+
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
 
-    Route::get('/activity-logs/datatable', [ActivityLogController::class, 'datatable'])
-        ->name('activity-logs.datatable');
-    Route::get('/activity-logs/export', [ActivityLogController::class, 'export'])
-        ->name('activity-logs.export');
-    Route::post('/activity-logs/cleanup', [ActivityLogController::class, 'cleanup'])
-        ->name('activity-logs.cleanup');
-    Route::resource('activity-logs', ActivityLogController::class);
+    Route::put('/internal/{id}/requestUnlock', [LockedDataController::class, 'requestUnlock'])
+        ->name('internal.requestUnlock');
+
     Route::resource('siman', simanController::class);
     Route::get('/siman-data/datatable', [simanController::class, 'datatable'])
         ->name('siman.datatable');
-    Route::delete('/siman', [SimanController::class, 'destroyBatch'])
+    Route::delete('/siman/batch/delete', [SimanController::class, 'destroyBatch'])
         ->name('siman.destroyBatch');
 
     Route::resource('internal', InternalController::class);
@@ -93,11 +114,21 @@ Route::middleware('auth')->group(function () {
         ->name('internal.updateImage');
     Route::delete('/internal/images/{id}/delete', [InternalController::class, 'imageDestroy'])
         ->name('internal.imageDestroy');
+
+    Route::post('/internal/documents/store', [InternalController::class, 'addDocument'])
+        ->name('internal.addDocument');
+    Route::put('/internal/documents/{id}/update', [InternalController::class, 'updateDocument'])
+        ->name('internal.updateDocument');
+    Route::delete('/internal/documents/{id}/delete', [InternalController::class, 'documentDestroy'])
+        ->name('internal.documentDestroy');
+
     Route::get('/internal/bast/{id}', [InternalController::class, 'downloadBast'])
         ->name('internal.bast');
 
     Route::get('/export-data/internal-all', [InternalController::class, 'exportAll'])
         ->name('export.internal-all');
+
+
 
 
     Route::resource('compare', CompareController::class);

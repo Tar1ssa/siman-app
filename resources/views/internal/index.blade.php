@@ -3,7 +3,7 @@
 @section('dependencies')
 <link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/responsive.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{{ asset('/assets/flatpickr/dist/flatpickr.min.css') }}">
 <style>
     /* Make action column sticky */
 table.dataTable th.dt-action-col ,
@@ -255,6 +255,25 @@ table.dataTable th.dt-action-col::before {
                     </div>
 
                     <div class="col-md-4">
+                        <div class="mb-2">
+                            <label for="statusSearch" class="form-label fw-bold">
+                                Search by Status
+                            </label>
+                            <select
+                                class="form-control"
+                                name="statusSearch"
+                                id="statusSearch"
+                            >
+                                <option value="" selected>Semua</option>
+                                <option value="draft">Draft</option>
+                                <option value="unlocked">Dibuka</option>
+                                <option value="locked">Terkunci</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
                         <label for="identitasSearch" class="form-label fw-bold">
                                 Search by Identitas
                             </label>
@@ -348,6 +367,7 @@ table.dataTable th.dt-action-col::before {
                                 <th>Link Kelengkapan LHI</th>
                                 <th>Nomor BAHI (Berita Acara Hasil Inven)</th>
                                 <th>Tanggal BAHI (Berita Acara Hasil Inven)</th>
+                                <th>Status</th>
                                 <th>Batch</th>
                                 <th >Aksi</th>
 
@@ -453,14 +473,14 @@ table.dataTable th.dt-action-col::before {
     </div>
 
      <!-- datatable Js -->
-    <script src="{{ asset('https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js') }}"></script>
+    <script src="{{ asset('/assets/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.bootstrap5.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.responsive.min.js') }}"></script>
     <script src="{{ asset('/assets/dist/assets/js/plugins/responsive.bootstrap5.min.js') }}"></script>
 
     <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="{{ asset('/assets/flatpickr/dist/flatpickr.min.js') }}"></script>
 
     <script>
         // data choices
@@ -686,6 +706,10 @@ table.dataTable th.dt-action-col::before {
         newcs.draw();
     });
 
+    $('#statusSearch').on('change', function () {
+        newcs.draw();
+    });
+
     // $('#nupSearch').on('keyup', function () {
     //     newcs.draw();
     // });
@@ -706,11 +730,13 @@ table.dataTable th.dt-action-col::before {
 
 
     ajax: {
+        // url: '{{ route("internal.locked.datatable") }}',
         url: "{{ route('internal.datatable') }}",
         data: function (d) {
             d.itemSearch   = $('#itemSearch').val();
             d.unitSearch   = $('#unitSearch').val();
             d.lokasiSearch = $('#lokasiSearch').val();
+            d.statusSearch = $('#statusSearch').val();
             d.kategoriIdentitasSearch = $('#kategoriIdentitasSearch').val();
             d.identitasSearch = $('#identitasSearch').val();
             d.nupMin = $('#nupMin').val();
@@ -752,6 +778,12 @@ table.dataTable th.dt-action-col::before {
         { data: 'link_lhi' },
         { data: 'no_bahi' },
         { data: 'tgl_bahi' },
+        {
+                data: 'status',
+                name: 'status',
+                orderable: false,
+                searchable: false
+        },
         {
                 data: 'batch',
                 name: 'batch',

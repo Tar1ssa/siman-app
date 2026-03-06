@@ -417,6 +417,15 @@ class simanController extends Controller
                     });
                 }
 
+                // nup range
+                if ($request->filled('nupMin') && $request->filled('nupMax')) {
+                    $query->whereRaw('CAST(nup AS UNSIGNED) BETWEEN ? AND ?', [$request->nupMin, $request->nupMax]);
+                } elseif ($request->filled('nupMin')) {
+                    $query->whereRaw('CAST(nup AS UNSIGNED) >= ?', [$request->nupMin]);
+                } elseif ($request->filled('nupMax')) {
+                    $query->whereRaw('CAST(nup AS UNSIGNED) <= ?', [$request->nupMax]);
+                }
+
                 // tgl_perolehan date range
                 if ($request->filled('tglFrom') && $request->filled('tglTo')) {
                     $query->whereBetween('tgl_perolehan', [

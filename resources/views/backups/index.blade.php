@@ -1,8 +1,8 @@
 @extends('app')
 @section('title', $title)
 @section('dependencies')
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="{{asset('/assets/bootstrap-5.3.8-dist/css/bootstrap.min.css')}}" rel="stylesheet">
 @endsection
 @section('content')
 <div class="pc-content overflow-x-hidden">

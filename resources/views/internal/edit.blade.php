@@ -41,18 +41,19 @@
                     <form id="mainForm" name="mainform" method="POST" action="{{ route('internal.update', $internal->id) }}" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
-                            <div class="row g-4" style="height: 60vh; overflow-y: hidden;">
+                            <div class="row g-4" style="height: 60vh; overflow-y: hidden; @media (max-width: 768px) { height: 100vh; overflow-y: visible; }">
                                 <div class="col-md-2 col-sm-12  border-end border-muted">
                                     <ul class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                                         <li><a class="nav-link active" id="v-pills-detail-tab" data-bs-toggle="pill" href="#v-pills-detail" role="tab" aria-controls="v-pills-detail" aria-selected="true">Detail BMN</a></li>
                                         <li><a class="nav-link" id="v-pills-foto-tab" data-bs-toggle="pill" href="#v-pills-foto" role="tab" aria-controls="v-pills-foto" aria-selected="false">Foto</a></li>
+                                        <li><a class="nav-link" id="v-pills-dokumen-tab" data-bs-toggle="pill" href="#v-pills-dokumen" role="tab" aria-controls="v-pills-dokumen" aria-selected="false">Dokumen</a></li>
                                         <li><a class="nav-link" id="v-pills-pengguna-tab" data-bs-toggle="pill" href="#v-pills-pengguna" role="tab" aria-controls="v-pills-pengguna" aria-selected="false">Pengguna</a></li>
                                         <li><a class="nav-link" id="v-pills-identitas-tab" data-bs-toggle="pill" href="#v-pills-identitas" role="tab" aria-controls="v-pills-identitas" aria-selected="false">Identitas</a></li>
                                         <li><a class="nav-link" id="v-pills-bast-tab" data-bs-toggle="pill" href="#v-pills-bast" role="tab" aria-controls="v-pills-bast" aria-selected="false">BAST</a></li>
 
                                     </ul>
                                 </div>
-                                <div class="col-md-10 col-sm-12 overflow-y-scroll" style="max-height: 60vh; ">
+                                <div class="col-md-10 col-sm-12 overflow-y-scroll" style="max-height: 60vh; @media (max-width: 768px) { max-height: 100vh; }">
                                     <div class="tab-content" id="v-pills-tabContent">
 
                                         <div class="tab-pane fade show active" id="v-pills-detail" role="tabpanel" aria-labelledby="v-pills-detail-tab">
@@ -155,7 +156,10 @@
 
                                                         <option value="{{ $keylokasi->id }}" {{ $internal->lokasi_id == $keylokasi->id ? 'selected' : '' }}>{{ $keylokasi->unitKerja->name }} - {{ $keylokasi->name }}</option>
                                                     @endforeach
+                                                    <option value="" {{ $internal->lokasi_id === null ? 'selected' : '' }}>Lainnya</option>
                                                 </select>
+                                                <label for="otherLokasiInput" id="otherLokasiLabel" class="form-label mt-2" {{ $internal->lokasi_id === null ? '' : 'style=display:none;' }}>Keterangan Lokasi</label>
+                                                <input name="ketLokasi" value="{{ old('ketLokasi', $internal->ket_lokasi ?? '') }}" type="text" id="otherLokasiInput" class="form-control mt-2" placeholder="Masukkan keterangan lokasi" {{ $internal->lokasi_id === null ? '' : 'style=display:none;' }}>
                                             </div>
                                             <div class="mb-3" style="height: 20vh"></div>
                                         </div>
@@ -206,13 +210,16 @@
                                                                 <td>
                                                                     <input type="radio" name="cover" class="form-check-input" {{ $image->is_cover ? 'checked' : '' }} disabled>
                                                                 </td>
-                                                                <td>
-                                                                    <button type="button" onclick="openEditModal({{ $image }})" class="btn btn-shadow btn-warning">Edit</button>
-                                                                    <button class="btn btn-shadow btn-danger" type="submit"
-                                                                    onclick="return confirm('Yakin ingin menghapus gambar {{ $image->title }} ?')"
-                                                                    form="delete-image-{{ $image->id }}"
-                                                                    >Delete
-                                                                    </button>
+                                                                <td >
+                                                                    <div class="d-flex flex-column gap-1">
+
+                                                                        <button type="button" onclick="openEditModal({{ $image }})" class="btn btn-shadow btn-warning">Edit</button>
+                                                                        <button class="btn btn-shadow btn-danger" type="submit"
+                                                                        onclick="return confirm('Yakin ingin menghapus gambar {{ $image->title }} ?')"
+                                                                        form="delete-image-{{ $image->id }}"
+                                                                        >Delete
+                                                                        </button>
+                                                                    </div>
 
                                                                 </td>
                                                             </tr>
@@ -229,12 +236,62 @@
                                             <div class="mb-3" style="height: 5vh"></div>
                                         </div>
 
+                                        <div class="tab-pane fade" id="v-pills-dokumen" role="tabpanel" aria-labelledby="v-pills-dokumen-tab">
+                                                <h4 class="fw-bold mb-3">Dokumen</h4>
+                                                <hr>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <button type="button"  class="btn btn-shadow btn-primary" onclick="openAddDocumentModal({{ $internal->id }})">Tambah Dokumen</button>
+                                                    </div>
+                                                </div>
+
+                                                <table id="documentTable" border="1" class="table table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="max-width: 150px;
+                                                                    white-space: nowrap;
+                                                                    overflow: hidden;
+                                                                    text-overflow: ellipsis;
+                                                                    word-wrap: break-word; ">Filename</th>
+                                                            <th>Title</th>
+                                                            <th>Description</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ( $internalDocuments as $document )
+                                                            <tr>
+                                                                <td style="max-width: 150px;
+                                                                    white-space: nowrap;
+                                                                    overflow: hidden;
+                                                                    text-overflow: ellipsis;
+                                                                    word-wrap: break-word;">
+                                                                    <a href="{{ asset( $document->path) }}" target="_blank">{{ basename($document->filename) }}</a>
+                                                                </td>
+                                                                <td>{{ $document->title }}</td>
+                                                                <td>{{ $document->description }}</td>
+                                                                <td>
+                                                                    <div class="d-flex flex-column gap-1">
+
+                                                                        <button type="button" class="btn btn-sm btn-warning btn-shadow" onclick="openEditDocumentModal({{ $document->id }}, '{{ $document->title }}', '{{ $document->description }}')">Edit</button>
+
+                                                                        <button form="delete-document-{{ $document->id }}" type="submit" class="btn btn-sm btn-shadow btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+
+                                            <div class="mb-3" style="height: 5vh"></div>
+                                        </div>
+
                                         <div class="tab-pane fade" id="v-pills-pengguna" role="tabpanel" aria-labelledby="v-pills-pengguna-tab">
 
                                             <h4 class="fw-bold mb-3">Pengguna</h4>
                                             <hr>
                                             <!-- Image Upload -->
-                                            <div class="mb-3">
+                                            {{-- <div class="mb-3">
                                                 <label for="profileImage" class="form-label">Upload Foto Pengguna</label>
                                                 <input class="form-control" type="file" id="profileImage" accept="image/*" name="profileImage" >
                                                 <small>Upload file untuk mengubah foto pengguna</small>
@@ -245,7 +302,7 @@
                                                 @else
                                                     <img id="preview" src="{{ asset( $internal->profile_image_path) }}" alt="Image Preview" class="img-thumbnail" style="max-width: 200px;">
                                                 @endif
-                                            </div>
+                                            </div> --}}
 
                                             <!-- Name -->
                                             <div class="mb-3">
@@ -253,7 +310,7 @@
                                                 <input type="text" name="name" class="form-control" id="name" placeholder="Masukkan nama lengkap" value="{{ $internal->nama_pengguna }}">
                                             </div> <!-- Address -->
                                             <div class="mb-3">
-                                                <label for="pengguna_unitkerja_id" class="form-label">Unit Penugasan/PokJa</label>
+                                                <label for="pengguna_unitkerja_id" class="form-label">Unit Penugasan Eselon 2</label>
                                             <select
                                                 class="form-control"
                                                 data-penggunaunitkerja
@@ -265,23 +322,29 @@
 
                                                     <option {{ $internal->pengguna_unitkerja_id == $keyunitkerja->id ? 'selected' : '' }} value="{{ $keyunitkerja->id }}" >{{ $keyunitkerja->name }}</option>
                                                 @endforeach
+                                                <option value="" {{ $internal->pengguna_unitkerja_id === null ? 'selected' : '' }}>Lainnya</option>
                                             </select>
+                                            <label for="otherUnitKerjaInput" id="otherUnitKerjaLabel" class="form-label mt-2" {{ $internal->pengguna_unitkerja_id === null ? '' : 'style=display:none;' }}>Keterangan Unit Penugasan Eselon 2</label>
+                                            <input name="ket_penugasan" value="{{ old('ket_penugasan', $internal->ket_penugasan ?? '') }}" type="text" id="otherUnitKerjaInput" class="form-control mt-2" placeholder="Masukkan keterangan unit penugasan eselon 2" {{ $internal->pengguna_unitkerja_id === null ? '' : 'style=display:none;' }}>
                                             </div>
 
                                             <div class="mb-3">
-                                                <label for="unit_teknis_id" class="form-label">Unit Teknis</label>
+                                                <label for="unit_teknis_id" class="form-label">Unit Pokja</label>
                                                 <select
                                                     class="form-control"
                                                     data-penggunaunitteknis
                                                     name="unit_teknis_id"
                                                     id="penggunaunitteknisSelect"
                                                     >
-                                                    <option value="" selected disabled>--Pilih Unit Teknis--</option>
+                                                    <option value="" selected disabled>--Pilih Unit Pokja--</option>
                                                     @foreach ($unitteknis as $keyunitteknis)
 
                                                         <option {{ $internal->unit_teknis_id == $keyunitteknis->id ? 'selected' : '' }} value="{{ $keyunitteknis->id }}" >{{ $keyunitteknis->name }}</option>
                                                     @endforeach
+                                                    <option value="" {{ $internal->unit_teknis_id === null ? 'selected' : '' }}>Lainnya</option>
                                                 </select>
+                                                <label for="otherUnitTeknisInput" id="otherUnitTeknisLabel" class="form-label mt-2" {{ $internal->unit_teknis_id === null ? '' : 'style=display:none;' }}>Keterangan Unit Pokja</label>
+                                                <input name="ket_unit_teknis" value="{{ old('ket_unit_teknis', $internal->ket_unit_teknis ?? '') }}" type="text" id="otherUnitTeknisInput" class="form-control mt-2" placeholder="Masukkan keterangan unit pokja"  {{ $internal->unit_teknis_id === null ? '' : 'style=display:none;' }}>
                                             </div>
 
                                             <div class="mb-3">
@@ -407,6 +470,14 @@
                         @method('DELETE')
                     </form>
                     @endforeach
+                    @foreach ($internalDocuments as $document)
+                    <form id="delete-document-{{ $document->id }}"
+                        action="{{ route('internal.documentDestroy', $document->id) }}"
+                        method="POST">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    @endforeach
                 </div>
 
             </div>
@@ -429,8 +500,25 @@
   </div>
 </div>
 
+<!-- Modal Edit Document -->
+<div class="modal fade" id="editDocumentModal" tabindex="-1" aria-labelledby="editDocumentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDocumentModalLabel"></h5>
+      </div>
+      <div class="modal-body" id="documentModalBody">
+        <!-- Dynamic content will be inserted here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-shadow btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
     <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
-    <script src="{{asset('https://cdn.jsdelivr.net/npm/autonumeric@4.6.0')}}"></script>
+    <script src="{{asset('/assets/autonumeric/dist/autoNumeric.min.js')}}"></script>
 
     {{-- <script>
         document.addEventListener('change', function (e) {
@@ -560,6 +648,40 @@
     </script>
 
     <script>
+        function openAddModal(internalId) {
+            var editModal = new bootstrap.Modal(document.getElementById('editImageModal'));
+            editModal.show();
+
+            document.getElementById('editImageModalLabel').innerHTML = 'Add Image';
+
+            var modalBody = document.getElementById('modalBody');
+            const route = "{{ route('internal.addImage') }}";
+            const modalAddContent = `
+                <form id="addImageForm" action="${route}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="internal_id" value="${internalId}">
+                    <div class="mb-3">
+                        <label for="addImageInput" class="form-label">Select Image</label>
+                        <input type="file" class="form-control" id="addImageInput" name="image" accept="image/*" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="addTitle" name="title">
+                    </div>
+                    <div class="mb-3">
+                        <label for="addDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="addDescription" name="description">
+                    </div>
+                    <div class="mb-3">
+                        <label for="addIsCover" class="form-label">Set as Cover</label>
+                        <input type="checkbox" class="form-check-input" id="addIsCover" name="is_cover" value="1">
+                    </div>
+                    <button type="submit" class="btn btn-shadow btn-primary">Upload</button>
+                </form>
+            `;
+            modalBody.innerHTML = modalAddContent;
+        }
+
         function openEditModal(image) {
             var editModal = new bootstrap.Modal(document.getElementById('editImageModal'));
             editModal.show();
@@ -581,7 +703,7 @@
                         <input type="text" class="form-control" id="editDescription" name="description" value="${image.description ? image.description : '' }">
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" name="isCover" class="form-check-input" id="editIsCover" ${image.is_cover ? 'checked' : ''}>
+                        <input type="checkbox" name="is_cover" class="form-check-input" id="editIsCover" ${image.is_cover ? 'checked' : ''}>
                         <label class="form-check-label" for="editIsCover">Set as Cover</label>
                     </div>
                     <button type="submit" class="btn btn-shadow btn-warning">Save Changes</button>
@@ -592,22 +714,54 @@
     </script>
 
     <script>
-        function openAddModal(internalId) {
+        function openEditModal(image) {
             var editModal = new bootstrap.Modal(document.getElementById('editImageModal'));
             editModal.show();
 
-            document.getElementById('editImageModalLabel').innerHTML = 'Add Image';
+            document.getElementById('editImageModalLabel').innerHTML = 'Edit Image Details';
 
             var modalBody = document.getElementById('modalBody');
-            const route = "{{ route('internal.addImage') }}";
+            const route = "{{ route('internal.updateImage', ':id') }}".replace(':id', image.id);
+            const modalEditContent = `
+                <form id="editImageForm" action="${route}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <img src="${image.path}" alt="Current Image" style="max-width: 200px; max-height: 200px;">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="editTitle" name="title" value="${image.title || ''}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="editDescription" name="description" value="${image.description || ''}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editIsCover" class="form-label">Set as Cover</label>
+                        <input type="checkbox" class="form-check-input" id="editIsCover" name="is_cover" value="1" ${image.is_cover ? 'checked' : ''}>
+                    </div>
+                    <button type="submit" class="btn btn-shadow btn-primary">Update</button>
+                </form>
+            `;
+            modalBody.innerHTML = modalEditContent;
+        }
+
+        function openAddDocumentModal(internalId) {
+            var editModal = new bootstrap.Modal(document.getElementById('editDocumentModal'));
+            editModal.show();
+
+            document.getElementById('editDocumentModalLabel').innerHTML = 'Add Document';
+
+            var modalBody = document.getElementById('documentModalBody');
+            const route = "{{ route('internal.addDocument') }}";
             const modalAddContent = `
-                <form id="addImageForm" action="${route}" method="POST" enctype="multipart/form-data">
+                <form id="addDocumentForm" action="${route}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="internal_id" value="${internalId}">
                     <div class="mb-3">
-                        <label for="addImageInput" class="form-label">Select Image</label>
-                        <input type="file" class="form-control" id="addImageInput" name="image" accept="image/*" required>
-
+                        <label for="addDocumentInput" class="form-label">Select Document</label>
+                        <input type="file" class="form-control" id="addDocumentInput" name="document" accept=".pdf" required>
                     </div>
                     <div class="mb-3">
                         <label for="addTitle" class="form-label">Title</label>
@@ -617,14 +771,36 @@
                         <label for="addDescription" class="form-label">Description</label>
                         <input type="text" class="form-control" id="addDescription" name="description">
                     </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" name="isCover" class="form-check-input" id="addIsCover">
-                        <label class="form-check-label" for="addIsCover">Set as Cover</label>
-                    </div>
                     <button type="submit" class="btn btn-shadow btn-primary">Upload</button>
                 </form>
             `;
             modalBody.innerHTML = modalAddContent;
+        }
+
+        function openEditDocumentModal(documentId, title, description) {
+            var editModal = new bootstrap.Modal(document.getElementById('editDocumentModal'));
+            editModal.show();
+
+            document.getElementById('editDocumentModalLabel').innerHTML = 'Edit Document Details';
+
+            var modalBody = document.getElementById('documentModalBody');
+            const route = "{{ route('internal.updateDocument', ':id') }}".replace(':id', documentId);
+            const modalEditContent = `
+                <form id="editDocumentForm" action="${route}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <div class="mb-3">
+                        <label for="editTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="editTitle" name="title" value="${title}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="editDescription" name="description" value="${description}">
+                    </div>
+                    <button type="submit" class="btn btn-shadow btn-primary">Update</button>
+                </form>
+            `;
+            modalBody.innerHTML = modalEditContent;
         }
     </script>
 
@@ -708,7 +884,7 @@
             new Choices(lokasielement, {
                 placeholderValue: 'This is a placeholder set in the config',
                 searchPlaceholderValue: 'Cari lokasi',
-                position: 'top'
+                // position: 'top'
             });
             }
 
@@ -731,7 +907,7 @@
             var unittekniselement = UnitTeknisSelect[i];
             new Choices(unittekniselement, {
                 placeholderValue: 'This is a placeholder set in the config',
-                searchPlaceholderValue: 'Cari unit teknis',
+                searchPlaceholderValue: 'Cari Unit Pokja',
                 position: 'bottom'
             });
             }
@@ -745,6 +921,49 @@
                 position: 'bottom'
             });
             }
+
+            const selectLokasi = document.getElementById("lokasiSelect");
+            selectLokasi.addEventListener("change", function () {
+                const selectedOption = selectLokasi.options[selectLokasi.selectedIndex];
+
+                if (selectedOption.value === null || selectedOption.value === "") {
+                    // Tampilkan input teks
+                    document.getElementById("otherLokasiLabel").style.display = "block";
+                    document.getElementById("otherLokasiInput").style.display = "block";
+                } else {
+                    // Sembunyikan input teks
+                    document.getElementById("otherLokasiLabel").style.display = "none";
+                    document.getElementById("otherLokasiInput").style.display = "none";
+                }
+            });
+
+            const selectUnitTeknis = document.getElementById("penggunaunitteknisSelect");
+            selectUnitTeknis.addEventListener("change", function () {
+                const selectedOption = selectUnitTeknis.options[selectUnitTeknis.selectedIndex];
+                if (selectedOption.value === null || selectedOption.value === "") {
+                    // Tampilkan input teks
+                    document.getElementById("otherUnitTeknisLabel").style.display = "block";
+                    document.getElementById("otherUnitTeknisInput").style.display = "block";
+                } else {
+                    // Sembunyikan input teks
+                    document.getElementById("otherUnitTeknisLabel").style.display = "none";
+                    document.getElementById("otherUnitTeknisInput").style.display = "none";
+                }
+            })
+
+            const selectUnitKerja = document.getElementById("penggunaunitkerjaSelect");
+            selectUnitKerja.addEventListener("change", function () {
+                const selectedOption = selectUnitKerja.options[selectUnitKerja.selectedIndex];
+                if (selectedOption.value === null || selectedOption.value === "") {
+                    // Tampilkan input teks
+                    document.getElementById("otherUnitKerjaLabel").style.display = "block";
+                    document.getElementById("otherUnitKerjaInput").style.display = "block";
+                } else {
+                    // Sembunyikan input teks
+                    document.getElementById("otherUnitKerjaLabel").style.display = "none";
+                    document.getElementById("otherUnitKerjaInput").style.display = "none";
+                }
+            })
         })
     </script>
 

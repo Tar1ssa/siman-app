@@ -29,6 +29,21 @@
 <link rel="stylesheet" href="{{asset('assets/dist/assets/css/style-preset.css')}}" >
 <link rel="stylesheet" href="{{ asset('bootstrap-icons/font/bootstrap-icons.min.css') }}">
 
+<style>
+/* Loading spinner for buttons */
+.fa-spinner {
+    margin-right: 5px;
+}
+
+/* Disabled button styles */
+button:disabled,
+input[type="submit"]:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+}
+</style>
+
 
 
     <!-- In your main layout file -->
@@ -97,12 +112,63 @@
 
   <script>font_change("Public-Sans");</script>
 
-  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{{asset('assets/dist/assets/js/plugins/sweetalert2.all.min.js')}}"></script>
 @include('sweetalert::alert')
 
   <script>
   // Global AJAX error handler for session expiration
   document.addEventListener('DOMContentLoaded', function() {
+      // Simple visual feedback for submit buttons
+      const buttons = document.querySelectorAll('button[type="submit"], input[type="submit"]');
+
+      buttons.forEach(button => {
+          let isProcessing = false;
+
+          button.addEventListener('click', function(e) {
+              // Prevent multiple clicks
+              if (isProcessing) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+              }
+
+              // Mark as processing
+              isProcessing = true;
+
+              // Store original text
+              const originalText = button.textContent || button.value;
+
+              // Show processing state immediately
+              button.style.opacity = '0.6';
+              button.style.cursor = 'not-allowed';
+
+              if (button.tagName === 'BUTTON') {
+                  button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+              } else {
+                  button.value = 'Processing...';
+              }
+
+              // Actually disable after a short delay to allow form submission
+              setTimeout(() => {
+                  button.disabled = true;
+              }, 50);
+
+              // Re-enable after 3 seconds
+              setTimeout(() => {
+                  isProcessing = false;
+                  button.disabled = false;
+                  button.style.opacity = '';
+                  button.style.cursor = '';
+                  if (button.tagName === 'BUTTON') {
+                      button.innerHTML = originalText;
+                  } else {
+                      button.value = originalText;
+                  }
+              }, 3000);
+          });
+      });
+
+      // Override fetch to check for 401 and 419
       // Override fetch to check for 401 and 419
       const originalFetch = window.fetch;
       window.fetch = function(...args) {
@@ -150,6 +216,16 @@
       }, warningDelay);
   });
   </script>
+
+    @if(session('error'))
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: "{{ session('error') }}"
+        });
+    </script>
+    @endif
 
 @yield('script')
 

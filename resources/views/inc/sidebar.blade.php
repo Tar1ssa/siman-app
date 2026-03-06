@@ -38,6 +38,7 @@
             <li class="pc-item"><a class="pc-link" href="{{ route('atribut.index') }}">Data Atribut</a></li>
             <li class="pc-item"><a class="pc-link" href="{{ route('identitas-kategori.index') }}">Data Kategori Identitas</a></li>
             <li><hr class=""></li>
+            <li class="pc-item"><a class="pc-link" href="{{ route('settings.index') }}">Settings</a></li>
             <li class="pc-item"><a class="pc-link" href="{{ route('backups.index') }}">Backup Dashboard</a></li>
 
             {{-- <li class="pc-item pc-hasmenu">
@@ -53,7 +54,7 @@
         @endif
 
         <li class="pc-item pc-hasmenu">
-            <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-database"></i></span><span class="pc-mtext">Database</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>
+            <a href="#!" class="pc-link"><span class="pc-micon"><i class="ti ti-database"></i></span><span class="pc-mtext">Database</span><span class="pc-arrow"><i data-feather="chevron-right"></i></span> @if($requestedCount > 0 && auth()->check() && auth()->user()->isAdmin())<span class="badge bg-danger ms-2">{{ $requestedCount }}</span>@endif</a>
             <ul class="pc-submenu">
                 <li class="pc-item ">
                 <a href="{{ route('siman.index') }}" class="pc-link"><span class="pc-micon"><i class="ti ti-database"></i></span><span class="pc-mtext">Data SIMAN</span></a>
@@ -63,6 +64,12 @@
                 <li class="pc-item ">
                 <a href="{{ route('internal.index') }}" class="pc-link"><span class="pc-micon"><i class="ti ti-database"></i></span><span class="pc-mtext">Data Internal</span></a>
                 </li>
+
+                @if (auth()->check() && auth()->user()->isAdmin())
+                <li class="pc-item ">
+                <a href="{{ route('internal.locked') }}" class="pc-link"><span class="pc-micon"><i class="ti ti-lock"></i></span><span class="pc-mtext">Data Internal Terkunci</span> @if($requestedCount > 0)<span class="badge bg-danger ms-2">{{ $requestedCount }}</span>@endif</a>
+                </li>
+                @endif
 
                 <li class="pc-item ">
                 <a href="{{ route('invalid.index') }}" class="pc-link"><span class="pc-micon"><i class=" ti ti-database"></i></span><span class="pc-mtext">Data Invalid</span></a>
@@ -84,9 +91,12 @@
           <a href="{{ route('compare.index') }}" class="pc-link"><span class="pc-micon"><i class=" ti ti-table"></i></span><span class="pc-mtext">Tabel Komparasi</span></a>
         </li>
 
+        @if (auth()->check() && auth()->user()->isAdmin())
+
         <li class="pc-item ">
           <a href="{{ route('activity-logs.index') }}" class="pc-link"><span class="pc-micon"><i class=" ti ti-clipboard-list"></i></span><span class="pc-mtext">Activity Logs</span></a>
         </li>
+        @endif
 
 
     </ul>

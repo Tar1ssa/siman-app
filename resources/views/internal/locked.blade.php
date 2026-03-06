@@ -1,0 +1,760 @@
+@extends('app')
+@section('title', $title)
+@section('dependencies')
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/dataTables.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/responsive.bootstrap5.min.css') }}">
+<link rel="stylesheet" href="{{ asset('/assets/flatpickr/dist/flatpickr.min.css') }}">
+<style>
+    /* Make action column sticky */
+table.dataTable th.dt-action-col ,
+table.dataTable td.dt-action-col{
+    position: sticky;
+    right: 0;
+    background: #fff;
+    z-index: 2;
+    white-space: nowrap;
+}
+
+/* Header should be above body */
+table.dataTable th.dt-action-col {
+    /* z-index: 3; */
+}
+
+
+
+/* Optional: shadow separator */
+table.dataTable td.dt-action-col::before,
+table.dataTable th.dt-action-col::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(to left, rgba(0,0,0,.15), transparent);
+}
+
+
+.choices__list--dropdown {
+    z-index: 5 !important;
+}
+
+</style>
+@endsection
+@section('content')
+    <div class="pc-content overflow-x-hidden">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+          <div class="page-block">
+            <div class="row align-items-center">
+              <div class="col-md-12">
+                <ul class="breadcrumb">
+                  <li class="breadcrumb-item" aria-current="page"><a href="#">Data Internal Terkunci</a></li>
+                </ul>
+              </div>
+              <div class="col-md-12">
+                <div class="page-header-title">
+                  <h2 class="mb-0">{{ $title }}</h2>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="card">
+              <div class="card-header d-flex justify-content-between">
+                <h3>Data Internal Terkunci</h3>
+                {{-- laundry trans button --}}
+                <div>
+                    <a href="{{ route('internal.index') }}" class="btn btn-shadow btn-primary">Kembali ke Data Internal</a>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="mb-2">
+                            <label for="nupSearch" class="form-label fw-bold">
+                                Search by NUP Range
+                            </label>
+                            <div class="row g-1">
+                                <div class="col-6">
+                                    <input
+                                        type="number"
+                                        id="nupMin"
+                                        class="form-control form-control-sm"
+                                        placeholder="Min NUP"
+                                        min="1"
+                                    >
+                                </div>
+                                <div class="col-6">
+                                    <input
+                                        type="number"
+                                        id="nupMax"
+                                        class="form-control form-control-sm"
+                                        placeholder="Max NUP"
+                                        min="1"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label for="itemsSearch" class="form-label fw-bold">
+                                Search by Kode Barang
+                            </label>
+                                <select
+                                        class="form-control"
+                                        data-trigger
+                                        name="itemsSearch"
+                                        id="itemSelect"
+                                    >
+                                        <option value="" selected disabled>--Pilih Kode Barang--</option>
+                                        <option value="">Semua</option>
+                                        @foreach ($barang as $keybarang)
+
+                                        <option value="{{ $keybarang->kode_barang }}">{{ $keybarang->kode_barang }} - {{ $keybarang->nama_barang }}</option>
+                                        @endforeach
+                                </select>
+                            <input
+                                type="hidden"
+                                id="itemSearch"
+                                placeholder=""
+                            >
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label for="unitSearch" class="form-label fw-bold">
+                                Search by Unit Kerja
+                            </label>
+                            <select
+                                        class="form-control "
+                                        data-unit
+                                        name="unitSearch"
+                                        id="unitSelect"
+                                    >
+                                        <option style="z-index: 4" value="" selected disabled>--Pilih Unit Kerja--</option>
+                                        <option style="z-index: 4" value="">Semua</option>
+                                        @foreach ($unitkerja as $keyunitkerja)
+
+                                        <option style="z-index: 4" value="{{ $keyunitkerja->id }}">{{ $keyunitkerja->name }}</option>
+                                        @endforeach
+                                    </select>
+                            <input
+                                type="hidden"
+                                id="unitSearch"
+                                placeholder=""
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                {{-- filter by tgl --}}
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="lokasiSearch" class="form-label fw-bold">
+                                Search by Tanggal Perolehan
+                            </label>
+                        <div class="accordion " id="accordionTgl">
+                            <div class="accordion-item">
+                                <h5 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    Pilih Rentang Tanggal Perolehan
+                                </button>
+                                </h5>
+                                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionTgl">
+                                    <div class="accordion-body">
+                                        <div class="row">
+
+                                            <div class="col-md-6">
+                                                <label for="tglFrom" class="form-label">Dari tanggal</label>
+                                                <input type="text" id="tglFrom" class="form-control mb-3" autocomplete="off">
+                                                <button class="btn btn-sm btn-secondary" onclick="clearTgl()">Clear Filter</button>
+
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="tglTo" class="form-label">Sampai tanggal</label>
+                                                <input type="text" id="tglTo" class="form-control mb-3" autocomplete="off">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label for="lokasiSearch" class="form-label fw-bold">
+                                Search by Lokasi Ruang
+                            </label>
+                            <select
+                                        class="form-control"
+                                        data-lokasi
+                                        name="lokasiSearch"
+                                        id="lokasiSearch"
+                                    >
+                                        <option value="" selected disabled>--Pilih Lokasi Ruang--</option>
+                                        <option value="">Semua</option>
+                                        @foreach ($lokasiruang as $keylokasiruang)
+
+                                        <option value="{{ $keylokasiruang->id }}">{{ $keylokasiruang->name }}</option>
+                                        @endforeach
+                                    </select>
+                            <input
+                                type="hidden"
+                                id="lokasiSearch"
+                                placeholder=""
+                            >
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="identitasSearch" class="form-label fw-bold">
+                                Search by Identitas
+                            </label>
+                        <div class="accordion " id="accordionIdentitas">
+                            <div class="accordion-item">
+                                <h5 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIdentitas" aria-expanded="false" aria-controls="collapseIdentitas">
+                                    Pilih Identitas
+                                </button>
+                                </h5>
+                                <div id="collapseIdentitas" class="accordion-collapse collapse" data-bs-parent="#accordionIdentitas">
+                                    <div class="accordion-body">
+                                        <div class="row d-flex justify-content-between flex-column">
+                                            <div class="col-md-12">
+                                            <div class="mb-2">
+                                                <label for="kategoriIdentitasSearch" class="form-label">
+                                                    Pilih Kategori Identitas
+                                                </label>
+                                                <select
+                                                    class="form-control"
+                                                    data-kategori-identitas
+                                                    name="kategoriIdentitasSearch"
+                                                    id="kategoriIdentitasSearch"
+                                                >
+                                                    <option value="" selected disabled>--Pilih Kategori Identitas--</option>
+                                                    <option value="">Semua</option>
+                                                    @foreach ($identitasKategori as $kategori)
+                                                    <option value="{{ $kategori->id }}">{{ $kategori->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="mb-2">
+                                                <label for="identitasSearch" class="form-label">
+                                                    Pilih Identitas
+                                                </label>
+                                                <select
+                                                    class="form-control"
+                                                    data-identitas
+                                                    name="identitasSearch"
+                                                    id="identitasSearch"
+                                                    disabled
+                                                >
+                                                    <option value="" selected disabled>--Pilih Identitas--</option>
+                                                    <option value="">Semua</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- filter by identitas --}}
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <div class="mb-2">
+                            <label class="form-label fw-bold">
+                                Search by Permintaan Unlock
+                            </label>
+                            <div>
+                                <label class="form-check-label me-3">
+                                    <input type="checkbox" class="form-check-input" id="isRequestedYes" value="1"> Ya
+                                </label>
+                                {{-- <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" id="isRequestedNo" value=""> Tidak
+                                </label> --}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- <div class="table-responsive"> --}}
+                    <table id="new-cons" class="table table-striped  " style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Permintaan Unlock</th>
+
+                                <th>Kode Satker</th>
+                                <th>Kode Barang</th>
+                                <th>NUP</th>
+                                <th>Tanggal Perolehan</th>
+                                <th>Nama Barang</th>
+                                <th>Foto Barang</th>
+                                <th>Identitas</th>
+                                <th>Merk</th>
+                                <th>Tipe</th>
+                                <th>Jumlah</th>
+                                <th>Nilai Aset</th>
+                                <th>Nilai Penyusutan</th>
+                                <th>Nilai Buku</th>
+                                <th>Kondisi</th>
+                                <th>Akun Neraca</th>
+                                <th>Pembukuan</th>
+                                <th>Unit Kerja</th>
+                                <th>Pengguna (CSV)</th>
+                                <th>Nama Pengguna</th>
+                                <th>Lokasi Ruang</th>
+                                <th>Status INVEN</th>
+                                <th>Kondisi Setelah Inventarisasi</th>
+                                <th>Link Dokumentasi</th>
+                                <th>Link Kelengkapan LHI</th>
+                                <th>Nomor BAHI (Berita Acara Hasil Inven)</th>
+                                <th>Tanggal BAHI (Berita Acara Hasil Inven)</th>
+                                <th>Batch</th>
+                                <th >Aksi</th>
+
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+
+              </div>
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Hapus Batch data</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form  action="{{ route('internal.destroyBatch') }}" method="post" class="d-inline">
+                <div class="modal-body" id="modal-content">
+                            @csrf
+                            @method('DELETE')
+
+                            <label for="number" class="form-label">Masukkan batch number</label>
+                            {{-- <input type="number" name="batch" class="form-control"> --}}
+                            <select name="batch" id="" class="form-control">
+                                <option value="" selected disabled>-- Pilih Batch --</option>
+                                @foreach ($batchNumber as $keyBatch)
+                                    <option value="{{$keyBatch->batch}}">{{$keyBatch->batch}} - {{$keyBatch->label}}</option>
+                                @endforeach
+                            </select>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-shadow btn-danger" >Hapus</button>
+                    <button type="button" class="btn btn-shadow btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+
+     <!-- datatable Js -->
+    <script src="{{ asset('/assets/jquery/dist/jquery.min.js') }}"></script>
+    <script src="{{ asset('/assets/dist/assets/js/plugins/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.bootstrap5.min.js') }}"></script>
+    <script src="{{ asset('/assets/dist/assets/js/plugins/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ asset('/assets/dist/assets/js/plugins/responsive.bootstrap5.min.js') }}"></script>
+
+    <script src="{{ asset('/assets/dist/assets/js/plugins/choices.min.js') }}"></script>
+    <script src="{{ asset('/assets/flatpickr/dist/flatpickr.min.js') }}"></script>
+
+    <script>
+        // data choices
+        document.addEventListener('DOMContentLoaded', function () {
+            var genericExamples = document.querySelectorAll('[data-trigger]');
+            for (i = 0; i < genericExamples.length; ++i) {
+            var element = genericExamples[i];
+            new Choices(element, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari kode barang',
+                position: 'bottom',
+                shouldSort: false
+            });
+            }
+
+            var UnitSelect = document.querySelectorAll('[data-unit]');
+            for (i = 0; i < UnitSelect.length; ++i) {
+            var unitelement = UnitSelect[i];
+            new Choices(unitelement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari unit kerja',
+                position: 'bottom'
+            });
+            }
+
+            var LokasiSelect = document.querySelectorAll('[data-lokasi]');
+            for (i = 0; i < LokasiSelect.length; ++i) {
+            var lokasielement = LokasiSelect[i];
+            new Choices(lokasielement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari lokasi ruang'
+            });
+            }
+
+            var KategoriIdentitasSelect = document.querySelectorAll('[data-kategori-identitas]');
+            for (i = 0; i < KategoriIdentitasSelect.length; ++i) {
+            var kategoriIdentitaselement = KategoriIdentitasSelect[i];
+            new Choices(kategoriIdentitaselement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari kategori identitas',
+                position: 'bottom'
+            });
+            }
+
+            var IdentitasSelect = document.querySelectorAll('[data-identitas]');
+            for (i = 0; i < IdentitasSelect.length; ++i) {
+            var identitaselement = IdentitasSelect[i];
+            var choicesInstance = new Choices(identitaselement, {
+                placeholderValue: 'This is a placeholder set in the config',
+                searchPlaceholderValue: 'Cari identitas',
+                position: 'bottom'
+            });
+            // Store the Choices instance for later use
+            $(identitaselement).data('choices', choicesInstance);
+            }
+
+        })
+    </script>
+
+    <script>
+        // flatpickr
+        function convertToISO(date) {
+            if (!date) return null;
+            let [y, m, d] = date.split('/');
+            return `${y}-${m}-${d}`;
+        }
+
+        flatpickr("#tglFrom, #tglTo", {
+            dateFormat: "Y/m/d",
+            allowInput: true
+        });
+
+        function clearTgl()  {
+            let from = document.getElementById('tglFrom').value = null;
+            let to = document.getElementById('tglTo').value = null;
+            newcs.draw();
+        }
+
+    </script>
+
+    <script>
+        // search filter
+        const item = document.getElementById('itemSelect');
+        const itemSearch = document.getElementById('itemSearch');
+
+        item.addEventListener('change', function () {
+            itemSearch.value = item.value; //  sync select → input
+            newcs.draw();
+        });
+
+        const unit = document.getElementById('unitSelect');
+        const unitSearch = document.getElementById('unitSearch');
+
+        unit.addEventListener('change', function () {
+            unitSearch.value = unit.value; //  sync select → input
+            newcs.draw();
+        });
+
+        const lokasi = document.getElementById('lokasiSearch');
+        const lokasiSearch = document.getElementById('lokasiSearch');
+
+        lokasi.addEventListener('change', function () {
+            lokasiSearch.value = lokasi.value; //  sync select → input
+            newcs.draw();
+        });
+    </script>
+
+    <script>
+      // [ Configuration Option ]
+    //   $('#res-config').DataTable({
+    //     responsive: true
+    //   });
+
+      // [ New Constructor ]
+//     function initNewConsTable() {
+//     var isMobile = window.innerWidth < 768;
+
+//     return $('#new-cons').DataTable({
+//         destroy: true,      //  allow re-init on resize
+//         autoWidth: false,
+
+//         scrollX: !isMobile, //  desktop = scroll, mobile = no scroll
+
+//         responsive: isMobile ? {
+//         details: {
+//             type: 'column',
+//             target: 'tr'
+//         }
+//         } : false
+//     });
+//     }
+
+//     //  First Init
+//     var newcs = initNewConsTable();
+
+// //  Re-init on screen resize (rotate phone, resize browser)
+//     $(window).on('resize', function () {
+//     $('#new-cons').DataTable().destroy();
+//     newcs = initNewConsTable();
+//     });
+
+
+    $('#new-cons_filter input').attr('id', 'newConsSearch');
+
+    // NUP range filter
+    $('#nupMin, #nupMax').on('input', function () {
+        newcs.draw();
+    });
+
+    // redraw table when filter applied
+    $('#itemSearch').on('change', function () {
+    newcs.draw();
+    });
+
+    $('#unitSearch').on('change', function () {
+    newcs.draw();
+    });
+
+    $('#tglFrom, #tglTo').on('change', function () {
+    newcs.ajax.reload();
+    });
+
+    $('#lokasiSearch').on('change', function () {
+        newcs.draw();
+    });
+
+    // Identitas filter logic
+    $('#kategoriIdentitasSearch').on('change', function () {
+        const kategoriId = $(this).val();
+        const identitasSelect = $('#identitasSearch');
+        const identitasChoices = identitasSelect.data('choices');
+
+        if (kategoriId) {
+            // Fetch identitas for selected kategori
+            $.ajax({
+                url: '{{ route("internal.kategoriIdentitas", ":id") }}'.replace(':id', kategoriId),
+                type: 'GET',
+                success: function (data) {
+                    // Clear existing options except the first two (placeholder and "Semua")
+                    identitasChoices.clearChoices();
+
+                    // Add "Semua" option
+                    identitasChoices.setChoices([{
+                        value: '',
+                        label: 'Semua',
+                        selected: false
+                    }], 'value', 'label', false);
+
+                    // Add fetched identitas options
+                    const identitasOptions = data.map(function (identitas) {
+                        return {
+                            value: identitas.id,
+                            label: identitas.name,
+                            selected: false
+                        };
+                    });
+                    identitasChoices.setChoices(identitasOptions, 'value', 'label', false);
+
+                    // Enable the select
+                    identitasSelect.prop('disabled', false);
+                    identitasChoices.enable();
+                }
+            });
+        } else {
+            // Reset to disabled state
+            identitasChoices.clearChoices();
+            identitasChoices.setChoices([{
+                value: '',
+                label: '--Pilih Identitas--',
+                selected: true,
+                disabled: true
+            }], 'value', 'label', false);
+            identitasSelect.prop('disabled', true);
+            identitasChoices.disable();
+        }
+
+        // Reset identitas selection and redraw table
+        identitasChoices.setChoiceByValue('');
+        newcs.draw();
+    });
+
+    $('#identitasSearch').on('change', function () {
+        newcs.draw();
+    });
+
+    $('#isRequestedYes, #isRequestedNo').on('change', function () {
+        newcs.draw();
+    });
+
+    // $('#nupSearch').on('keyup', function () {
+    //     newcs.draw();
+    // });
+
+    let newcs = $('#new-cons').DataTable({
+    processing: true,
+    serverSide: true,
+    deferRender: true,
+    pageLength: 25,
+
+    scrollX: true,
+    scrollY: '60vh',
+
+    scrollCollapse: true,
+
+    autoWidth: false,   // IMPORTANT
+    responsive: false,  // IMPORTANT
+
+
+    ajax: {
+        url: '{{ route("internal.locked.datatable") }}',
+        // url: "{{ route('internal.datatable') }}",
+        data: function (d) {
+            d.itemSearch   = $('#itemSearch').val();
+            d.unitSearch   = $('#unitSearch').val();
+            d.lokasiSearch = $('#lokasiSearch').val();
+            d.kategoriIdentitasSearch = $('#kategoriIdentitasSearch').val();
+            d.identitasSearch = $('#identitasSearch').val();
+            d.nupMin = $('#nupMin').val();
+            d.nupMax = $('#nupMax').val();
+            let isRequestedValues = [];
+            if ($('#isRequestedYes').is(':checked')) isRequestedValues.push('1');
+            if ($('#isRequestedNo').is(':checked')) isRequestedValues.push('0');
+            d.isRequestedSearch = isRequestedValues.join(',');
+            // d.bmnSearch    = $('#bmnSearch').val();
+
+            //  DATE RANGE
+            d.tglFrom = convertToISO($('#tglFrom').val());
+            d.tglTo   = convertToISO($('#tglTo').val());
+        }
+    },
+
+    columns: [
+        { data: 'DT_RowIndex', orderable: false, searchable: false },
+        {
+            data: 'is_requested',
+            name: 'is_requested',
+            orderable: true,
+            render: function (data, type, row) {
+                if (data == 1) {
+                    return '<span class="badge bg-success">Ya</span>';
+                } else {
+                    return '<span class="badge bg-danger">Tidak</span>';
+                }
+            }
+        },
+        { data: 'kode_satker', name: 'satkers.kode_satker', orderable: false,  },
+        { data: 'kode_barang', orderable: false },
+        { data: 'nup' },
+        { data: 'tgl_perolehan' },
+        { data: 'nama_barang', orderable: false },
+        { data: 'foto_barang', orderable: false },
+        { data: 'identitas', orderable: false },
+        // { data: 'merkRaw' },
+        { data: 'merk', },
+        { data: 'tipe',  },
+        { data: 'jumlah' },
+        { data: 'nilai_aset', name: 'nilai_aset' },
+        { data: 'nilai_penyusutan', name: 'nilai_penyusutan' },
+        { data: 'nilai_buku', name: 'nilai_buku' },
+        { data: 'kondisi' },
+        { data: 'akun_neraca' },
+        { data: 'pembukuan' },
+        { data: 'unit_kerja_id',orderable: false, },
+        { data: 'penggunaRaw' },
+        { data: 'nama_pengguna' },
+        { data: 'lokasi_id' },
+        { data: 'status_inven' },
+        { data: 'update_kondisi' },
+        { data: 'link_dokumentasi', },
+        { data: 'link_lhi' },
+        { data: 'no_bahi' },
+        { data: 'tgl_bahi' },
+
+        {
+                data: 'batch',
+                name: 'batch',
+                className: 'batch-col',
+                orderable: false,
+                render: function (data, type, row) {
+                    if (!data || data === '-') {
+                        return '<span class="text-muted">-</span>';
+                    }
+
+                    return `
+                        <h5><span class="badge bg-primary">
+                            ${data}
+                        </span></h5>
+                    `;
+                }
+        },
+        { data: 'action',
+            name: 'action',
+            orderable: false,
+            searchable: false,
+            className: 'dt-action-col'
+        },
+
+    ]
+});
+// table.on('draw.dt', function () {
+//     table.columns.adjust();
+// });
+
+    // Function to open image modal
+    function openImageModal(imageSrc, title) {
+        // Create modal if it doesn't exist
+        if (!$('#imageModal').length) {
+            $('body').append(`
+                <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="imageModalLabel">${title}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <img src="${imageSrc}" class="img-fluid" alt="${title}" style="max-height: 70vh;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        } else {
+            // Update existing modal
+            $('#imageModal .modal-title').text(title);
+            $('#imageModal img').attr('src', imageSrc).attr('alt', title);
+        }
+
+        // Show modal
+        $('#imageModal').modal('show');
+    }
+
+
+
+
+
+
+
+</script>
+@endsection
