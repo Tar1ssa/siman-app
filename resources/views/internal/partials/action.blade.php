@@ -32,12 +32,14 @@
     @endif
 
     {{-- Delete --}}
+    @if (auth()->user()->isAdmin() || $row->status != 'locked')
     <form onclick="return confirm('Yakin ingin menghapus {{ $row->barang->nama_barang }}, NUP: {{ $row->nup }}, {{$row->merk}} {{$row->tipe}} ?')" action="{{ route('internal.destroy', $row->id) }}" method="post" class="d-inline">
         @csrf
         @method('DELETE')
 
         <button title="Hapus data" class="btn btn-sm btn-shadow btn-danger fs-6"><i class="ti ti-trash fs-6"></i></button>
     </form>
+    @endif
     {{-- <button
         class="btn btn-sm btn-danger btn-delete"
         data-id="{{ $row->id }}"

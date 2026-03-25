@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\satker;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Validator;
 
-class satkerController extends Controller
+class SatkerController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -103,42 +104,44 @@ class satkerController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $rules = [
-                'nama_satker' => 'required',
-                'kode_satker' => 'required'
-            ];
+        return DB::transaction(function () use ($request, $id) {
+            $rules = [
+                    'nama_satker' => 'required',
+                    'kode_satker' => 'required'
+                ];
 
-            $messages = [
-                'nama_satker.required' => 'Nama Satker tidak dapat kosong.',
-                'kode_satker.required' => 'Nomor Satker tidak dapat kosong.',
-            ];
+                $messages = [
+                    'nama_satker.required' => 'Nama Satker tidak dapat kosong.',
+                    'kode_satker.required' => 'Nomor Satker tidak dapat kosong.',
+                ];
 
-        $validation = Validator::make($request->all(), $rules, $messages);
+            $validation = Validator::make($request->all(), $rules, $messages);
 
-        if ($validation->fails()) {
-            $errors = $validation->errors();
+            if ($validation->fails()) {
+                $errors = $validation->errors();
 
-            // Ambil pesan error spesifik untuk password jika ada
-            if ($errors->has('kode_satker')) {
-                    Alert::error('Gagal!', $errors->first('kode_satker'));
+                // Ambil pesan error spesifik untuk password jika ada
+                if ($errors->has('kode_satker')) {
+                        Alert::error('Gagal!', $errors->first('kode_satker'));
+                }
+                if ($errors->has('nama_satker')) {
+                        Alert::error('Gagal!', $errors->first('nama_satker'));
+                } else {
+                    Alert::error('Gagal!', 'Terjadi kesalahan validasi. Silakan periksa kembali.');
+                }
+
+                return redirect()->back()->withErrors($errors)->withInput();
             }
-            if ($errors->has('nama_satker')) {
-                    Alert::error('Gagal!', $errors->first('nama_satker'));
-            } else {
-                Alert::error('Gagal!', 'Terjadi kesalahan validasi. Silakan periksa kembali.');
-            }
 
-            return redirect()->back()->withErrors($errors)->withInput();
-        }
+            $Satker = satker::where('id', $id)->lockForUpdate()->firstOrFail();
+            $Satker->nama_satker = $request->nama_satker;
+            $Satker->kode_satker = $request->kode_satker;
 
-        $Satker = Satker::findOrFail($id);
-        $Satker->nama_satker = $request->nama_satker;
-        $Satker->kode_satker = $request->kode_satker;
+            $Satker->save();
 
-        $Satker->save();
-
-        Alert::success('Sukses!', 'Satker berhasil diupdate');
-        return redirect()->route('satker.index')->with('Sukses!', 'Satker berhasil diperbarui');
+            Alert::success('Sukses!', 'Satker berhasil diupdate');
+            return redirect()->route('satker.index')->with('Sukses!', 'Satker berhasil diperbarui');
+        });
     }
 
     /**
@@ -146,9 +149,13 @@ class satkerController extends Controller
      */
     public function destroy(string $id)
     {
-        $Satker = Satker::find($id);
-        $Satker->delete();
-        Alert::success('Sukses!', 'Satker berhasil dihapus');
-        return redirect()->back()->with('Sukses!', 'Satker berhasil dihapus!');
+        return DB::transaction(function () use ($id) {
+            $Satker = satker::where('id', $id)->lockForUpdate()->first();
+            if ($Satker) {
+                $Satker->delete();
+            }
+            Alert::success('Sukses!', 'Satker berhasil dihapus');
+            return redirect()->back()->with('Sukses!', 'Satker berhasil dihapus!');
+        });
     }
 }

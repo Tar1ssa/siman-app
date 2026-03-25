@@ -3,7 +3,7 @@
 @section('dependencies')
 <link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/dataTables.bootstrap5.min.css') }}">
 <link rel="stylesheet" href="{{ asset('/assets/dist/assets/css/plugins/responsive.bootstrap5.min.css') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="{{ asset('/assets/flatpickr/dist/flatpickr.min.css') }}">
 
 @endsection
 @section('content')
@@ -34,15 +34,18 @@
                 <h3>Data Siman</h3>
                 {{-- laundry trans button --}}
                 <div>
+                    @if (auth()->user()->isAdmin())
+
                     <a href="{{ route('siman.create') }}" class="btn btn-shadow btn-primary">Import data SIMAN</a>
                     <button
-                    type="button"
-                    class="btn btn-shadow btn-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                    >
-                    Hapus batch data
-                </button>
+                        type="button"
+                        class="btn btn-shadow btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal"
+                        >
+                        Hapus batch data
+                    </button>
+                    @endif
                 </div>
               </div>
               <div class="card-body">

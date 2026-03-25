@@ -270,7 +270,7 @@ class LockedDataController extends Controller
         DB::beginTransaction();
         try {
             // Authorization handled by middleware
-            $dataInternal = DataInternal::findOrFail($id);
+            $dataInternal = DataInternal::where('id', $id)->lockForUpdate()->firstOrFail();
             if ($dataInternal->status === 'locked') {
                 throw new \Exception('Data sudah terkunci.');
             }
@@ -298,7 +298,7 @@ class LockedDataController extends Controller
         DB::beginTransaction();
         try {
             // Authorization handled by middleware
-            $dataInternal = DataInternal::findOrFail($id);
+            $dataInternal = DataInternal::where('id', $id)->lockForUpdate()->firstOrFail();
             if ($dataInternal->status !== 'locked') {
                 throw new \Exception('Data sudah tidak terkunci atau tidak dapat diunlock.');
             }
@@ -325,7 +325,7 @@ class LockedDataController extends Controller
     {
         DB::beginTransaction();
         try {
-            $dataInternal = DataInternal::findOrFail($id);
+            $dataInternal = DataInternal::where('id', $id)->lockForUpdate()->firstOrFail();
             if ($dataInternal->status !== 'locked') {
                 throw new \Exception('Data tidak terkunci, tidak perlu request unlock.');
             }
@@ -353,7 +353,7 @@ class LockedDataController extends Controller
     {
         DB::beginTransaction();
         try {
-            $dataInternal = DataInternal::findOrFail($id);
+            $dataInternal = DataInternal::where('id', $id)->lockForUpdate()->firstOrFail();
             if ($dataInternal->is_requested != 1) {
                 throw new \Exception('Tidak ada permintaan unlock yang aktif.');
             }

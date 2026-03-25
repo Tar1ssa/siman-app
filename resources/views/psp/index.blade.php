@@ -66,6 +66,11 @@ table.dataTable th.dt-action-col::before {
     z-index: 5 !important;
 }
 
+.row-checkbox:hover {
+    cursor: pointer;
+
+}
+
 
 
 </style>
@@ -78,7 +83,8 @@ table.dataTable th.dt-action-col::before {
             <div class="row align-items-center">
               <div class="col-md-12">
                 <ul class="breadcrumb">
-                  <li class="breadcrumb-item" aria-current="page"><a href="#">Data Internal</a></li>
+                    <li class="breadcrumb-item"><a href="{{route('internal.index')}}">Data Internal</a></li>
+                    <li class="breadcrumb-item" aria-current="page"><a href="#">Generate Dokumen PSP</a></li>
                 </ul>
               </div>
               <div class="col-md-12">
@@ -95,48 +101,19 @@ table.dataTable th.dt-action-col::before {
           <div class="col-sm-12">
             <div class="card">
               <div class="card-header">
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <h3>Data internal</h3>
-                    </div>
-                    <div class="col-md-9 d-flex flex-column justify-content-end align-items-end gap-2">
-                            <a class="btn btn-primary px-3 " data-bs-toggle="collapse" href="#collapseAction" role="button" aria-expanded="false" aria-controls="collapseAction">
-                                Menu
-                            </a>
-                    </div>
+                <div class="row d-flex flex-column justify-content-between ">
+               
+                        <h3>Generate Dokumen PSP</h3>
+                        <button
+                            type="button"
+                            onclick="generatePSP()"
+                            class="btn btn-shadow btn-primary"
+                            >
+                            Generate Dokumen PSP
+                        </button>
+
                 </div>
-                <div class="row">
-                    <div class="col-md-12 d-flex justify-content-center align-items-center gap-1 flex-wrap">
-                                <div class="collapse"  id="collapseAction">
-                                    <div class="card card-body d-flex gap-2 flex-row">
-                                        <a href="{{ route('internal.make') }}" class="btn btn-shadow btn-success">Tambah data Internal</a>
-    
-                                        <a href="{{ route('internal.create') }}" class="btn btn-shadow btn-primary">Import data Internal</a>
-    
-                                        <a href="{{ route('export.internal-all') }}" class="btn btn-shadow btn-info">Export All Data</a>
-    
-                                        @if (auth()->user()->isAdmin())
-                                            <a
-                                                href="{{route('psp.index')}}"
-                                                class="btn btn-shadow btn-primary"
-    
-                                                >
-                                                Generate Dokumen PSP
-                                            </a>
-    
-                                            <button
-                                                type="button"
-                                                class="btn btn-shadow btn-danger"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#exampleModal"
-                                                >
-                                                Hapus batch data
-                                            </button>
-                                        @endif
-                                    </div>
-                                </div>
-                    </div>
-                </div>
+
                 
                 
               </div>
@@ -364,10 +341,19 @@ table.dataTable th.dt-action-col::before {
 
                 </div>
 
+                {{-- Lampiran --}}
+                {{-- <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label for="lampiran" class="form-label fw-bold">Lampiran</label>
+                        <textarea id="lampiran" name="lampiran" class="form-control" rows="3" placeholder="Masukkan lampiran..."></textarea>
+                    </div>
+                </div> --}}
+
                 {{-- <div class="table-responsive"> --}}
                     <table id="new-cons" class="table table-striped  " style="width:100%">
                         <thead>
                             <tr>
+                                <th><input type="checkbox" class="form-check-input " id="selectAll"></th>
                                 <th>No</th>
                                 <th>Kode Satker</th>
                                 <th>Kode Barang</th>
@@ -397,73 +383,13 @@ table.dataTable th.dt-action-col::before {
                                 <th>Tanggal BAHI (Berita Acara Hasil Inven)</th>
                                 <th>Status</th>
                                 <th>Batch</th>
-                                <th >Aksi</th>
 
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
 
-                  {{-- <table id="new-cons" class=" table table-striped table-hover" style="width: 100%">
-                    <thead>
-                        <th>No.</th>
-                        <th>Jenis BMN</th>
-                        <th>Kode Satker</th>
-                        <th>Nama Satker</th>
-                        <th>Kode Barang</th>
-                        <th>NUP</th>
-                        <th>Nama Barang</th>
-                        <th>Merk</th>
-                        <th>Tipe</th>
-                        <th>Kondisi</th>
-                        <th>No Dokumen</th>
-                        <th>No BPKP</th>
-                        <th>No Polisi</th>
-                        <th>No Sertifikat</th>
-                        <th>Tanggal Perolehan</th>
-                        <th>Nilai Perolehan</th>
-                        <th>Nilai Penyusutan</th>
-                        <th>Nilai Buku</th>
-                        <th>Kode Register</th>
-                        <th>Lokasi Ruang</th>
-                        <th>Nama Pengguna </th>
-                        <th>Link Foto Dokumentasi</th>
-                        <th>Opname (terbaru)</th>
-                        <th>Import Batch</th>
-                    </thead>
-                    <tbody>
-                        @foreach ($datainternal as $index => $data)
-                        <tr>
-                        <td>{{$index+=1}}</td>
-                        <td>{{ $data->bmns->name }}</td>
-                        <td>{{ $data->satkers->kode_satker }}</td>
-                        <td>{{ $data->satkers->nama_satker }}</td>
-                        <td>{{ $data->kode_barang }}</td>
-                        <td>{{ $data->nup }}</td>
-                        <td>{{ $data->nama_barang }}</td>
-                        <td>{{ $data->merk }}</td>
-                        <td>{{ $data->tipe }}</td>
-                        <td>{{ $data->kondisi }}</td>
-                        <td>{{ $data->no_dokumen }}</td>
-                        <td>{{ $data->no_BPKP }}</td>
-                        <td>{{ $data->no_polisi }}</td>
-                        <td>{{ $data->no_sertifikat }}</td>
-                        <td>{{ $data->tgl_perolehan }}</td>
-                        <td data-value="{{ $data->nilai_perolehan }}">{{ $data->nilai_perolehan_fmt }}</td>
-                        <td data-value="{{ $data->nilai_penyusutan }}">{{ $data->nilai_penyusutan_fmt }}</td>
-                        <td data-value='{{$data->nilai_buku}}'>{{ $data->nilai_buku_fmt }}</td>
-                        <td>{{ $data->kode_register }}</td>
-                        <td>{{ $data->lokasi_ruang }}</td>
-                        <td>{{ $data->nama_pengguna }}</td>
-                        <td>{{ $data->link_dokumentasi }}</td>
-                        <td>{{ $data->opname }}</td>
-                        <td>{{ $data->import_batch_id }}</td>
-                        </tr>
-                        @endforeach
-
-                    </tbody>
-                  </table> --}}
-                {{-- </div> --}}
+                  
               </div>
 
     </div>
@@ -621,38 +547,7 @@ table.dataTable th.dt-action-col::before {
     </script>
 
     <script>
-      // [ Configuration Option ]
-    //   $('#res-config').DataTable({
-    //     responsive: true
-    //   });
 
-      // [ New Constructor ]
-//     function initNewConsTable() {
-//     var isMobile = window.innerWidth < 768;
-
-//     return $('#new-cons').DataTable({
-//         destroy: true,      //  allow re-init on resize
-//         autoWidth: false,
-
-//         scrollX: !isMobile, //  desktop = scroll, mobile = no scroll
-
-//         responsive: isMobile ? {
-//         details: {
-//             type: 'column',
-//             target: 'tr'
-//         }
-//         } : false
-//     });
-//     }
-
-//     //  First Init
-//     var newcs = initNewConsTable();
-
-// //  Re-init on screen resize (rotate phone, resize browser)
-//     $(window).on('resize', function () {
-//     $('#new-cons').DataTable().destroy();
-//     newcs = initNewConsTable();
-//     });
 
 
     $('#new-cons_filter input').attr('id', 'newConsSearch');
@@ -746,6 +641,8 @@ table.dataTable th.dt-action-col::before {
     //     newcs.draw();
     // });
 
+    let selectedRows = []; // Array to store selected row IDs
+
     let newcs = $('#new-cons').DataTable({
     processing: true,
     serverSide: true,
@@ -759,6 +656,17 @@ table.dataTable th.dt-action-col::before {
 
     autoWidth: false,   // IMPORTANT
     responsive: false,  // IMPORTANT
+
+    drawCallback: function() {
+        $('.row-checkbox').each(function() {
+            const id = $(this).val();
+            $(this).prop('checked', selectedRows.includes(id));
+        });
+        // Update selectAll based on visible checkboxes
+        const visibleCheckboxes = $('.row-checkbox');
+        const checkedVisible = visibleCheckboxes.filter(':checked');
+        $('#selectAll').prop('checked', visibleCheckboxes.length > 0 && checkedVisible.length === visibleCheckboxes.length);
+    },
 
 
     ajax: {
@@ -782,6 +690,9 @@ table.dataTable th.dt-action-col::before {
     },
 
     columns: [
+        { data: null, orderable: false, searchable: false, render: function(data, type, row) { 
+            return '<input type="checkbox" class="row-checkbox form-check-input" value="' + row.id + '">'; 
+        } },
         { data: 'DT_RowIndex', orderable: false, searchable: false },
         { data: 'kode_satker', name: 'satkers.kode_satker', orderable: false,  },
         { data: 'kode_barang', orderable: false },
@@ -833,18 +744,72 @@ table.dataTable th.dt-action-col::before {
                     `;
                 }
         },
-        { data: 'action',
-            name: 'action',
-            orderable: false,
-            searchable: false,
-            className: 'dt-action-col'
-        },
 
     ]
 });
 // table.on('draw.dt', function () {
 //     table.columns.adjust();
 // });
+
+$(document).on('change', '.row-checkbox', function() {
+    const id = $(this).val();
+    if ($(this).is(':checked')) {
+        if (!selectedRows.includes(id)) selectedRows.push(id);
+    } else {
+        selectedRows = selectedRows.filter(item => item != id);
+    }
+    // Update selectAll
+    const totalCheckboxes = $('.row-checkbox').length;
+    const checkedCheckboxes = $('.row-checkbox:checked').length;
+    $('#selectAll').prop('checked', totalCheckboxes === checkedCheckboxes && totalCheckboxes > 0);
+});
+
+$('#selectAll').on('change', function() {
+    const isChecked = $(this).is(':checked');
+    $('.row-checkbox').prop('checked', isChecked);
+    $('.row-checkbox').each(function() {
+        const id = $(this).val();
+        if (isChecked) {
+            if (!selectedRows.includes(id)) selectedRows.push(id);
+        } else {
+            selectedRows = selectedRows.filter(item => item != id);
+        }
+    });
+});
+
+function generatePSP() {
+    if (selectedRows.length === 0) {
+        alert('Please select at least one row.');
+        return;
+    }
+    const lampiran = $('#lampiran').val();
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ route("psp.download") }}';
+    form.target = '_blank'; // Open in new tab
+    form.style.display = 'none';
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_token';
+    csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
+    selectedRows.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'selected[]';
+        input.value = id;
+        form.appendChild(input);
+    });
+    const lampiranInput = document.createElement('input');
+    lampiranInput.type = 'hidden';
+    lampiranInput.name = 'lampiran';
+    lampiranInput.value = lampiran;
+    form.appendChild(lampiranInput);
+    document.body.appendChild(form);
+    form.submit();
+    // Redirect current page to internal.index
+    window.location.href = '{{ route("internal.index") }}';
+}
 
     // Function to open image modal
     function openImageModal(imageSrc, title) {

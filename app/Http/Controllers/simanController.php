@@ -15,7 +15,7 @@ use RealRashid\SweetAlert\Facades\Alert;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
-class simanController extends Controller
+class SimanController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -334,10 +334,12 @@ class simanController extends Controller
 
     public function destroyBatch(Request $request)
     {
-        $Siman = simanData::where('import_batch_id', $request->batch)->delete();
-        simanBatch::where('id', $request->batch)->delete();
-        Alert::success('Sukses!', 'Data SIMAN berhasil dihapus');
-        return redirect()->back()->with('Sukses!', 'Data SIMAN berhasil dihapus!');
+        return DB::transaction(function () use ($request) {
+            $Siman = simanData::where('import_batch_id', $request->batch)->delete();
+            simanBatch::where('id', $request->batch)->delete();
+            Alert::success('Sukses!', 'Data SIMAN berhasil dihapus');
+            return redirect()->back()->with('Sukses!', 'Data SIMAN berhasil dihapus!');
+        });
     }
 
     public function datatable(Request $request)

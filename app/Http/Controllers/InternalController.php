@@ -1008,7 +1008,7 @@ class InternalController extends Controller
             $identitas = identitas::with('atribut')->findOrFail($request->identitas_id);
 
 
-            $dataInternal = DataInternal::findOrFail($id);
+            $dataInternal = DataInternal::where('id', $id)->lockForUpdate()->firstOrFail();
 
             // Check if data is locked and user is not admin
             $user = Auth::user();
@@ -1355,9 +1355,11 @@ class InternalController extends Controller
 
     public function destroyBatch(Request $request)
     {
-        $Data = DataInternal::where('batch', $request->batch)->delete();
-        Alert::success('Sukses!', $Data. ' - ' . 'Data Internal berhasil dihapus');
-        return redirect()->back()->with('Sukses!', $Data. ' - ' . 'Data Internal berhasil dihapus!');
+        return DB::transaction(function () use ($request) {
+            $Data = DataInternal::where('batch', $request->batch)->delete();
+            Alert::success('Sukses!', $Data. ' - ' . 'Data Internal berhasil dihapus');
+            return redirect()->back()->with('Sukses!', $Data. ' - ' . 'Data Internal berhasil dihapus!');
+        });
     }
 
     public function datatable(Request $request)
@@ -1405,6 +1407,7 @@ class InternalController extends Controller
                 'identitas_id',
                 'status'
             ])
+            
             // ->whereNot('status', 'locked')
             ; // Exclude locked records from regular datatable
 
@@ -2051,6 +2054,34 @@ class InternalController extends Controller
         }
     }
 
+    public function penyebut($nilai) {
+        $nilai = abs($nilai);
+        $huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam",
+                "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
+        
+        if ($nilai < 12) {
+            return " " . $huruf[$nilai];
+        } elseif ($nilai < 20) {
+            return $this->penyebut($nilai - 10) . " belas";
+        } elseif ($nilai < 100) {
+            return $this->penyebut($nilai / 10) . " puluh" . $this->penyebut($nilai % 10);
+        } elseif ($nilai < 200) {
+            return " seratus" . $this->penyebut($nilai - 100);
+        } elseif ($nilai < 1000) {
+            return $this->penyebut($nilai / 100) . " ratus" . $this->penyebut($nilai % 100);
+        } elseif ($nilai < 2000) {
+            return " seribu" . $this->penyebut($nilai - 1000);
+        } elseif ($nilai < 1000000) {
+            return $this->penyebut($nilai / 1000) . " ribu" . $this->penyebut($nilai % 1000);
+        } elseif ($nilai < 1000000000) {
+            return $this->penyebut($nilai / 1000000) . " juta" . $this->penyebut($nilai % 1000000);
+        }
+    }
+
+    public function terbilang($nilai) {
+        return trim($this->penyebut($nilai));
+    }
+
     public function downloadBast($id)
     {
         \Carbon\Carbon::setLocale('id');
@@ -2101,9 +2132,9 @@ class InternalController extends Controller
 
             // Tanggal di halaman utama
             'hari' => $todayDate->translatedFormat('l'),
-            'tanggal' => $todayDate->day,
+            'tanggal' => $this->terbilang($todayDate->day),
             'bulan' => $todayDate->translatedFormat('F'),
-            'tahun' => $todayDate->year,
+            'tahun' => $this->terbilang($todayDate->year),
 
             // Pihak Kedua (dari DataInternal)
             'pihak_kedua_nama' => $data->nama_pengguna,
@@ -2118,7 +2149,15 @@ class InternalController extends Controller
             'pihak_pertama_alamat' => $data->alamat_pihak_pertama ?? '',
         ]);
 
-        return $pdf->stream("BAST-{$data->barang->nama_barang}-{$data->nup}-{$data->merk}-{$data->tipe}.pdf");
+        // Sanitize filename by replacing invalid characters
+        $namaBarang = str_replace(['/', '\\'], '-', $data->barang->nama_barang ?? '');
+        $merk = str_replace(['/', '\\'], '-', $data->merk ?? '');
+        $tipe = str_replace(['/', '\\'], '-', $data->tipe ?? '');
+        $nup = $data->nup ?? '';
+
+        $filename = "BAST-{$namaBarang}-{$nup}-{$merk}-{$tipe}.pdf";
+
+        return $pdf->stream($filename);
     }
 
     public function kategoriIdentitas($kategoriId)

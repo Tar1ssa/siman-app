@@ -17,7 +17,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
 
 
-class invalidController extends Controller
+class InvalidController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -156,7 +156,7 @@ class invalidController extends Controller
     {
         DB::beginTransaction();
         try {
-            $edit = InvalidData::where('id',$id)->first();
+            $edit = InvalidData::where('id',$id)->lockForUpdate()->first();
                     $tglBAHI = $this->normalizeCsvDateToYMD($request->tgl_bahi);
 
                     $perolehan_tgl = $this->normalizeCsvDateToYMD($request->tgl_perolehan);
@@ -307,9 +307,11 @@ class invalidController extends Controller
 
     public function destroyBatch(Request $request)
     {
-        $Data = InvalidData::where('batch', $request->batch)->delete();
-        Alert::success('Sukses!', 'Data Invalid berhasil dihapus');
-        return redirect()->back()->with('Sukses!', 'Data Invalid berhasil dihapus!');
+        return DB::transaction(function () use ($request) {
+            $Data = InvalidData::where('batch', $request->batch)->delete();
+            Alert::success('Sukses!', 'Data Invalid berhasil dihapus');
+            return redirect()->back()->with('Sukses!', 'Data Invalid berhasil dihapus!');
+        });
     }
 
     public function datatable(Request $request)

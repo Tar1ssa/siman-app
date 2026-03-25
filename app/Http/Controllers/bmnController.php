@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\bmn;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Validator;
 
-class bmnController extends Controller
+class BmnController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -98,36 +99,38 @@ class bmnController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $rules = [
-            'name' => 'required',
-        ];
+        return DB::transaction(function () use ($request, $id) {
+            $rules = [
+                'name' => 'required',
+            ];
 
-        $messages = [
-            'name.required' => 'Nama tidak dapat kosong.',
-        ];
+            $messages = [
+                'name.required' => 'Nama tidak dapat kosong.',
+            ];
 
-        $validation = Validator::make($request->all(), $rules, $messages);
+            $validation = Validator::make($request->all(), $rules, $messages);
 
-        if ($validation->fails()) {
-            $errors = $validation->errors();
+            if ($validation->fails()) {
+                $errors = $validation->errors();
 
-            // Ambil pesan error spesifik untuk password jika ada
-            if ($errors->has('name')) {
-                Alert::error('Gagal!', $errors->first('name'));
-            } else {
-                Alert::error('Gagal!', 'Terjadi kesalahan validasi. Silakan periksa kembali.');
+                // Ambil pesan error spesifik untuk password jika ada
+                if ($errors->has('name')) {
+                    Alert::error('Gagal!', $errors->first('name'));
+                } else {
+                    Alert::error('Gagal!', 'Terjadi kesalahan validasi. Silakan periksa kembali.');
+                }
+
+                return redirect()->back()->withErrors($errors)->withInput();
             }
 
-            return redirect()->back()->withErrors($errors)->withInput();
-        }
+            $bmn = bmn::where('id', $id)->lockForUpdate()->firstOrFail();
+            $bmn->name = $request->name;
 
-        $bmn = bmn::findOrFail($id);
-        $bmn->name = $request->name;
+            $bmn->save();
 
-        $bmn->save();
-
-        Alert::success('Sukses!', 'jenis bmn berhasil diupdate');
-        return redirect()->route('bmn.index')->with('Sukses!', 'jenis bmn berhasil diperbarui');
+            Alert::success('Sukses!', 'jenis bmn berhasil diupdate');
+            return redirect()->route('bmn.index')->with('Sukses!', 'jenis bmn berhasil diperbarui');
+        });
     }
 
     /**
@@ -135,9 +138,13 @@ class bmnController extends Controller
      */
     public function destroy(string $id)
     {
-        $bmn = bmn::find($id);
-        $bmn->delete();
-        Alert::success('Sukses!', 'bmn berhasil dihapus');
-        return redirect()->back()->with('Sukses!', 'bmn berhasil dihapus!');
+        return DB::transaction(function () use ($id) {
+            $bmn = bmn::where('id', $id)->lockForUpdate()->first();
+            if ($bmn) {
+                $bmn->delete();
+            }
+            Alert::success('Sukses!', 'bmn berhasil dihapus');
+            return redirect()->back()->with('Sukses!', 'bmn berhasil dihapus!');
+        });
     }
 }

@@ -42,6 +42,20 @@ input[type="submit"]:disabled {
     opacity: 0.6 !important;
     pointer-events: none !important;
 }
+
+/* Force enable Bootstrap animations */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out !important;
+}
+.modal-backdrop {
+    transition: opacity 0.3s linear !important;
+}
+.collapse {
+    transition: height 0.35s ease !important;
+}
+.collapsing {
+    transition: height 0.35s ease !important;
+}
 </style>
 
 

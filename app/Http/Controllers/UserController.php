@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Level;
 use App\Models\UnitKerja;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Validator;
 
@@ -106,8 +107,8 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        try {
-            $user = User::findOrFail($id);
+        return DB::transaction(function () use ($request, $id) {
+            $user = User::where('id', $id)->lockForUpdate()->firstOrFail();
 
             $rules = [
                 'name' => 'required|string|max:255',
@@ -156,10 +157,7 @@ class UserController extends Controller
 
             Alert::success('Sukses!', 'User berhasil diupdate');
             return redirect()->route('user.index')->with('Sukses!', 'User berhasil diperbarui');
-        } catch (\Throwable $th) {
-            Alert::error('Gagal!', 'Terjadi kesalahan: ' . $th->getMessage());
-            return redirect()->back()->withInput();
-        }
+        });
     }
 
     /**
@@ -167,16 +165,13 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        try {
-            $user = User::findOrFail($id);
+        return DB::transaction(function () use ($id) {
+            $user = User::where('id', $id)->lockForUpdate()->firstOrFail();
             $userName = $user->name;
             $user->delete();
 
             Alert::success('Sukses!', $userName . ' berhasil dihapus');
             return redirect()->back()->with('Sukses!', $userName . ' berhasil dihapus!');
-        } catch (\Throwable $th) {
-            Alert::error('Gagal!', 'Terjadi kesalahan: ' . $th->getMessage());
-            return redirect()->back();
-        }
+        });
     }
 }

@@ -7,10 +7,12 @@
     </button> --}}
 
     {{-- Delete --}}
+    @if (auth()->user()->isAdmin() || $row->status != 'locked')
     <button
         class="btn btn-sm btn-danger btn-delete"
         data-id="{{ $row->id }}"
         data-name="{{ $row->id }}">
         <i class="ti ti-trash"></i>
     </button>
+    @endif
 </div>

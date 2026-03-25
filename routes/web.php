@@ -1,24 +1,25 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\bmnController;
+use App\Http\Controllers\BmnController;
+use App\Http\Controllers\PspController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\simanController;
+use App\Http\Controllers\SimanController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\LokasiController;
-use App\Http\Controllers\satkerController;
+use App\Http\Controllers\SatkerController;
 use App\Http\Controllers\AtributController;
 use App\Http\Controllers\CompareController;
-use App\Http\Controllers\invalidController;
+use App\Http\Controllers\InvalidController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\InternalController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IdentitasController;
 use App\Http\Controllers\UnitKerjaController;
 use App\Http\Controllers\LockedDataController;
 use App\Http\Controllers\UnitTeknisController;
-use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\IdentitasKategoriController;
 
@@ -48,8 +49,8 @@ Route::middleware('auth')->group(function () {
             [BackupController::class, 'destroy'])
             ->name('backups.delete');
 
-        Route::resource('bmn', bmnController::class);
-        Route::resource('satker', satkerController::class);
+        Route::resource('bmn', BmnController::class);
+        Route::resource('satker', SatkerController::class);
         Route::resource('barang', BarangController::class);
         Route::resource('lokasi', LokasiController::class);
         Route::resource('identitas-kategori', IdentitasKategoriController::class);
@@ -81,16 +82,27 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+        Route::delete('/siman/batch/delete', [SimanController::class, 'destroyBatch'])
+        ->name('siman.destroyBatch');
+
+        Route::delete('/internal/batch/delete', [InternalController::class, 'destroyBatch'])
+        ->name('internal.destroyBatch');
+
+        Route::delete('/invalid', [InvalidController::class, 'destroyBatch'])
+        ->name('invalid.destroyBatch');
+
+        Route::resource('psp', PspController::class);
+
     });
 
     Route::put('/internal/{id}/requestUnlock', [LockedDataController::class, 'requestUnlock'])
         ->name('internal.requestUnlock');
 
-    Route::resource('siman', simanController::class);
-    Route::get('/siman-data/datatable', [simanController::class, 'datatable'])
+    Route::resource('siman', SimanController::class);
+    Route::get('/siman-data/datatable', [SimanController::class, 'datatable'])
         ->name('siman.datatable');
-    Route::delete('/siman/batch/delete', [SimanController::class, 'destroyBatch'])
-        ->name('siman.destroyBatch');
+
 
     Route::resource('internal', InternalController::class);
     Route::get('/identitas/bykategori/{id}', [IdentitasController::class, 'byKategori']);
@@ -105,8 +117,7 @@ Route::middleware('auth')->group(function () {
         ->name('internal.kategoriIdentitas');
     Route::post('/internal/insert', [InternalController::class, 'insert'])
         ->name('internal.insert');
-    Route::delete('/internal/batch/delete', [InternalController::class, 'destroyBatch'])
-        ->name('internal.destroyBatch');
+
 
     Route::post('/internal/images/store', [InternalController::class, 'addImage'])
         ->name('internal.addImage');
@@ -124,6 +135,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/internal/bast/{id}', [InternalController::class, 'downloadBast'])
         ->name('internal.bast');
+
+    Route::post('/psp/download', [PspController::class, 'downloadPSP'])
+        ->name('psp.download');
 
     Route::get('/export-data/internal-all', [InternalController::class, 'exportAll'])
         ->name('export.internal-all');
@@ -149,12 +163,11 @@ Route::middleware('auth')->group(function () {
 
 
 
-    Route::resource('invalid', invalidController::class);
-    Route::get('/invalid-data/datatable', [invalidController::class, 'datatable'])
+    Route::resource('invalid', InvalidController::class);
+    Route::get('/invalid-data/datatable', [InvalidController::class, 'datatable'])
         ->name('invalid.datatable');
-    Route::delete('/invalid', [invalidController::class, 'destroyBatch'])
-        ->name('invalid.destroyBatch');
-    Route::get('/export-data/invalid', [invalidController::class, 'exportInvalid'])
+
+    Route::get('/export-data/invalid', [InvalidController::class, 'exportInvalid'])
         ->name('export.invalid');
 
 

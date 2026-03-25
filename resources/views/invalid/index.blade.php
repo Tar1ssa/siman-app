@@ -35,14 +35,17 @@
                 {{-- laundry trans button --}}
                 <div>
                     {{-- <a href="{{ route('invalid.create') }}" class="btn btn-shadow btn-primary">Import data invalid</a> --}}
+                    @if (auth()->user()->isAdmin())
+
                     <button
-                    type="button"
-                    class="btn btn-shadow btn-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteModal"
-                    >
-                    Hapus batch data
-                </button>
+                        type="button"
+                        class="btn btn-shadow btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal"
+                        >
+                        Hapus batch data
+                    </button>
+                    @endif
                 </div>
               </div>
               <div class="card-body">
