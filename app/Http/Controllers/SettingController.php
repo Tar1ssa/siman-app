@@ -19,11 +19,22 @@ class SettingController extends Controller
     {
         $request->validate([
             'admin_phone' => 'required|string|max:20',
+            'biro' => 'required|string|max:40',
+            'nip_biro' => 'required|string|max:40',
         ]);
-
         Setting::updateOrCreate(
             ['key' => 'admin_phone'],
             ['value' => $request->admin_phone]
+        );
+
+        Setting::updateOrCreate(
+            ['key' => 'biro'],
+            ['value' => $request->biro]
+        );
+
+        Setting::updateOrCreate(
+            ['key' => 'nip_biro'],
+            ['value' => $request->nip_biro]
         );
 
         Alert::success('Success', 'Settings updated successfully');

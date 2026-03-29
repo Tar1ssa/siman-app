@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Barang;
+use App\Models\Setting;
 use App\Models\UnitKerja;
 use App\Models\LokasiRuang;
 use App\Models\DataInternal;
@@ -85,7 +86,10 @@ class PspController extends Controller
         $lampiran = $request->input('lampiran', []);
         
         // Fetch the selected DataInternal records
-        $data = DataInternal::whereIn('id', $selectedIds)->get();
+        $data = DataInternal::whereIn('id', $selectedIds)->with('barang')->get();
+
+        $biro = Setting::where('key', 'biro')->first()->value ?? '';
+        $nip_biro = Setting::where('key', 'nip_biro')->first()->value ?? '';
         
         // Set locale and date
         \Carbon\Carbon::setLocale('id');
@@ -94,6 +98,8 @@ class PspController extends Controller
         // Prepare data for the PDF
         $pdfData = [
             'data' => $data,
+            'biro' => $biro,
+            'nip_biro' => $nip_biro,
             'lampiran' => $lampiran,
             'tahun' => $todayDate->year,
             'tanggal' => $todayDate->format('d F Y'),

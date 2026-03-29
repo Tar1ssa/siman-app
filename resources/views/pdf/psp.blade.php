@@ -31,7 +31,7 @@
     .hr{
         border-top:0.1cm solid black; 
         height:0.04cm; 
-        margin:1px -0.7cm 5px -0.7cm; 
+        margin:1px -0.9cm 5px -0.9cm; 
         border-bottom:0.04cm solid black;
     }
 
@@ -185,8 +185,8 @@ Atas perhatian dan kerjasamanya, diucapkan terima kasih.
 <td>
 Kepala Biro Umum,<br><br><br><br><br><br>
 
-<u>Sasmita Nugroho</u><br>
-NIP. 19690705 199603 1 001
+<u>{{$biro}}</u><br>
+NIP. {{$nip_biro}}
 </td>
 </tr>
 </table>
@@ -212,26 +212,26 @@ Nomor: B-…/C.3/KAP.4.1/…/{{$tahun}}
 <thead>
 <tr>
 <th>No</th>
-<th>Nama Barang</th>
+<th>Kode Barang</th>
+<th>Uraian Barang</th>
+<th>NUP</th>
 <th>Tahun Perolehan</th>
-<th>Spesifikasi</th>
-<th>Jumlah Barang</th>
-<th>Merk</th>
-<th>Kondisi</th>
-<th>Keterangan</th>
+<th>Merk & Tipe</th>
+<th>Jumlah</th>
+<th>Nilai Aset</th>
 </tr>
 </thead>
 <tbody>
 @foreach($data as $index => $item)
 <tr>
 <td>{{ $index + 1 }}</td>
+<td>{{ $item->barang->kode_barang ?? '' }}</td>
 <td>{{ $item->barang->nama_barang ?? '' }}</td>
-<td>{{ $item->tanggal_perolehan ? \Carbon\Carbon::parse($item->tanggal_perolehan)->year : '' }}</td>
-<td>{{ $item->keterangan ?? '' }}</td>
-<td>1</td>
-<td>{{ $item->merk ?? '' }}</td>
-<td>{{ $item->kondisi ?? '' }}</td>
-<td></td>
+<td>{{ $item->nup ?? '' }}</td>
+<td>{{ $item->tgl_perolehan ? \Carbon\Carbon::parse($item->tgl_perolehan)->year : '' }}</td>
+<td>{{ $item->merk ?? '' }} {{ $item->tipe ?? '' }}</td>
+<td>{{ $item->jumlah ?? '' }}</td>
+<td>Rp.{{ number_format($item->nilai_aset ?? 0, 2, ',', '.') }}</td>
 </tr>
 @endforeach
 </tbody>

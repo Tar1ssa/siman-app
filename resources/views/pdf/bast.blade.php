@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<link href="{{asset('assets/dist/assets/css/plugins/bootstrap.min.css')}}" rel="stylesheet">
+{{-- <link href="{{asset('assets/dist/assets/css/plugins/bootstrap.min.css')}}" rel="stylesheet"> --}}
 <style>
 @page {
     margin: 2cm 2.5cm 2.5cm 2.5cm; /* Top, Right, Bottom, Left margins */
@@ -73,9 +73,12 @@ body {
     width: 110%;
     border-collapse: collapse;
     font-size: 11pt;
-    table-layout: fixed; /* Prevent overflow by fixing column widths */    
-    margin: 15px auto 0 auto; /* Center the table horizontally */
-    margin-left: -5%; /* Adjust for asymmetric page margins */}
+    table-layout: fixed; 
+    /* Prevent overflow by fixing column widths */    
+    margin: 15px auto 0 auto; 
+    /* Center the table horizontally */
+    margin-left: -5%;
+     /* Adjust for asymmetric page margins */}
 
 .table th, .table td {
     border: 1px solid black;
@@ -87,14 +90,22 @@ body {
 }
 
 /* Specific column widths to prevent overflow */
-.table th:nth-child(1), .table td:nth-child(1) { width: 5%; }  /* No */
-.table th:nth-child(2), .table td:nth-child(2) { width: 20%; } /* Nama Barang */
-.table th:nth-child(3), .table td:nth-child(3) { width: 10%; } /* Tahun Perolehan */
-.table th:nth-child(4), .table td:nth-child(4) { width: 20%; } /* Spesifikasi */
-.table th:nth-child(5), .table td:nth-child(5) { width: 8%; }  /* Jumlah Barang */
-.table th:nth-child(6), .table td:nth-child(6) { width: 12%; } /* Merk */
-.table th:nth-child(7), .table td:nth-child(7) { width: 10%; } /* Kondisi */
-.table th:nth-child(8), .table td:nth-child(8) { width: 15%; } /* Keterangan */
+.table th:nth-child(1), .table td:nth-child(1) { width: 5%; }  
+/* No */
+.table th:nth-child(2), .table td:nth-child(2) { width: 20%; } 
+/* Nama Barang */
+.table th:nth-child(3), .table td:nth-child(3) { width: 10%; } 
+/* Tahun Perolehan */
+.table th:nth-child(4), .table td:nth-child(4) { width: 20%; } 
+/* Spesifikasi */
+.table th:nth-child(5), .table td:nth-child(5) { width: 8%; }  
+/* Jumlah Barang */
+.table th:nth-child(6), .table td:nth-child(6) { width: 12%; } 
+/* Merk */
+.table th:nth-child(7), .table td:nth-child(7) { width: 10%; } 
+/* Kondisi */
+.table th:nth-child(8), .table td:nth-child(8) { width: 15%; } 
+/* Keterangan
 
 /* --- LAMPIRAN TITLE --- */
 .lampiran-title {

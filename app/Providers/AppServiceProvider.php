@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
             $requestedCount = DataInternal::where('status', 'locked')->where('is_requested', 1)->count();
-            $adminPhone = Setting::where('key', 'admin_phone')->first()->value ?? '6281234567890';
+            $adminPhone = Setting::where('key', 'admin_phone')->first()->value ?? '';
             $view->with('requestedCount', $requestedCount);
             $view->with('adminPhone', $adminPhone);
         });

@@ -34,7 +34,19 @@
               <div class="mb-3">
                 <label for="admin_phone" class="form-label">Admin WhatsApp Phone Number</label>
                 <input type="text" class="form-control" id="admin_phone" name="admin_phone" value="{{ $settings['admin_phone'] ?? '' }}" placeholder="e.g. 6281234567890">
-                <small class="form-text text-muted">Enter the phone number without + or spaces, e.g. 6281234567890</small>
+                <small class="form-text text-muted">Masukkan nomor WA admin tanpa + atau spasi, contoh. 6281234567890</small>
+              </div>
+              <hr>
+              <h4>Generate PSP settings</h4>
+              <div class="mb-3">
+                <label for="biro" class="form-label">Kepala Biro Umum</label>
+                <input type="text" class="form-control" id="biro" name="biro" value="{{ $settings['biro'] ?? '' }}" placeholder="e.g. John Smith">
+                <small class="form-text text-muted">Masukkan nama kepala biro umum, contoh. John Smith</small>
+              </div>
+              <div class="mb-3">
+                <label for="nip_biro" class="form-label">NIP Kepala Biro Umum</label>
+                <input type="text" class="form-control" id="nip_biro" name="nip_biro" value="{{ $settings['nip_biro'] ?? '' }}" placeholder="e.g. 19690705 199603 1 001">
+                <small class="form-text text-muted">Masukkan NIP kepala biro umum, contoh. 19690705 199603 1 001</small>
               </div>
               <button type="submit" class="btn btn-primary">Save Settings</button>
             </form>

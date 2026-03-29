@@ -15,6 +15,16 @@ table.dataTable td.dt-action-col{
     white-space: nowrap;
 }
 
+/* Make checkbox column sticky */
+table.dataTable th.checkbox-col,
+table.dataTable td.checkbox-col {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 2;
+    white-space: nowrap;
+}
+
 /* Header should be above body */
 table.dataTable th.dt-action-col {
     /* z-index: 3; */
@@ -32,6 +42,18 @@ table.dataTable th.dt-action-col::before {
     bottom: 0;
     width: 6px;
     background: linear-gradient(to left, rgba(0,0,0,.15), transparent);
+}
+
+/* Shadow separator for checkbox column */
+table.dataTable td.checkbox-col::after,
+table.dataTable th.checkbox-col::after {
+    content: "";
+    position: absolute;
+    right: -6px;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: linear-gradient(to right, rgba(0,0,0,.15), transparent);
 }
 
 /* .dt-action-col {
@@ -690,7 +712,7 @@ table.dataTable th.dt-action-col::before {
     },
 
     columns: [
-        { data: null, orderable: false, searchable: false, render: function(data, type, row) { 
+        { data: null, orderable: false, searchable: false, className: 'checkbox-col', render: function(data, type, row) { 
             return '<input type="checkbox" class="row-checkbox form-check-input" value="' + row.id + '">'; 
         } },
         { data: 'DT_RowIndex', orderable: false, searchable: false },
