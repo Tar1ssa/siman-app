@@ -215,6 +215,7 @@ class InternalController extends Controller
 
                 // --- NUP ---
                 $nup = trim($row['nup'] ?? '');
+                $normalizedNup = isset($row['nup']) ? (int) str_replace(',', '', $row['nup']) : null;
                 if ($nup === '' || !preg_match('/^\d+$/', $nup)) {
                     $reasons[] = 'NUP kosong atau bukan angka';
                 }
@@ -230,17 +231,78 @@ class InternalController extends Controller
                     $reasons[] = 'Kode barang dan uraian barang kosong';
                 }
 
-                // --- DUPLICATE ---
-                if (!$kodeEmpty && $nup !== '') {
-                    $key = $kode . '|' . $nup;
-                    $findDuplicate = DataInternal::whereHas('barang', function ($q) use ($row){
-                            $q->where('kode_barang', 'LIKE', $row['kodebarang']);
-                        })->where('nup', $row['nup'])->exists();
+                if ($row['kodebarang'] !== '' && ctype_digit($row['kodebarang'])) {
+                            //  Valid numeric kode_barang
+                            $barang = Barang::firstOrCreate(
+                                ['kode_barang' => $row['kodebarang']],
+                                ['nama_barang' => $row['uraianbarang']]
+                            );
+                        } else {
+                            // Try to find Barang by nama_barang first
+                            $barang = Barang::where('nama_barang', $row['uraianbarang'])->first();
 
-                    if (isset($seenCombinations[$key]) || $findDuplicate) {
-                        $reasons[] = 'Duplikasi kodebarang + NUP dalam CSV'.', '. 'Kode/Nama Barang : ' . $row['kodebarang'] . ' - ' . $row['uraianbarang'] . ' ' . 'NUP :' . $row['nup'];
+                            if (!$barang) {
+                                // If not found, create a new one with both kode_barang and nama_barang
+                                $barang = Barang::create([
+                                    'kode_barang' => $row['kodebarang'] ?: 'unknown', // or handle invalid codes differently
+                                    'nama_barang' => $row['uraianbarang'],
+                                ]);
+                            }
+                        }
+
+                // --- DUPLICATE ---
+                // if (!$kodeEmpty && $nup !== '') {
+                //     $key = $kode . '|' . $nup;
+                //     $findDuplicate = DataInternal::where('barang_id', $barang->id)
+                //                     ->where('nup', $row['nup'])
+                //                     ->exists();
+
+
+                //     if (isset($seenCombinations[$key])) {
+                //         $reasons[] = 'Duplikasi kodebarang + NUP dalam CSV'.', '. 'Kode/Nama Barang : ' . $row['kodebarang'] . ' - ' . $row['uraianbarang'] . ' ' . 'NUP :' . $row['nup'];
+                //     }
+
+                //     if ($findDuplicate) {
+                //         $reasons[] = 'Duplikasi kodebarang + NUP di database'.', '. 'Kode/Nama Barang : ' . $row['kodebarang'] . ' - ' . $row['uraianbarang'] . ' ' . 'NUP :' . $row['nup'];
+                //     }
+                // }
+
+                // if ($reasons) {
+                //     $invalidRows[] = [
+                //         'row' => $row,
+                //         'reasons' => $reasons,
+                //     ];
+                //     continue;
+                // }
+
+                // $seenCombinations[$key] = true;
+                // $mapped[] = $row;
+
+                // --- DUPLICATE ---
+                if ($normalizedNup !== null) {
+                    $key = $uraian . '|' . $normalizedNup;
+                    Log::info("Checking key: $key, barang_id: {$barang->id}, nup: $normalizedNup");
+                    $findDuplicate = DB::table('data_internals')->where('barang_id', $barang->id)
+                                    ->where('nup', $normalizedNup)
+                                    ->exists();
+
+                    if (isset($seenCombinations[$key])) {
+                        $reasons[] = 'Duplikasi kodebarang + NUP dalam CSV, '
+                            . 'Kode/Nama Barang : ' . $row['kodebarang']
+                            . ' - ' . $row['uraianbarang']
+                            . ' NUP :' . $row['nup'];
+                        Log::info("Duplicate found in CSV for key: $key");
                     } else {
                         $seenCombinations[$key] = true;
+                        Log::info("No duplicate found in CSV for key: $key");
+                    }
+
+                    if ($findDuplicate) {
+                        $reasons[] = 'Duplikasi kodebarang + NUP di database, '
+                            . 'Kode/Nama Barang : ' . $row['kodebarang']
+                            . ' - ' . $row['uraianbarang']
+                            . ' NUP :' . $row['nup'];
+                        Log::info("Duplicate found in database for key: $key");
                     }
                 }
 
@@ -249,10 +311,21 @@ class InternalController extends Controller
                         'row' => $row,
                         'reasons' => $reasons,
                     ];
-                    continue;
+                    Log::info("Row marked as invalid: " . json_encode($row) . " Reasons: " . implode('; ', $reasons));
+                    continue; // skip this row entirely
+                } else {
+                    $row['barang_id'] = $barang->id;
+                    // $row['satker_id'] = $satker->id ?? null;
+                    $mapped[] = $row; // only map if no reasons
+                    Log::info("Row mapped successfully: " . json_encode($row));
                 }
 
-                $mapped[] = $row;
+                // only reached if no reasons
+
+
+
+
+
             }
 
             // validation
@@ -308,6 +381,7 @@ class InternalController extends Controller
 
             foreach (array_chunk($mapped, 500) as $chunk) {
                 foreach ($chunk as $row) {
+                    Log::info("Inserting row: " . json_encode($row));
                         $tglBAHI = $this->normalizeCsvDateToYMD($row['tanggalbahiberitaacarahasilinven']);
 
                         $perolehan_tgl = $this->normalizeCsvDateToYMD($row['tahunperolehan']);
@@ -350,19 +424,19 @@ class InternalController extends Controller
                             }
                         }
 
-                        if ($row['kodebarang'] !== '' && ctype_digit($row['kodebarang'])) {
-                            //  Valid numeric kode_barang
-                            $barang = Barang::firstOrCreate(
-                                ['kode_barang' => $row['kodebarang']],
-                                ['nama_barang' => $row['uraianbarang']]
-                            );
-                        } else {
-                            //  kode_barang invalid → fallback to nama_barang
-                            $barang = Barang::firstOrCreate(
-                                ['nama_barang' => $row['uraianbarang']],
-                                ['kode_barang' => null]
-                            );
-                        }
+                        // if ($row['kodebarang'] !== '' && ctype_digit($row['kodebarang'])) {
+                        //     //  Valid numeric kode_barang
+                        //     $barang = Barang::firstOrCreate(
+                        //         ['kode_barang' => $row['kodebarang']],
+                        //         ['nama_barang' => $row['uraianbarang']]
+                        //     );
+                        // } else {
+                        //     //  kode_barang invalid → fallback to nama_barang
+                        //     $barang = Barang::firstOrCreate(
+                        //         ['nama_barang' => $row['uraianbarang']],
+                        //         ['kode_barang' => null]
+                        //     );
+                        // }
 
 
                         $nilaiPerolehan  = $this->normalizeNumeric($row['nilaiaset'], 'nilaiaset');
@@ -378,7 +452,7 @@ class InternalController extends Controller
                         $insertData = DataInternal::create([
                             // 'bmn_id' => $bmn->id,
                             'satker_id' => $satker->id,
-                            'barang_id' => $barang->id,
+                            'barang_id' => $row['barang_id'],
                             'nup' => isset($row['nup'])
                                     ? (int) str_replace(',', '', $row['nup'])
                                     : null,
@@ -1407,7 +1481,7 @@ class InternalController extends Controller
                 'identitas_id',
                 'status'
             ])
-            
+
             // ->whereNot('status', 'locked')
             ; // Exclude locked records from regular datatable
 
@@ -1992,7 +2066,7 @@ class InternalController extends Controller
                     $extension = strtolower($file->getClientOriginalExtension());
                     $filename = $file->storeAs(
                         'documents/'. $unitKerjaName,
-                        "document-{$barangName}-{$nup}-{$validated['merk']}-{$validated['tipe']}-{$validated['documentTitles'][$index]}-"
+                        "internal-{$barangName}-{$nup}-{$validated['merk']}-{$validated['tipe']}-{$validated['documentTitles'][$index]}-"
                         . time() . Str::uuid() . "." . $extension,
                         'public'
                     );
@@ -2058,7 +2132,7 @@ class InternalController extends Controller
         $nilai = abs($nilai);
         $huruf = ["", "satu", "dua", "tiga", "empat", "lima", "enam",
                 "tujuh", "delapan", "sembilan", "sepuluh", "sebelas"];
-        
+
         if ($nilai < 12) {
             return " " . $huruf[$nilai];
         } elseif ($nilai < 20) {

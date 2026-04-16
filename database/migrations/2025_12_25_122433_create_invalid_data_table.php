@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('satker_id')->nullable()->constrained('satkers')->onDelete('cascade');
             $table->foreignId('barang_id')->nullable()->constrained('barangs')->onDelete('cascade');
-            $table->unique(['barang_id', 'nup']);
             $table->string('nup')->nullable();
             $table->date('tgl_perolehan')->nullable();
             $table->string('merkRaw')->nullable();

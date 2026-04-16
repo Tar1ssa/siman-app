@@ -88,8 +88,12 @@ class PspController extends Controller
         // Fetch the selected DataInternal records
         $data = DataInternal::whereIn('id', $selectedIds)->with('barang')->get();
 
-        $biro = Setting::where('key', 'biro')->first()->value ?? '';
-        $nip_biro = Setting::where('key', 'nip_biro')->first()->value ?? '';
+        $settings = Setting::whereIn('key', ['biro', 'nip_biro', 'kepada', 'jabatan', 'lokasi'])->pluck('value', 'key');
+        $biro = $settings['biro'] ?? '';
+        $nip_biro = $settings['nip_biro'] ?? '';
+        $kepada = $settings['kepada'] ?? '';
+        $jabatan = $settings['jabatan'] ?? '';
+        $lokasi = $settings['lokasi'] ?? '';
         
         // Set locale and date
         \Carbon\Carbon::setLocale('id');
@@ -99,6 +103,9 @@ class PspController extends Controller
         $pdfData = [
             'data' => $data,
             'biro' => $biro,
+            'kepada' => $kepada,
+            'jabatan' => $jabatan,
+            'lokasi' => $lokasi,
             'nip_biro' => $nip_biro,
             'lampiran' => $lampiran,
             'tahun' => $todayDate->year,
@@ -109,6 +116,7 @@ class PspController extends Controller
         $pdf = Pdf::loadView('pdf.psp', $pdfData)
                 ->setPaper('A4', 'portrait');
 
-        return $pdf->stream('surat PSP.pdf');
+        $filename = "surat_PSP_{$todayDate->format('Ymd')}.pdf";
+        return $pdf->stream($filename);
     }
 }

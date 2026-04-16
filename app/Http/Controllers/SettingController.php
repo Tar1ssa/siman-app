@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Setting;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class SettingController extends Controller
@@ -17,27 +18,54 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
-        $request->validate([
-            'admin_phone' => 'required|string|max:20',
-            'biro' => 'required|string|max:40',
-            'nip_biro' => 'required|string|max:40',
-        ]);
-        Setting::updateOrCreate(
-            ['key' => 'admin_phone'],
-            ['value' => $request->admin_phone]
-        );
+        DB::beginTransaction();
+        try {
 
-        Setting::updateOrCreate(
-            ['key' => 'biro'],
-            ['value' => $request->biro]
-        );
 
-        Setting::updateOrCreate(
-            ['key' => 'nip_biro'],
-            ['value' => $request->nip_biro]
-        );
+            $request->validate([
+                'admin_phone' => 'string|max:20',
+                'biro' => 'string|max:40',
+                'nip_biro' => 'string|max:40',
+            ]);
 
-        Alert::success('Success', 'Settings updated successfully');
-        return redirect()->back();
+            Setting::updateOrCreate(
+                ['key' => 'admin_phone'],
+                ['value' => $request->admin_phone]
+            );
+
+            Setting::updateOrCreate(
+                ['key' => 'biro'],
+                ['value' => $request->biro]
+            );
+
+            Setting::updateOrCreate(
+                ['key' => 'nip_biro'],
+                ['value' => $request->nip_biro]
+            );
+
+            Setting::updateOrCreate(
+                ['key' => 'kepada'],
+                ['value' => $request->kepada]
+            );
+
+            Setting::updateOrCreate(
+                ['key' => 'jabatan'],
+                ['value' => $request->jabatan]
+            );
+
+            Setting::updateOrCreate(
+                ['key' => 'lokasi'],
+                ['value' => $request->lokasi]
+            );
+
+            DB::commit();
+            Alert::success('Success', 'Settings updated successfully');
+            return redirect()->back();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Alert::error('Error', 'Failed to update settings: ' . $th->getMessage());
+            return redirect()->back();
+        }
+
     }
 }

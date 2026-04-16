@@ -2,10 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class DataInternal extends Model
 {
+    // use HasFactory;
+
+    protected $casts = [
+        'tgl_perolehan' => 'date',
+        'tgl_bahi' => 'date',
+        'nup' => 'integer',
+    ];
+
     protected $fillable = [
         'satker_id',
         'barang_id',
@@ -54,10 +63,7 @@ class DataInternal extends Model
         'is_requested',
     ];
 
-    protected $casts = [
-        'tgl_perolehan' => 'date',
-        'tgl_bahi' => 'date',
-    ];
+
 
     public function bmns()
     {

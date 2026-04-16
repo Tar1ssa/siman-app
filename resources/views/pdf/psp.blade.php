@@ -148,11 +148,32 @@ style=" left:-1.7cm; top:-0.9cm;">
 </tr>
 </table>
 
-<p>
-Yth. Kepala Biro Umum KLH/BPLH.<br>
-di-<br>
-&nbsp;&nbsp;&nbsp;Jakarta
+<table class="meta-table" 
+style="border-collapse: separate; 
+margin-bottom: 0 !important; 
+width: 60%; 
+margin: 0 0 0 -0.2cm;
+padding:0 0 0 0;
+border-spacing: 0 -0.8cm; ">
+<tr>
+    <td width="10px">Yth.</td>
+    <td >{{$kepada}}.</td>
+</tr>
+<tr >
+    <td colspan="2" style="padding-top:-8cm; line-height: 0.5;">di-</td>
+</tr>
+<tr>
+    <td colspan="2" style="padding-left:0.7cm; line-height: 0.5;">{{$lokasi}}</td>
+</tr>
+</table>
+
+{{-- <p style="width:50%;" >
+Yth. {{$kepada}}.
 </p>
+<p>
+di-<br>
+&nbsp;&nbsp;&nbsp;{{$lokasi}}
+</p> --}}
 
 <div class="content">
 
@@ -183,7 +204,7 @@ Atas perhatian dan kerjasamanya, diucapkan terima kasih.
 <tr>
 <td width="60%"></td>
 <td>
-Kepala Biro Umum,<br><br><br><br><br><br>
+{{$jabatan}},<br><br><br><br><br><br>
 
 <u>{{$biro}}</u><br>
 NIP. {{$nip_biro}}

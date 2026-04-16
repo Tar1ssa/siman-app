@@ -429,7 +429,8 @@ class InvalidController extends Controller
                         ->orWhere('invalid_data.pembukuan', 'like', "%{$search}%")
                         ->orWhere('invalid_data.pembukuan', 'like', "%{$search}%")
                         ->orWhere('invalid_data.label', 'like', "%{$search}%")
-                        ->orWhere('invalid_data.tipe', 'like', "%{$search}%");
+                        ->orWhere('invalid_data.tipe', 'like', "%{$search}%")
+                        ->orWhere('invalid_data.description', 'like', "%{$search}%");
                     });
                 }
         })

@@ -810,6 +810,8 @@
                     // Sembunyikan input teks
                     document.getElementById("otherLokasiLabel").style.display = "none";
                     document.getElementById("otherLokasiInput").style.display = "none";
+                    document.getElementById("otherLokasiInput").value = "";
+
                 }
             });
 
@@ -824,6 +826,7 @@
                     // Sembunyikan input teks
                     document.getElementById("otherUnitTeknisLabel").style.display = "none";
                     document.getElementById("otherUnitTeknisInput").style.display = "none";
+                    document.getElementById("otherUnitTeknisInput").value = "";
                 }
             })
 
@@ -838,6 +841,7 @@
                     // Sembunyikan input teks
                     document.getElementById("otherUnitKerjaLabel").style.display = "none";
                     document.getElementById("otherUnitKerjaInput").style.display = "none";
+                    document.getElementById("otherUnitKerjaInput").value = "";
                 }
             })
 

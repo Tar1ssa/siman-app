@@ -53,11 +53,14 @@
                         <td>{{ $user->unitKerja->name ?? '-' }}</td>
                         <td>
                             <a href="{{ route('user.edit', $user->id) }}" class="btn btn-shadow btn-warning"><div class="d-flex justify-content-center align-items-center gap-2 text-center"><i class="ti ti-edit fs-5 text-white"></i>Edit</div> </a>
+                            @if ($user->id != 1)
+                                
                             <form onclick="return confirm('Yakin ingin menghapus {{ $user->name }} ?')" action="{{ route('user.destroy', $user->id) }}" method="post" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                 <button class="btn btn-shadow btn-danger"><div class="d-flex justify-content-center align-items-center gap-2 text-center"><i class="ti ti-trash fs-5 text-white"></i>Hapus</div></button>
                             </form>
+                            @endif
                         </td>
                       </tr>
                        @endforeach

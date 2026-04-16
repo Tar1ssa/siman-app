@@ -1,0 +1,272 @@
+
+   FAIL  Tests\Feature\UserControllerTest
+  ⨯ it can display user index page
+  ⨯ it can display create user form
+  ⨯ it can store a new user with valid data
+  ⨯ it cannot store user with invalid data
+  ⨯ it cannot store user with duplicate email
+  ⨯ it can display edit user form
+  ⨯ it can update user with valid data
+  ⨯ it can update user password
+  ⨯ it cannot update user with invalid password confirmation
+  ⨯ it cannot update user with duplicate email
+  ⨯ it can delete user
+  ⨯ it cannot delete admin user
+  ⨯ it requires authentication for all user routes
+  ⨯ it requires admin role for user management
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it can display…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it can display…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it can store a…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it cannot stor…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it cannot stor…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it can display…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it can update…   QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it can update…   QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it cannot upda…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it cannot upda…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it can delete…   QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it cannot dele…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it requires au…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+  ────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\UserControllerTest > it requires ad…  QueryException   
+  SQLSTATE[HY000]: General error: 1005 Can't create table `siman_app`.`siman_data` (errno: 150 "Foreign key constraint is incorrectly formed") (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: siman_app, SQL: alter table `siman_data` add constraint `siman_data_bmn_id_foreign` foreign key (`bmn_id`) references `bmns` (`id`) on delete cascade)
+
+  at vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+    580▕             $this->bindValues($statement, $this->prepareBindings($bindings));
+    581▕ 
+    582▕             $this->recordsHaveBeenModified();
+    583▕ 
+  ➜ 584▕             return $statement->execute();
+    585▕         });
+    586▕     }
+    587▕ 
+    588▕     /**
+
+  1   vendor\laravel\framework\src\Illuminate\Database\Connection.php:584
+  2   vendor\laravel\framework\src\Illuminate\Database\Connection.php:827
+
+
+  Tests:    14 failed (0 assertions)
+  Duration: 8.78s
+

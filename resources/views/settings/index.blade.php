@@ -39,12 +39,27 @@
               <hr>
               <h4>Generate PSP settings</h4>
               <div class="mb-3">
-                <label for="biro" class="form-label">Kepala Biro Umum</label>
+                <label for="kepada" class="form-label">Kepada</label>
+                <input type="text" class="form-control" id="kepada" name="kepada" value="{{ $settings['kepada'] ?? '' }}" placeholder="e.g. Kepala Biro Umum KLH/BPLH">
+                <small class="form-text text-muted">Masukkan nama tujuan, contoh. Yth. "Kepala Biro Umum KLH/BPLH"</small>
+              </div>
+              <div class="mb-3">
+                <label for="lokasi" class="form-label">Lokasi</label>
+                <input type="text" class="form-control" id="lokasi" name="lokasi" value="{{ $settings['lokasi'] ?? '' }}" placeholder="e.g. Jakarta">
+                <small class="form-text text-muted">Masukkan nama tujuan, contoh. di- "Jakarta"</small>
+              </div>
+              <div class="mb-3">
+                <label for="jabatan" class="form-label">Jabatan Penanda Tangan</label>
+                <input type="text" class="form-control" id="jabatan" name="jabatan" value="{{ $settings['jabatan'] ?? '' }}" placeholder="e.g. Kepala Biro Umum">
+                <small class="form-text text-muted">Masukkan nama jabatan, contoh. Kepala Biro Umum</small>
+              </div>
+              <div class="mb-3">
+                <label for="biro" class="form-label">Nama Penanda Tangan</label>
                 <input type="text" class="form-control" id="biro" name="biro" value="{{ $settings['biro'] ?? '' }}" placeholder="e.g. John Smith">
                 <small class="form-text text-muted">Masukkan nama kepala biro umum, contoh. John Smith</small>
               </div>
               <div class="mb-3">
-                <label for="nip_biro" class="form-label">NIP Kepala Biro Umum</label>
+                <label for="nip_biro" class="form-label">NIP Penanda tangan</label>
                 <input type="text" class="form-control" id="nip_biro" name="nip_biro" value="{{ $settings['nip_biro'] ?? '' }}" placeholder="e.g. 19690705 199603 1 001">
                 <small class="form-text text-muted">Masukkan NIP kepala biro umum, contoh. 19690705 199603 1 001</small>
               </div>

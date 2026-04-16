@@ -40,6 +40,7 @@
             <li><hr class=""></li>
             <li class="pc-item"><a class="pc-link" href="{{ route('settings.index') }}">Settings</a></li>
             <li class="pc-item"><a class="pc-link" href="{{ route('backups.index') }}">Backup Dashboard</a></li>
+            {{-- <li class="pc-item"><a class="pc-link" href="{{ route('test-dashboard') }}">Test Dashboard</a></li> --}}
 
             {{-- <li class="pc-item pc-hasmenu">
               <a href="#!" class="pc-link">User<span class="pc-arrow"><i data-feather="chevron-right"></i></span></a>

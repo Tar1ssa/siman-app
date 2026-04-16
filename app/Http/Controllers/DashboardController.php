@@ -7,6 +7,8 @@ use App\Models\InvalidData;
 use App\Models\simanData;
 use App\Models\UnitKerja;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -222,4 +224,5 @@ class DashboardController extends Controller
             'countRusakBerat' => number_format($countRusakBerat),
         ]);
     }
+
 }

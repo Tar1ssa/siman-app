@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\BackupDatabaseAndFiles::class,
         \App\Console\Commands\BackupCheck::class,
         \App\Console\Commands\DeleteOldActivityLogs::class,
+        \App\Console\Commands\RunTestsCommand::class,
     ];
 
     /**

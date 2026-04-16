@@ -4,10 +4,13 @@ namespace App\Models;
 
 use App\Models\bmn;
 use App\Models\satker;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class simanData extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'bmn_id',
         'satker_id',

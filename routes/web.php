@@ -49,6 +49,9 @@ Route::middleware('auth')->group(function () {
             [BackupController::class, 'destroy'])
             ->name('backups.delete');
 
+        Route::get('/admin/test-dashboard', [DashboardController::class, 'testDashboard'])->name('test-dashboard');
+        Route::post('/admin/test-dashboard/run', [DashboardController::class, 'runTests'])->name('test-dashboard.run');
+
         Route::resource('bmn', BmnController::class);
         Route::resource('satker', SatkerController::class);
         Route::resource('barang', BarangController::class);

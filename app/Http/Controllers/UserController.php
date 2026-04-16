@@ -135,6 +135,10 @@ class UserController extends Controller
 
             $user->name = $request->name;
             $user->email = $request->email;
+            if ($user->id == 1) {
+                Alert::error('Gagal!', 'Level user admin tidak dapat diubah.');
+                return redirect()->back()->withInput();
+            }
             $user->level_id = $request->level_id;
             $user->unit_kerja_id = $request->unit_kerja_id ?? null;
 
@@ -167,6 +171,10 @@ class UserController extends Controller
     {
         return DB::transaction(function () use ($id) {
             $user = User::where('id', $id)->lockForUpdate()->firstOrFail();
+            if ($user->id == 1) {
+                Alert::error('Gagal!', 'User admin tidak dapat dihapus.');
+                return redirect()->back();
+            }
             $userName = $user->name;
             $user->delete();
 
