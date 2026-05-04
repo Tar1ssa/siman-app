@@ -61,6 +61,7 @@ class DataInternal extends Model
         'ket_penugasan',
         'ket_unit_teknis',
         'is_requested',
+        'is_borrowed',
     ];
 
 

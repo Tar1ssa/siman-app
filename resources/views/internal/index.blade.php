@@ -110,20 +110,20 @@ table.dataTable th.dt-action-col::before {
                                 <div class="collapse"  id="collapseAction">
                                     <div class="card card-body d-flex gap-2 flex-row">
                                         <a href="{{ route('internal.make') }}" class="btn btn-shadow btn-success">Tambah data Internal</a>
-    
+
                                         <a href="{{ route('internal.create') }}" class="btn btn-shadow btn-primary">Import data Internal</a>
-    
+
                                         <a href="{{ route('export.internal-all') }}" class="btn btn-shadow btn-info">Export All Data</a>
-    
+
                                         @if (auth()->user()->isAdmin())
                                             <a
                                                 href="{{route('psp.index')}}"
                                                 class="btn btn-shadow btn-primary"
-    
+
                                                 >
                                                 Generate Dokumen PSP
                                             </a>
-    
+
                                             <button
                                                 type="button"
                                                 class="btn btn-shadow btn-danger"
@@ -137,8 +137,8 @@ table.dataTable th.dt-action-col::before {
                                 </div>
                     </div>
                 </div>
-                
-                
+
+
               </div>
               <div class="card-body">
                 <div class="row">
@@ -357,6 +357,16 @@ table.dataTable th.dt-action-col::before {
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <label for="isBorrowedSearch">Status Peminjaman</label>
+                        <select name="isBorrowedSearch" id="isBorrowedSearch" class="form-control">
+                            <option value="" selected disabled>--Pilih Status Peminjaman--</option>
+                            <option value="">Semua</option>
+                            <option value="3">Tidak Dipinjam</option>
+                            <option value="1">Dipinjam</option>
+                            <option value="2">Sudah Dikembalikan</option>
+                        </select>
+                    </div>
                 </div>
 
                 {{-- filter by identitas --}}
@@ -395,6 +405,7 @@ table.dataTable th.dt-action-col::before {
                                 <th>Link Kelengkapan LHI</th>
                                 <th>Nomor BAHI (Berita Acara Hasil Inven)</th>
                                 <th>Tanggal BAHI (Berita Acara Hasil Inven)</th>
+                                <th>Status Peminjaman</th>
                                 <th>Status</th>
                                 <th>Batch</th>
                                 <th >Aksi</th>
@@ -404,67 +415,8 @@ table.dataTable th.dt-action-col::before {
                         <tbody></tbody>
                     </table>
 
-                  {{-- <table id="new-cons" class=" table table-striped table-hover" style="width: 100%">
-                    <thead>
-                        <th>No.</th>
-                        <th>Jenis BMN</th>
-                        <th>Kode Satker</th>
-                        <th>Nama Satker</th>
-                        <th>Kode Barang</th>
-                        <th>NUP</th>
-                        <th>Nama Barang</th>
-                        <th>Merk</th>
-                        <th>Tipe</th>
-                        <th>Kondisi</th>
-                        <th>No Dokumen</th>
-                        <th>No BPKP</th>
-                        <th>No Polisi</th>
-                        <th>No Sertifikat</th>
-                        <th>Tanggal Perolehan</th>
-                        <th>Nilai Perolehan</th>
-                        <th>Nilai Penyusutan</th>
-                        <th>Nilai Buku</th>
-                        <th>Kode Register</th>
-                        <th>Lokasi Ruang</th>
-                        <th>Nama Pengguna </th>
-                        <th>Link Foto Dokumentasi</th>
-                        <th>Opname (terbaru)</th>
-                        <th>Import Batch</th>
-                    </thead>
-                    <tbody>
-                        @foreach ($datainternal as $index => $data)
-                        <tr>
-                        <td>{{$index+=1}}</td>
-                        <td>{{ $data->bmns->name }}</td>
-                        <td>{{ $data->satkers->kode_satker }}</td>
-                        <td>{{ $data->satkers->nama_satker }}</td>
-                        <td>{{ $data->kode_barang }}</td>
-                        <td>{{ $data->nup }}</td>
-                        <td>{{ $data->nama_barang }}</td>
-                        <td>{{ $data->merk }}</td>
-                        <td>{{ $data->tipe }}</td>
-                        <td>{{ $data->kondisi }}</td>
-                        <td>{{ $data->no_dokumen }}</td>
-                        <td>{{ $data->no_BPKP }}</td>
-                        <td>{{ $data->no_polisi }}</td>
-                        <td>{{ $data->no_sertifikat }}</td>
-                        <td>{{ $data->tgl_perolehan }}</td>
-                        <td data-value="{{ $data->nilai_perolehan }}">{{ $data->nilai_perolehan_fmt }}</td>
-                        <td data-value="{{ $data->nilai_penyusutan }}">{{ $data->nilai_penyusutan_fmt }}</td>
-                        <td data-value='{{$data->nilai_buku}}'>{{ $data->nilai_buku_fmt }}</td>
-                        <td>{{ $data->kode_register }}</td>
-                        <td>{{ $data->lokasi_ruang }}</td>
-                        <td>{{ $data->nama_pengguna }}</td>
-                        <td>{{ $data->link_dokumentasi }}</td>
-                        <td>{{ $data->opname }}</td>
-                        <td>{{ $data->import_batch_id }}</td>
-                        </tr>
-                        @endforeach
 
-                    </tbody>
-                  </table> --}}
-                {{-- </div> --}}
-              </div>
+            </div>
 
     </div>
 
@@ -742,6 +694,10 @@ table.dataTable th.dt-action-col::before {
         newcs.draw();
     });
 
+    $('#isBorrowedSearch').on('change', function () {
+        newcs.draw();
+    });
+
     // $('#nupSearch').on('keyup', function () {
     //     newcs.draw();
     // });
@@ -769,6 +725,7 @@ table.dataTable th.dt-action-col::before {
             d.unitSearch   = $('#unitSearch').val();
             d.lokasiSearch = $('#lokasiSearch').val();
             d.statusSearch = $('#statusSearch').val();
+            d.isBorrowedSearch = $('#isBorrowedSearch').val();
             d.kategoriIdentitasSearch = $('#kategoriIdentitasSearch').val();
             d.identitasSearch = $('#identitasSearch').val();
             d.nupMin = $('#nupMin').val();
@@ -810,6 +767,7 @@ table.dataTable th.dt-action-col::before {
         { data: 'link_lhi' },
         { data: 'no_bahi' },
         { data: 'tgl_bahi' },
+        { data: 'is_borrowed', name: 'is_borrowed', orderable: false, searchable: false },
         {
                 data: 'status',
                 name: 'status',

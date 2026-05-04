@@ -1053,7 +1053,7 @@ class InternalController extends Controller
                 'satker_id' => 'required|exists:satkers,id',
                 'barang_id' => 'required|exists:barangs,id',
                 'unitkerja_id' => 'required|exists:unit_kerjas,id',
-
+                // 'lokasi_id' => 'nullable',
                 'tgl_perolehan' => 'required|date',
                 'merk' => 'nullable|string',
                 'tipe' => 'nullable|string',
@@ -1076,8 +1076,16 @@ class InternalController extends Controller
                 'ketLokasi' => 'nullable|string',
                 'ket_penugasan' => 'nullable|string',
                 'ket_unit_teknis' => 'nullable|string',
-
+                'is_borrowed' => 'nullable|in:0,1,2',
             ]);
+
+            if(($request->lokasi_id === null || $request->lokasi_id === '') && ($validated['ketLokasi'] === null || $validated['ketLokasi'] === '')) {
+                throw ValidationException::withMessages([
+                    'lokasi_id' => 'Lokasi harus diisi jika keterangan lokasi kosong',
+                    'ketLokasi' => 'Keterangan lokasi harus diisi jika lokasi kosong',
+                ]);
+
+            }
 
             $identitas = identitas::with('atribut')->findOrFail($request->identitas_id);
 
@@ -1149,7 +1157,7 @@ class InternalController extends Controller
             $dataInternal->unit_kerja_id = $validated['unitkerja_id'];
             $dataInternal->pengguna_unitkerja_id = $validated['pengguna_unitkerja_id'] ?: null;
             $dataInternal->unit_teknis_id = $validated['unit_teknis_id'] ?: null;
-            $dataInternal->lokasi_id = $validated['lokasi_id'] ?? null;
+            $dataInternal->lokasi_id = $request->lokasi_id ?: null;
             // $dataInternal->nup = $nup;
             $dataInternal->tgl_perolehan = $validated['tgl_perolehan'];
             $dataInternal->merk = $validated['merk']?? null;
@@ -1157,6 +1165,7 @@ class InternalController extends Controller
             $dataInternal->jumlah = $validated['jumlah'];
             $dataInternal->nilai_aset = $validated['nilai_perolehan'];
             $dataInternal->kondisi = $validated['kondisi'];
+            $dataInternal->is_borrowed = $validated['is_borrowed'] ?? null;
             $dataInternal->pembukuan = $validated['pembukuan'] ?? null;
             $dataInternal->link_dokumentasi = $validated['link_dokumentasi'] ?? null;
             $dataInternal->nama_pengguna = $validated['name']?? null;
@@ -1464,6 +1473,7 @@ class InternalController extends Controller
                 'nilai_penyusutan',
                 'nilai_buku',
                 'kondisi',
+                'is_borrowed',
                 'pembukuan',
                 'unit_kerja_id',
                 'penggunaRaw',
@@ -1552,6 +1562,16 @@ class InternalController extends Controller
             ->editColumn('nilai_buku', fn ($row) =>
                 'Rp. ' . number_format($row->nilai_buku, 2, ',', '.')
             )
+            ->editColumn('is_borrowed', function ($row) {
+                if ($row->is_borrowed === 1) {
+                    return '<span class="badge bg-warning">Dipinjam</span>';
+                } elseif ($row->is_borrowed === 2) {
+                    return '<span class="badge bg-success">Sudah Dikembalikan</span>';
+                } else {
+                    return '<span class="badge bg-secondary">Tidak Dipinjam</span>';
+                }
+            })
+
             ->addColumn('status', function ($row) {
                 if ($row->status === 'locked') {
                     return '<span class="badge bg-danger">Terkunci</span>';
@@ -1567,6 +1587,7 @@ class InternalController extends Controller
             ->addColumn('action', function ($row) {
                 return view('internal.partials.action', compact('row'))->render();
             })
+
 
             // raw numeric for sorting
             ->orderColumn('nilai_aset', 'nilai_aset $1')
@@ -1667,6 +1688,17 @@ class InternalController extends Controller
                     $query->where('status', $request->statusSearch);
                 }
 
+                // is_borrowed filter
+                if ($request->filled('isBorrowedSearch')) {
+                    if ($request->isBorrowedSearch === '3') {
+                        $query->whereNull('is_borrowed');
+                    } else {
+
+                        $query->where('is_borrowed', $request->isBorrowedSearch);
+                    }
+
+                }
+
                 if ($search = $request->input('search.value')) {
                     $query->where(function ($q) use ($search) {
                         $q
@@ -1683,7 +1715,7 @@ class InternalController extends Controller
                     });
                 }
             })
-            ->rawColumns(['action', 'status', 'identitas', 'foto_barang'])
+            ->rawColumns(['action', 'status', 'identitas', 'foto_barang', 'is_borrowed'])
             ->make(true);
     }
 
@@ -1731,7 +1763,7 @@ class InternalController extends Controller
                 'satker_id' => 'required|exists:satkers,id',
                 'barang_id' => 'required|exists:barangs,id',
                 'unitkerja_id' => 'required|exists:unit_kerjas,id',
-                // 'lokasi_id' => 'required|exists:lokasi_ruangs,id',
+                'lokasi_id' => 'nullable',
                 'pengguna_unitkerja_id' => 'nullable|exists:unit_kerjas,id',
                 'unit_teknis_id' => 'nullable|exists:unit_teknis,id',
                 'tgl_perolehan' => 'required|date',
@@ -1760,6 +1792,7 @@ class InternalController extends Controller
                 'documentDescriptions.*' => 'nullable|string',
                 'jabatan_pengguna' => 'nullable|string',
                 'alamat_pengguna' => 'nullable|string',
+                'nip_pengguna' => 'nullable|string',
                 'nama_pihak_pertama' => 'nullable|string',
                 'nip_pihak_pertama' => 'nullable|string',
                 'jabatan_pihak_pertama' => 'nullable|string',
@@ -1767,7 +1800,16 @@ class InternalController extends Controller
                 'ketLokasi' => 'nullable|string',
                 'ket_penugasan' => 'nullable|string',
                 'ket_unit_teknis' => 'nullable|string',
+                'is_borrowed' => 'nullable|in:0,1,2',
             ]);
+
+            if(($validated['lokasi_id'] === null || $validated['lokasi_id'] === '') && ($validated['ketLokasi'] === null || $validated['ketLokasi'] === '')) {
+                throw ValidationException::withMessages([
+                    'lokasi_id' => 'Lokasi harus diisi jika keterangan lokasi kosong',
+                    'ketLokasi' => 'Keterangan lokasi harus diisi jika lokasi kosong',
+                ]);
+
+            }
 
             // Handle profile image upload if provided
             $profileImagePath = null;
@@ -1885,37 +1927,37 @@ class InternalController extends Controller
             $dataInternal = DataInternal::create([
                 'satker_id' => $validated['satker_id'],
                 'barang_id' => $validated['barang_id'],
-                'lokasi_id' => $validated['lokasi_id'] ?? null,
-                'pengguna_unitkerja_id' => $validated['pengguna_unitkerja_id'] ?? null,
-                'unit_teknis_id' => $validated['unit_teknis_id'] ?? null,
+                'lokasi_id' => $validated['lokasi_id'] ?: null,
+                'pengguna_unitkerja_id' => $validated['pengguna_unitkerja_id'] ?: null,
+                'unit_teknis_id' => $validated['unit_teknis_id'] ?: null,
                 'identitas_id' => $identitas->id,
                 'nup' => $nup,
-                'unit_kerja_id' => $validated['unitkerja_id'] ?? null,
-                'tgl_perolehan' => $validated['tgl_perolehan'] ?? null,
-                'merk' => $validated['merk'] ?? null,
-                'tipe' => $validated['tipe'] ?? null,
-                'jumlah' => $validated['jumlah'] ?? null,
-                'nilai_aset' => $validated['nilai_perolehan'] ?? null,
-                'kondisi' => $validated['kondisi'] ?? null,
-                'pembukuan' => $validated['pembukuan'] ?? null,
-                'link_dokumentasi' => $validated['link_dokumentasi'] ?? null,
+                'unit_kerja_id' => $validated['unitkerja_id'] ?: null,
+                'tgl_perolehan' => $validated['tgl_perolehan'] ?: null,
+                'merk' => $validated['merk'] ?: null,
+                'tipe' => $validated['tipe'] ?: null,
+                'jumlah' => $validated['jumlah'] ?: null,
+                'nilai_aset' => $validated['nilai_perolehan'] ?: null,
+                'kondisi' => $validated['kondisi'] ?: null,
+                'pembukuan' => $validated['pembukuan'] ?: null,
+                'link_dokumentasi' => $validated['link_dokumentasi'] ?: null,
                 // 'penggunaRaw' => $validated['name'],
                 'profile_image' => $profileImagePath,
                 'profile_image_path' => $profileImageUrl,
-                'nama_pengguna' => $validated['name'] ?? null,
-                'nip_pengguna' => $validated['nip_pengguna']?? null,
-                'jabatan_pengguna' => $validated['jabatan_pengguna']?? null,
-                'alamat_pengguna' => $validated['alamat_pengguna']?? null,
-                'nama_pihak_pertama' => $validated['nama_pihak_pertama']?? null,
-                'nip_pihak_pertama' => $validated['nip_pihak_pertama']?? null,
-                'jabatan_pihak_pertama' => $validated['jabatan_pihak_pertama']?? null,
-                'alamat_pihak_pertama' => $validated['alamat_pihak_pertama']?? null,
-                'ket_lokasi' => $validated['ketLokasi']?? null,
-                'ket_penugasan' => $validated['ket_penugasan']?? null,
-                'ket_unit_teknis' => $validated['ket_unit_teknis']?? null,
+                'nama_pengguna' => $validated['name'] ?: null,
+                'nip_pengguna' => $validated['nip_pengguna'] ?: null,
+                'jabatan_pengguna' => $validated['jabatan_pengguna'] ?: null,
+                'alamat_pengguna' => $validated['alamat_pengguna'] ?: null,
+                'nama_pihak_pertama' => $validated['nama_pihak_pertama'] ?: null,
+                'nip_pihak_pertama' => $validated['nip_pihak_pertama'] ?: null,
+                'jabatan_pihak_pertama' => $validated['jabatan_pihak_pertama'] ?: null,
+                'alamat_pihak_pertama' => $validated['alamat_pihak_pertama'] ?: null,
+                'ket_lokasi' => $validated['ketLokasi'] ?: null,
+                'ket_penugasan' => $validated['ket_penugasan'] ?: null,
+                'ket_unit_teknis' => $validated['ket_unit_teknis'] ?: null,
                 // 'batch' => (DataInternal::max('batch') ?? 0) + 1,
                 'label' => 'Manual Entry',
-
+                'is_borrowed' => $validated['is_borrowed'] ?? null,
             ]);
 
             // Handle multiple images

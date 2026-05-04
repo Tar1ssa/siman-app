@@ -161,6 +161,15 @@
                                                 <label for="otherLokasiInput" id="otherLokasiLabel" class="form-label mt-2" {{ $internal->lokasi_id === null ? '' : 'style=display:none;' }}>Keterangan Lokasi</label>
                                                 <input name="ketLokasi" value="{{ old('ketLokasi', $internal->ket_lokasi ?? '') }}" type="text" id="otherLokasiInput" class="form-control mt-2" placeholder="Masukkan keterangan lokasi" {{ $internal->lokasi_id === null ? '' : 'style=display:none;' }}>
                                             </div>
+                                            <div class="mb-3">
+                                                <label for="is_borrowed" class="form-label">Status Peminjaman</label>
+                                                <select name="is_borrowed" id="is_borrowed" class="form-control" value="{{ old('is_borrowed') }}">
+                                                    <option value="" selected disabled>--Pilih Status Peminjaman--</option>
+                                                    <option value="" {{ $internal->is_borrowed === null ? 'selected' : '' }}>Tidak Dipinjam</option>
+                                                    <option value="1" {{ $internal->is_borrowed === 1 ? 'selected' : '' }}>Dipinjam</option>
+                                                    <option value="2" {{ $internal->is_borrowed === 2 ? 'selected' : '' }}>Sudah Dikembalikan</option>
+                                                </select>
+                                            </div>
                                             <div class="mb-3" style="height: 20vh"></div>
                                         </div>
 
