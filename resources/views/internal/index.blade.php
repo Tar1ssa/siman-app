@@ -358,7 +358,7 @@ table.dataTable th.dt-action-col::before {
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <label for="isBorrowedSearch">Status Peminjaman</label>
+                        <label for="isBorrowedSearch" class="form-label fw-bold">Status Peminjaman</label>
                         <select name="isBorrowedSearch" id="isBorrowedSearch" class="form-control">
                             <option value="" selected disabled>--Pilih Status Peminjaman--</option>
                             <option value="">Semua</option>
