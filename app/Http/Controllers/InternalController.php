@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Services\ImportIdempotencyService;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -154,7 +155,7 @@ class InternalController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, ImportIdempotencyService $importIdempotency)
     {
         $allErrors = [];
         $rowNumber = 1;
@@ -166,6 +167,40 @@ class InternalController extends Controller
         $seenCombinations = [];
         $batchLabel = $request->batch_label;
 
+        if (!$request->hasFile('csv_file')) {
+            return response()->json(['error' => 'File not detected'], 400);
+        }
+
+        $file = $request->file('csv_file');
+        $fingerprint = $importIdempotency->fingerprintForFile(
+            $file,
+            $batchLabel,
+            'internal',
+            $request->user()?->id
+        );
+        $reservation = $importIdempotency->reserve(
+            'internal',
+            $fingerprint,
+            $request->user()?->id,
+            $batchLabel
+        );
+
+        if ($reservation['state'] === 'completed') {
+            return response()->json(
+                $reservation['response'],
+                $reservation['response_status'] ?? 200
+            );
+        }
+
+        if ($reservation['state'] === 'busy') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import sedang diproses. Coba beberapa saat lagi.',
+            ], 409);
+        }
+
+        $importRun = $reservation['run'];
+
         DB::beginTransaction();
 
         try {
@@ -174,10 +209,6 @@ class InternalController extends Controller
             $batchId = $batch + 1;
 
                 // handle csv file
-            if (!$request->hasFile('csv_file')) {
-                return response()->json(['error' => 'File not detected'], 400);
-            }
-
             $file = $request->file('csv_file');
 
             $data = [];
@@ -369,11 +400,13 @@ class InternalController extends Controller
                 if (count($allErrors) > 10) {
                     $message .= ' (+' . (count($allErrors) - 10) . ' more)';
                 }
-                return response()->json([
+                $response = [
                     'success' => false,
                     'message' => $message,
                     'errors' => $allErrors
-                ], 422);
+                ];
+                $importIdempotency->markCompleted($importRun, $response, 422);
+                return response()->json($response, 422);
 
             }
 
@@ -565,18 +598,24 @@ class InternalController extends Controller
 
                 DB::commit();
 
-
-            return response()->json([
+            $response = [
                 'success' => true,
                 'redirect' => route('internal.index'),
-                'message'  => 'Import selesai. Jumlah data invalid: ' . $invalidCount
-            ],200);
+                'message'  => 'Import selesai. Jumlah data invalid: ' . $invalidCount,
+                'batch' => $batchId,
+            ];
+
+            $importIdempotency->markCompleted($importRun, $response, 200);
+
+            return response()->json($response,200);
 
             // return $mapped;
 
 
         } catch (\Throwable $th) {
             DB::rollBack();
+
+            $importIdempotency->markFailed($importRun, $th->getMessage(), 500);
 
 
             return response()->json([
@@ -1103,6 +1142,9 @@ class InternalController extends Controller
             if (!$this->canAccessDataInternal($dataInternal)) {
                 throw new \Exception('Anda tidak memiliki akses.');
             }
+
+            $filename = $dataInternal->profile_image;
+            $path = $dataInternal->profile_image_path;
 
             if ($request->hasFile('profileImage')) {
                 $file = $request->file('profileImage');

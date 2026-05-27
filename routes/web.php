@@ -30,7 +30,7 @@ Route::get('/', function () {
 Route::get('login', [LoginController::class, 'login'])->name('login');
 Route::post('actionLogin', [LoginController::class, 'actionLogin'])->middleware('throttle:5,1')->name('actionLogin');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'prevent.duplicate'])->group(function () {
 
 
     Route::post('logout', [LoginController::class, 'logout'])->name('logout');

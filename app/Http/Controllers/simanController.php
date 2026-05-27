@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Validator;
+use App\Services\ImportIdempotencyService;
 
 class SimanController extends Controller
 {
@@ -78,12 +79,46 @@ class SimanController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, ImportIdempotencyService $importIdempotency)
     {
         $allErrors = [];
         $rowNumber = 1;
         $inserted = 0;
         $batchLabel = $request->batch_label;
+
+        if (!$request->hasFile('csv_file')) {
+            return response()->json(['error' => 'File not detected'], 400);
+        }
+
+        $file = $request->file('csv_file');
+        $fingerprint = $importIdempotency->fingerprintForFile(
+            $file,
+            $batchLabel,
+            'siman',
+            $request->user()?->id
+        );
+        $reservation = $importIdempotency->reserve(
+            'siman',
+            $fingerprint,
+            $request->user()?->id,
+            $batchLabel
+        );
+
+        if ($reservation['state'] === 'completed') {
+            return response()->json(
+                $reservation['response'],
+                $reservation['response_status'] ?? 200
+            );
+        }
+
+        if ($reservation['state'] === 'busy') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Import sedang diproses. Coba beberapa saat lagi.',
+            ], 409);
+        }
+
+        $importRun = $reservation['run'];
 
         DB::beginTransaction();
 
@@ -95,10 +130,6 @@ class SimanController extends Controller
             $batchId = $batch->id;
 
                 // handle csv file
-            if (!$request->hasFile('csv_file')) {
-                return response()->json(['error' => 'File not detected'], 400);
-            }
-
             $file = $request->file('csv_file');
 
             $data = [];
@@ -174,10 +205,12 @@ class SimanController extends Controller
             //  If ANY error exists → CANCEL ALL INSERTS
             if (!empty($allErrors)) {
                 DB::rollBack();
-                return response()->json([
+                $response = [
                     'success' => false,
                     'errors' => $allErrors
-                ], 422);
+                ];
+                $importIdempotency->markCompleted($importRun, $response, 422);
+                return response()->json($response, 422);
 
             }
 
@@ -221,6 +254,8 @@ class SimanController extends Controller
                             // Handle invalid date
                             $perolehan_tgl = null;
                         }
+                    } else {
+                        $perolehan_tgl = null;
                     }
 
                     $nilaiPerolehan  = $this->normalizeNumeric($row['nilai_perolehan'], 'nilai_perolehan');
@@ -229,6 +264,8 @@ class SimanController extends Controller
 
                     // normalize no_polisi
                     $raw = $row['no_polisi'];
+
+                    $noPolisi = null;
 
                     if (!empty($row['no_polisi'])) {
                         try {
@@ -278,18 +315,24 @@ class SimanController extends Controller
              $skippedRows =  (!empty($skipped)) ? count($skipped) : 0;
 
                 DB::commit();
-            // Alert::success('Sukses!', 'Import CSV berhasil ditambahkan!');
-            // return redirect()->to('siman')->with('Sukses!', 'Data SIMAN berhasil ditambahkan!');
-            return response()->json([
+            $response = [
                 'success' => true,
                 'redirect' => route('siman.index'),
-                'message' => "Import selesai. {$inserted} data ditambahkan, " . $skippedRows . " dilewati."
-            ],200);
+                'message' => "Import selesai. {$inserted} data ditambahkan, " . $skippedRows . " dilewati.",
+                'batch' => $batchId,
+            ];
+
+            $importIdempotency->markCompleted($importRun, $response, 200);
+            // Alert::success('Sukses!', 'Import CSV berhasil ditambahkan!');
+            // return redirect()->to('siman')->with('Sukses!', 'Data SIMAN berhasil ditambahkan!');
+            return response()->json($response,200);
 
             // return $mapped;
 
         } catch (\Throwable $th) {
             DB::rollBack();
+
+            $importIdempotency->markFailed($importRun, $th->getMessage(), 500);
 
             return response()->json([
                 'success'  => false,

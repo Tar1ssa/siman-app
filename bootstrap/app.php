@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\ActivityLogMiddleware;
+use App\Http\Middleware\PreventDuplicateSubmissions;
 use App\Http\Middleware\Roles;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,7 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->use([ActivityLogMiddleware::class]);
         $middleware->alias([
-            'role' => Roles::class
+            'role' => Roles::class,
+            'prevent.duplicate' => PreventDuplicateSubmissions::class,
         ]);
     })
     // ->withExceptions(function (Exceptions $exceptions): void {
