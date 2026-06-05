@@ -1,59 +1,248 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SIMAN App
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+SIMAN App is a Laravel 12 application for managing internal asset data, SIMAN import data, invalid rows, comparison reports, locked records, activity logs, settings, and PDF/XLSX exports. The codebase is Blade-driven and uses server-rendered pages backed by custom controllers, middleware, and database-backed sessions and queues.
 
-## About Laravel
+## Project Overview
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+The application centers on `DataInternal`, `simanData`, and `InvalidData` records. It supports login-based access, administrator-only master data management, internal asset import and editing, SIMAN import, comparison workflows, locked-record review, activity logging, backup administration, and PSP/BAST document generation.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+The repository is built with:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.2
+- Laravel 12
+- Vite + Tailwind CSS 4 for frontend assets
+- Blade templates for UI rendering
+- database-backed session and queue storage
 
-## Learning Laravel
+## Features
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- Authentication with login and logout flows.
+- Role-based access control through a custom `role` middleware.
+- Duplicate-submission protection on write requests.
+- Dashboard summaries for internal, SIMAN, and invalid data.
+- CRUD management for reference data such as BMN, barang, satker, lokasi, identitas category, identitas, atribut, unit kerja, unit teknis, and users.
+- Internal asset import, update, attachment handling, BAST export, and Excel export.
+- SIMAN CSV import with batch tracking and deduplication by register code.
+- Data comparison between internal and SIMAN records with multiple export variants.
+- Invalid-row management and conversion into internal data.
+- Locked-data review, lock, unlock, unlock-request, and rejection flows.
+- Activity log capture, filtering, cleanup, and export.
+- Backup listing, backup generation, download, and deletion.
+- Settings management for values such as admin phone and document metadata.
+- PSP PDF generation from selected internal records.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Requirements
 
-## Laravel Sponsors
+- PHP `^8.2`
+- Composer
+- Node.js and npm
+- A database supported by the project configuration
+- `zip` and `pdo_mysql` extensions if you plan to use the backup commands
+- `mysqldump` available on the server if you plan to use `backup:run`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+The application defaults to:
 
-### Premium Partners
+- `sqlite` for the database connection
+- `database` sessions
+- `database` queues
+- `log` mail delivery
+- `local` filesystem storage
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Installation
 
-## Contributing
+1. Install PHP dependencies.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer install
+```
 
-## Code of Conduct
+2. Install frontend dependencies.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+npm install
+```
 
-## Security Vulnerabilities
+3. Create and configure your environment file.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+copy .env.example .env
+```
 
-## License
+Update the key settings in `.env`, especially:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `APP_NAME`
+- `APP_URL`
+- `APP_DEBUG`
+- `DB_CONNECTION`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_DATABASE`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `FILESYSTEM_DISK`
+- `SESSION_DRIVER`
+- `QUEUE_CONNECTION`
+- `MAIL_MAILER`
+- `BACKUP_RETENTION`
+- `MYSQL_BIN_PATH`
+
+4. Generate the application key.
+
+```bash
+php artisan key:generate
+```
+
+5. Run the database migrations.
+
+```bash
+php artisan migrate
+```
+
+6. Seed the default data if needed.
+
+```bash
+php artisan db:seed
+```
+
+The seeder creates an administrator level record and an initial admin user with the email `admin@email.com` and password `admin123`.
+
+7. Create the storage symlink for public files.
+
+```bash
+php artisan storage:link
+```
+
+8. Build frontend assets for production.
+
+```bash
+npm run build
+```
+
+You can also run the bundled setup script from `composer.json`:
+
+```bash
+composer run setup
+```
+
+## Configuration
+
+The main configuration surfaces are:
+
+- `config/app.php` for app name, timezone, SweetAlert alias, and admin phone fallback.
+- `config/auth.php` for the web guard and `User` model.
+- `config/database.php` for SQLite, MySQL, MariaDB, PostgreSQL, and SQL Server connections.
+- `config/session.php` for database-backed sessions.
+- `config/queue.php` for database-backed queues.
+- `config/filesystems.php` for local and public file storage.
+- `config/logging.php` for stack/single-file logging.
+- `config/mail.php` for log-based mail delivery.
+- `config/backups.php` for backup paths and retention.
+- `config/dompdf.php` for PDF rendering defaults.
+- `config/sweetalert.php` for alert UI behavior.
+- `config/services.php` for external service credentials.
+
+Important environment variables used by the code include:
+
+- Application: `APP_NAME`, `APP_URL`, `APP_DEBUG`, `ADMIN_PHONE`
+- Auth: `AUTH_GUARD`, `AUTH_MODEL`
+- Database: `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+- Storage: `FILESYSTEM_DISK`
+- Sessions and queues: `SESSION_DRIVER`, `QUEUE_CONNECTION`
+- Backup tooling: `BACKUP_RETENTION`, `MYSQL_BIN_PATH`
+- Mail and logging: `MAIL_MAILER`, `LOG_CHANNEL`
+- SweetAlert: `SWEET_ALERT_*`
+
+## Usage
+
+### Local development
+
+Run the combined development stack:
+
+```bash
+composer run dev
+```
+
+This starts:
+
+- `php artisan serve`
+- `php artisan queue:listen --tries=1`
+- `npm run dev`
+
+### Common Artisan commands
+
+The project defines several operational commands:
+
+```bash
+php artisan backup:check
+php artisan backup:run
+php artisan activity-logs:cleanup
+php artisan run:tests
+```
+
+### Application workflow
+
+- Open the login page and authenticate through the `login` route.
+- Use the dashboard to review asset summaries and condition counts.
+- Manage reference data only as an administrator.
+- Import internal data or SIMAN data through their respective controllers and pages.
+- Review comparison results, invalid rows, and locked records from the protected area.
+- Use backup and activity-log screens from the admin section.
+
+## Folder Structure
+
+The most relevant project folders are:
+
+```text
+app/
+	Console/Commands/        Custom Artisan commands for backup, cleanup, and tests
+	Helpers/                 Submission token helper functions
+	Http/Controllers/        Login, dashboard, import, compare, backup, and admin controllers
+	Http/Middleware/         Role checks, duplicate submission protection, and request logging
+	Models/                  Core Eloquent models for assets, imports, settings, logs, and lookups
+	Policies/                DataInternal authorization policy
+	Providers/               Application service provider and view composer setup
+	Services/                Import idempotency service
+bootstrap/                 Framework bootstrap and provider registration
+config/                    Application, auth, database, filesystem, queue, session, mail, backup, and alert settings
+database/migrations/       Schema definitions and later table updates
+database/seeders/          Default admin-level and settings seeders
+public/                    Public web root, compiled assets, and storage symlink
+resources/css/             Tailwind CSS entry styles
+resources/js/              Minimal Vite bootstrap and Axios setup
+resources/views/           Blade views for login, dashboard, master data, internal data, compare, logs, backups, PSP, PDFs, and errors
+routes/                    Web and console routes
+storage/                   Logs, backups, generated exports, and framework caches
+```
+
+## Deployment
+
+Before deploying to production, make sure the target server provides the requirements listed above and can run the backup tooling if you intend to use it.
+
+Recommended deployment steps:
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+npm install
+npm run build
+php artisan storage:link
+```
+
+Operational checks for deployment:
+
+- Ensure `storage/` and `bootstrap/cache/` are writable.
+- Ensure the `public/storage` symlink exists.
+- Configure the scheduler to run `php artisan schedule:run`.
+- Keep a queue worker available if queued work is introduced or enabled in production.
+- If backups are enabled, install `zip`, `pdo_mysql`, and `mysqldump`, and configure `MYSQL_BIN_PATH`.
+
+The scheduled jobs defined in the codebase are:
+
+- `backup:run` every three months
+- `activity-logs:cleanup` daily at 01:00
+
+## Notes
+
+- This repository does not include an `app/Http/Requests` directory, `routes/api.php`, `app/Events`, `app/Listeners`, `app/Notifications`, `app/Mail`, `app/Jobs`, or a `tests/` directory.
+- The project uses Blade views and server-side DataTables rather than an API-first or SPA architecture.
+- The default Laravel scaffold README has been replaced with project-specific documentation based on the audited codebase.
