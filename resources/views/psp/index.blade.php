@@ -124,7 +124,7 @@ table.dataTable th.checkbox-col::after {
             <div class="card">
               <div class="card-header">
                 <div class="row d-flex flex-column justify-content-between ">
-               
+
                         <h3>Generate Dokumen PSP</h3>
                         <button
                             type="button"
@@ -136,10 +136,14 @@ table.dataTable th.checkbox-col::after {
 
                 </div>
 
-                
-                
+
+
               </div>
               <div class="card-body">
+                <a class="btn btn-primary px-3 mb-3" data-bs-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+                    Filter Data
+                </a>
+                <div class="collapse"  id="collapseFilter">
                 <div class="row">
                     <div class="col-md-2">
                         <div class="mb-2">
@@ -362,7 +366,7 @@ table.dataTable th.checkbox-col::after {
                 <div class="row mb-3">
 
                 </div>
-
+                </div>
                 {{-- Lampiran --}}
                 {{-- <div class="row mb-3">
                     <div class="col-md-12">
@@ -411,7 +415,7 @@ table.dataTable th.checkbox-col::after {
                         <tbody></tbody>
                     </table>
 
-                  
+
               </div>
 
     </div>
@@ -712,8 +716,8 @@ table.dataTable th.checkbox-col::after {
     },
 
     columns: [
-        { data: null, orderable: false, searchable: false, className: 'checkbox-col', render: function(data, type, row) { 
-            return '<input type="checkbox" class="row-checkbox form-check-input" value="' + row.id + '">'; 
+        { data: null, orderable: false, searchable: false, className: 'checkbox-col', render: function(data, type, row) {
+            return '<input type="checkbox" class="row-checkbox form-check-input" value="' + row.id + '">';
         } },
         { data: 'DT_RowIndex', orderable: false, searchable: false },
         { data: 'kode_satker', name: 'satkers.kode_satker', orderable: false,  },

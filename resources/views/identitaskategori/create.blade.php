@@ -35,7 +35,7 @@
                 <form action="{{ route('identitas-kategori.store') }}" method="post">
                     @csrf
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                                 <div class="mb-3">
                                     <div class="form-floating ">
                                         <input value="{{  old('name') }}" type="text" class="form-control" id="floatingName" placeholder="Nama kategori identitas" name="name">
@@ -50,9 +50,9 @@
                                     </div>
                                 </div>
                         </div>
-                        <div class="col-md-6 d-flex justify-content-center align-items-center">
+                        {{-- <div class="col-md-6 d-flex justify-content-center align-items-center">
                             <i class="ti ti-briefcase font-size-icon text-blue-500"></i>
-                        </div>
+                        </div> --}}
                     </div>
                     <button type="submit" class="btn btn-shadow btn-primary">Submit</button>
                     <a href="{{ route('identitas-kategori.index') }}" class="btn btn-shadow btn-secondary">Kembali</a>

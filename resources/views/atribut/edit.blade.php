@@ -36,7 +36,7 @@
                     @csrf
                     @method('PUT')
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="mb-3">
 
                                 <label class="form-label" for="key">Key (unique)</label>
@@ -57,9 +57,9 @@
                             </div>
 
                         </div>
-                        <div class="col-md-6 d-flex justify-content-center align-items-center">
+                        {{-- <div class="col-md-6 d-flex justify-content-center align-items-center">
                             <i class="ti ti-tag font-size-icon text-blue-500"></i>
-                        </div>
+                        </div> --}}
                     </div>
                     <button type="submit" class="btn btn-shadow btn-primary">Submit</button>
                     <a href="{{ route('atribut.index') }}" class="btn btn-shadow btn-secondary">Kembali</a>

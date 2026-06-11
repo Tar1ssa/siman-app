@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Standard Operating Procedure - Internal DB App</title>
+  <style>
+    :root {
+      --ink: #102033;
+      --muted: #5d6b7a;
+      --line: #d8e0e8;
+      --accent: #1f5f8b;
+      --accent-2: #dcecf7;
+      --panel: #f8fbfd;
+      --warn: #fff5e6;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      background: #ffffff;
+    }
+
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 28px 48px;
+    }
+
+    header.hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f6fbff 100%);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+
+    h1, h2, h3, h4 {
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .summary {
+      max-width: 900px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .meta {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .meta .box {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .meta .label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .meta .value {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    nav.toc {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 24px;
+      page-break-after: avoid;
+    }
+
+    nav.toc h2,
+    section > h2 {
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+
+    .toc ol {
+      margin: 0;
+      padding-left: 22px;
+      columns: 2;
+      column-gap: 32px;
+    }
+
+    .toc li {
+      break-inside: avoid;
+      margin: 0 0 8px;
+    }
+
+    .toc a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .toc a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    section {
+      border-top: 2px solid var(--line);
+      padding-top: 24px;
+      margin-top: 24px;
+      page-break-inside: avoid;
+    }
+
+    .section-number {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+    }
+
+    .process {
+      margin-top: 14px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      padding: 18px;
+    }
+
+    .card h3 {
+      font-size: 17px;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    .card h4 {
+      font-size: 14px;
+      margin: 16px 0 8px;
+    }
+
+    .card p {
+      margin: 0 0 10px;
+    }
+
+    .card ol,
+    .card ul {
+      margin: 0 0 12px 20px;
+      padding: 0;
+    }
+
+    .card li {
+      margin-bottom: 8px;
+    }
+
+    .note {
+      background: var(--warn);
+      border-left: 4px solid #f0a500;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 12px 0;
+      color: #6d4b00;
+    }
+
+    .placeholder {
+      border: 1px dashed #8ba5ba;
+      background: linear-gradient(180deg, #fbfdff 0%, #f2f8fc 100%);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 12px 0 14px;
+    }
+
+    .placeholder .title {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .placeholder ul {
+      margin: 0 0 0 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 6px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #e9f2f8;
+      font-weight: 700;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+    }
+
+    .appendix {
+      margin-top: 30px;
+      border-top: 3px solid var(--accent);
+      padding-top: 22px;
+    }
+
+    .screenshot-table td:first-child,
+    .screenshot-table th:first-child {
+      width: 58px;
+      text-align: center;
+    }
+
+    .screenshot-table td:nth-child(2) {
+      width: 240px;
+    }
+
+    .screenshot-table td:nth-child(4) {
+      width: 180px;
+    }
+
+    .spaced {
+      margin-top: 10px;
+    }
+
+    @media print {
+      @page { size: A4; margin: 14mm; }
+      body { background: white; }
+      .page { max-width: none; padding: 0; }
+      header.hero, nav.toc, .card, .placeholder, .note, table { break-inside: avoid; }
+      nav.toc ol { columns: 1; }
+      a { color: inherit; text-decoration: none; }
+      .no-print { display: none !important; }
+    }
+
+    @media (max-width: 860px) {
+      .meta, .two-col { grid-template-columns: 1fr; }
+      .toc ol { columns: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero" role="banner">
+      <p class="eyebrow">Standard Operating Procedure</p>
+      <h1>SOP Internal DB App</h1>
+      <p class="summary">
+        Dokumen ini disusun untuk pengguna akhir berdasarkan fitur yang benar-benar tersedia di sumber kode aplikasi.
+        Fokus SOP adalah penggunaan harian untuk login, dashboard, pengelolaan data aset, laporan, manajemen pengguna,
+        pengaturan, dan proses administrasi yang dapat diakses melalui antarmuka web.
+      </p>
+      <div class="meta" aria-label="Informasi dokumen">
+        <div class="box">
+          <span class="label">Sistem</span>
+          <span class="value">Internal DB App</span>
+        </div>
+        <div class="box">
+          <span class="label">Bahasa</span>
+          <span class="value">Bahasa Indonesia</span>
+        </div>
+        <div class="box">
+          <span class="label">Sifat Dokumen</span>
+          <span class="value">Panduan Operasional Pengguna</span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="toc" aria-label="Daftar isi">
+      <h2>Daftar Isi</h2>
+      <ol>
+        <li><a href="#ringkasan">Ringkasan Dokumen</a></li>
+        <li><a href="#login">Login</a></li>
+        <li><a href="#logout">Logout</a></li>
+        <li><a href="#dashboard">Dashboard Usage</a></li>
+        <li><a href="#asset-management">Asset Management</a></li>
+        <li><a href="#siman-import">Import SIMAN</a></li>
+        <li><a href="#reports">Reports</a></li>
+        <li><a href="#invalid-data">Invalid Data</a></li>
+        <li><a href="#locked-data">Locked Data</a></li>
+        <li><a href="#settings">Settings</a></li>
+        <li><a href="#user-management">User Management</a></li>
+        <li><a href="#master-data">CRUD Operations / Master Data</a></li>
+        <li><a href="#identitas-master-data">Identitas, Atribut, dan Kategori Identitas</a></li>
+        <li><a href="#backup">Backup Management</a></li>
+        <li><a href="#activity-logs">Activity Log Review</a></li>
+        <li><a href="#psp">PSP Document Generation</a></li>
+        <li><a href="#important-notes">Important Notes</a></li>
+        <!-- <li><a href="#appendix">Appendix</a></li> -->
+      </ol>
+    </nav>
+
+    <section id="ringkasan">
+      <div class="section-number">1. Ringkasan Dokumen</div>
+      <h2>Tujuan SOP</h2>
+      <div class="">
+      <!-- was previously <div class="two-col">   -->
+        <div class="card">
+          <h3>1.1 Purpose</h3>
+          <p>
+            SOP ini menjelaskan langkah operasional yang dapat dilakukan pengguna pada Internal DB App.
+            Seluruh prosedur disusun dari fitur yang terlihat di kode sumber dan halaman Blade yang tersedia.
+          </p>
+          <h3>1.2 Preconditions</h3>
+          <ul>
+            <li>Pengguna memiliki akun yang aktif.</li>
+            <li>Pengguna mengetahui peran aksesnya, misalnya pengguna biasa atau administrator.</li>
+            <li>Pengguna membuka aplikasi melalui browser web.</li>
+          </ul>
+          <h3>1.3 Steps</h3>
+          <ol>
+            <li>Baca daftar isi untuk memilih proses yang diperlukan.</li>
+            <li>Ikuti langkah pada setiap bagian sesuai fungsi yang ingin dijalankan.</li>
+            <li>Gunakan placeholder gambar untuk melengkapi dokumentasi operasional saat tangkapan layar tersedia.</li>
+          </ol>
+          <h3>1.4 Expected Result</h3>
+          <p>Pengguna dapat menjalankan fungsi sistem sesuai akses yang dimiliki tanpa perlu memahami detail teknis aplikasi.</p>
+          <h3>1.5 Troubleshooting</h3>
+          <ul>
+            <li>Jika menu tidak muncul, periksa peran pengguna dan status login.</li>
+            <li>Jika halaman gagal dimuat, muat ulang browser atau login kembali.</li>
+            <li>Jika proses tidak tersimpan, pastikan isian wajib lengkap dan tidak ada pesan validasi.</li>
+          </ul>
+        </div>
+        <!-- dokumen sumber -->
+        <!-- <div class="card">
+          <h3>Dokumen Sumber</h3>
+          <p class="small">Dokumen ini dibangun dari bukti berikut:</p>
+          <ul>
+            <li><a href="System_Analysis.md">docs/System_Analysis.md</a></li>
+            <li><a href="../routes/web.php">routes/web.php</a></li>
+            <li><a href="../app/Http/Controllers/LoginController.php">LoginController</a></li>
+            <li><a href="../app/Http/Controllers/InternalController.php">InternalController</a></li>
+            <li><a href="../app/Http/Controllers/SimanController.php">SimanController</a></li>
+            <li><a href="../app/Http/Controllers/CompareController.php">CompareController</a></li>
+          </ul>
+          <div class="note">
+            Sections for Registration, Profile Management, and Notifications are not included because they were not found in the source code.
+          </div>
+        </div> -->
+      </div>
+    </section>
+
+    <section id="login">
+      <div class="section-number">2. Login</div>
+      <h2>Prosedur Masuk ke Sistem</h2>
+      <div class="card">
+        <h3>2.1 Purpose</h3>
+        <p>Memungkinkan pengguna mengakses aplikasi dengan akun yang terdaftar.</p>
+
+        <h3>2.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna memiliki email dan kata sandi yang valid.</li>
+          <li>Browser dapat membuka halaman login.</li>
+        </ul>
+
+        <h3>2.3 Steps</h3>
+        <ol>
+          <li>Buka halaman login aplikasi.</li>
+          <li>Masukkan alamat email pada kolom Email Address.</li>
+          <li>Masukkan kata sandi pada kolom Password.</li>
+          <li>Klik tombol Login.</li>
+        </ol>
+
+        <div class="placeholder">
+          <img src="SOP-images/img-2.1.png" alt="Placeholder Login Before" style="width:100%; height:auto; border-radius: 8px;">
+            <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman login sebelum pengguna memasukkan kredensial.</li>
+            <li>Action: Pengguna meninjau form login dan mengisi email serta kata sandi.</li>
+            <li>Why: Menunjukkan lokasi field dan tombol Login agar pengguna akhir mudah mengikuti langkah masuk.</li>
+          </ul> -->
+        </div>
+
+        <!-- <div class="placeholder">
+          <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman login setelah tombol Login ditekan.</li>
+            <li>Action: Sistem memproses kredensial yang dimasukkan pengguna.</li>
+            <li>Why: Menunjukkan kondisi saat validasi login berjalan dan membantu dokumentasi bila terjadi pesan kesalahan.</li>
+          </ul>
+        </div> -->
+
+        <h3>2.4 Expected Result</h3>
+        <p>Pengguna diarahkan ke dashboard setelah autentikasi berhasil.</p>
+
+        <h3>2.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika muncul pesan email atau password salah, periksa kembali data yang diinput.</li>
+          <li>Jika halaman kembali ke form login, pastikan akun memang aktif.</li>
+          <li>Jika browser menampilkan error sesi, muat ulang halaman lalu login kembali.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="logout">
+      <div class="section-number">3. Logout</div>
+      <h2>Prosedur Keluar dari Sistem</h2>
+      <div class="card">
+        <h3>3.1 Purpose</h3>
+        <p>Memutus sesi kerja pengguna saat selesai menggunakan aplikasi.</p>
+
+        <h3>3.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna sudah login.</li>
+          <li>Pengguna berada di halaman aplikasi utama.</li>
+        </ul>
+
+        <h3>3.3 Steps</h3>
+        <ol>
+          <li>Buka menu pengguna atau menu keluar yang tersedia di antarmuka.</li>
+          <li>Klik Logout.</li>
+          <li>Tunggu hingga sistem kembali ke halaman login.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-3.1(1).png" alt="Placeholder Logout Menu" style="width:100%; height:auto; border-radius: 8px;">
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Area menu pengguna atau tombol Logout pada tampilan aplikasi.</li>
+            <li>Action: Pengguna memilih Logout untuk mengakhiri sesi.</li>
+            <li>Why: Penting untuk memperlihatkan lokasi kontrol keluar agar proses terminasi sesi dapat diikuti dengan benar.</li>
+          </ul> -->
+        </div>
+
+        <h3>3.4 Expected Result</h3>
+        <p>Sesi pengguna berakhir dan browser diarahkan kembali ke halaman login.</p>
+
+        <h3>3.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika pengguna masih bisa membuka halaman tanpa login ulang, hapus cache browser dan refresh.</li>
+          <li>Jika logout tidak merespons, coba muat ulang halaman dan ulangi proses.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="dashboard">
+      <div class="section-number">4. Dashboard Usage</div>
+      <h2>Penggunaan Dashboard</h2>
+      <div class="card">
+        <h3>4.1 Purpose</h3>
+        <p>Menampilkan ringkasan jumlah data dan status operasional yang dibutuhkan pengguna untuk pemantauan cepat.</p>
+
+        <h3>4.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna sudah login.</li>
+          <li>Data dasar telah tersedia di sistem.</li>
+        </ul>
+
+        <h3>4.3 Steps</h3>
+        <ol>
+          <li>Buka menu Dashboard setelah login.</li>
+          <li>Periksa kartu ringkasan jumlah data SIMAN, data internal, data invalid, dan status komparasi.</li>
+          <li>Gunakan filter Unit Kerja untuk melihat kondisi barang berdasarkan unit tertentu.</li>
+          <li>Klik tautan menu yang tersedia pada kartu ringkasan untuk membuka modul terkait.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-4.1.png" alt="Placeholder Dashboard" style="width:100%; height:auto; border-radius: 8px;">
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman dashboard utama setelah login.</li>
+            <li>Action: Pengguna meninjau kartu ringkasan, filter Unit Kerja, dan tautan laporan.</li>
+            <li>Why: Menjelaskan tampilan utama aplikasi yang menjadi pusat navigasi harian pengguna.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-4.2(1).png" alt="Placeholder Dashboard Filter" style="width:100%; height:auto; border-radius: 8px;">
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Dashboard saat filter Unit Kerja dipilih.</li>
+            <li>Action: Pengguna mengubah pilihan unit untuk memperbarui angka kondisi barang.</li>
+            <li>Why: Membuktikan bahwa dashboard dapat menampilkan ringkasan yang difilter per unit kerja.</li>
+          </ul> -->
+        </div>
+
+        <h3>4.4 Expected Result</h3>
+        <p>Pengguna melihat ringkasan operasional dan dapat melompat ke modul yang diperlukan.</p>
+
+        <h3>4.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika angka tidak berubah setelah filter dipilih, refresh halaman dan coba lagi.</li>
+          <li>Jika tautan laporan tidak terbuka, pastikan pengguna memiliki hak akses ke modul tersebut.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="asset-management">
+      <div class="section-number">5. Asset Management</div>
+      <h2>Pengelolaan Data Internal</h2>
+      <div class="card">
+        <h3>5.1 Purpose</h3>
+        <p>Memungkinkan pengguna mengelola data aset internal, termasuk menambah, mengubah, melihat, menghapus, melampirkan foto, melampirkan dokumen, dan mengekspor data.</p>
+
+        <h3>5.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna sudah login.</li>
+          <li>Pengguna memiliki akses ke menu Internal.</li>
+          <li>Data referensi seperti Barang, Satker, Unit Kerja, Lokasi, dan Identitas tersedia bila diperlukan.</li>
+        </ul>
+
+        <h3>5.3 Steps</h3>
+        <ol>
+          <li>Buka menu Internal.</li>
+          <li>Gunakan daftar data untuk menelusuri aset yang sudah ada.</li>
+          <li>Klik Tambah Data Internal untuk membuat data baru.</li>
+          <li>Isi data utama aset sesuai form yang tersedia, lalu simpan.</li>
+          <li>Gunakan menu edit untuk memperbarui data yang sudah tersimpan.</li>
+          <li>Gunakan menu foto atau dokumen untuk menambahkan lampiran.</li>
+          <li>Gunakan ekspor internal bila diperlukan untuk laporan Excel.</li>
+          <li>Gunakan BAST bila diperlukan untuk dokumen PDF aset.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.1.png" alt="Placeholder Asset Management" style="width:100%; height:auto; border-radius: 8px;">
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman daftar data internal.</li>
+            <li>Action: Pengguna meninjau daftar aset sebelum memilih tambah, ubah, atau hapus.</li>
+            <li>Why: Menunjukkan lokasi kerja utama untuk pengelolaan aset internal.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.2(1).png" alt="Placeholder Asset Management" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Keterangan:
+                1.Tombol untuk menambah data internal baru.
+                2.Tombol untuk mengimport data Internal.
+                3.Tombol untuk mengekspor data Internal ke Excel.
+                4.Tombol untuk masuk ke laman export dokumen PSP.
+                5.Tombol untuk melihat detail data internal.
+                6.Tombol untuk export BAST data internal ke PDF.
+                7.Tombol untuk mengunci data internal.
+            </pre></small>
+            <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman daftar data internal.</li>
+            <li>Action: Pengguna meninjau daftar aset sebelum memilih tambah, ubah, atau hapus.</li>
+            <li>Why: Menunjukkan lokasi kerja utama untuk pengelolaan aset internal.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.3.png" alt="Placeholder Asset Form" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah data internal.
+            </pre></small>
+            <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form tambah data internal.</li>
+            <li>Action: Pengguna mengisi data aset baru lalu menyimpan.</li>
+            <li>Why: Menunjukkan field yang harus dilengkapi saat membuat data aset baru.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.4.png" alt="Placeholder Asset Form" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah data internal - bagian upload dokumen.
+            </pre></small>
+            <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form tambah data internal.</li>
+            <li>Action: Pengguna mengisi data aset baru lalu menyimpan.</li>
+            <li>Why: Menunjukkan field yang harus dilengkapi saat membuat data aset baru.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.5.png" alt="Placeholder Asset Form" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah data internal - bagian upload foto.
+            </pre></small>
+            <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form tambah data internal.</li>
+            <li>Action: Pengguna mengisi data aset baru lalu menyimpan.</li>
+            <li>Why: Menunjukkan field yang harus dilengkapi saat membuat data aset baru.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.6.png" alt="Placeholder Asset Form" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form view data internal.
+            </pre></small>
+            <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form view data internal.</li>
+            <li>Action: Pengguna melihat detail data aset yang sudah ada.</li>
+            <li>Why: Menunjukkan field yang harus dilengkapi saat membuat data aset baru.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.7.png" alt="Placeholder Asset Form" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form edit data internal.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form edit data internal.</li>
+            <li>Action: Pengguna memperbarui informasi aset yang sudah ada.</li>
+            <li>Why: Penting untuk mendokumentasikan bagaimana perubahan data dilakukan pada aset lama.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.8.png" alt="Placeholder Asset Form" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form edit data internal - bagian upload foto.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form edit data internal.</li>
+            <li>Action: Pengguna memperbarui informasi aset yang sudah ada.</li>
+            <li>Why: Penting untuk mendokumentasikan bagaimana perubahan data dilakukan pada aset lama.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.9.png" alt="Placeholder Asset Form" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form edit data internal - bagian upload dokumen.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form edit data internal.</li>
+            <li>Action: Pengguna memperbarui informasi aset yang sudah ada.</li>
+            <li>Why: Penting untuk mendokumentasikan bagaimana perubahan data dilakukan pada aset lama.</li>
+          </ul> -->
+        </div>
+
+        <h4>5.3.1 Import Data Internal</h4>
+        <ol>
+            <li>Buka menu Data Internal.</li>
+            <li>Klik Import Data Internal .</li>
+            <li>Pastikan file CSV sesuai format yang ditentukan.</li>
+            <li>Template CSV dengan format yang sesuai tersedia untuk diunduh.</li>
+            <li>Pilih file CSV dari komputer.</li>
+            <li>Isi label batch jika diminta.</li>
+            <li>Jalankan proses impor dan tunggu hasilnya.</li>
+            <li>Periksa hasil impor pada daftar Data Internal dalam table.</li>
+        </ol>
+        <div class="placeholder">
+            <img src="SOP-images/img-5.10.png" alt="Placeholder Import Data Internal" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form import data internal.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Area unggah foto atau dokumen pada detail aset.</li>
+            <li>Action: Pengguna menambahkan lampiran pada data aset.</li>
+            <li>Why: Lampiran adalah bukti visual dan administratif yang penting bagi proses verifikasi aset.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.11.png" alt="Placeholder Import Data Internal" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form import data internal - saat process import berlangsung.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Area unggah foto atau dokumen pada detail aset.</li>
+            <li>Action: Pengguna menambahkan lampiran pada data aset.</li>
+            <li>Why: Lampiran adalah bukti visual dan administratif yang penting bagi proses verifikasi aset.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.12.png" alt="Placeholder Import Data Internal" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form import data internal - setelah proses import selesai.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Area unggah foto atau dokumen pada detail aset.</li>
+            <li>Action: Pengguna menambahkan lampiran pada data aset.</li>
+            <li>Why: Lampiran adalah bukti visual dan administratif yang penting bagi proses verifikasi aset.</li>
+          </ul> -->
+        </div>
+
+        <h3>5.4 Expected Result</h3>
+        <p>Data aset tersimpan, dapat dicari di daftar internal, dan lampiran tampil pada data terkait.</p>
+
+        <h3>5.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika data tidak tersimpan, periksa pesan validasi dan lengkapi field wajib.</li>
+          <li>Jika lampiran gagal diunggah, pastikan file sesuai tipe dan ukuran yang diizinkan.</li>
+          <li>Jika data terkunci, lakukan perubahan hanya bila status data memungkinkan.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="siman-import">
+      <div class="section-number">6. Import SIMAN</div>
+      <h2>Pengolahan Data SIMAN</h2>
+      <div class="card">
+        <h3>6.1 Purpose</h3>
+        <p>Memasukkan data SIMAN dari file CSV untuk dibandingkan dengan data internal dan dianalisis sebagai batch.</p>
+
+        <h3>6.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna sudah login.</li>
+          <li>Pengguna memiliki akses ke menu SIMAN.</li>
+          <li>File CSV tersedia dan sesuai format yang dipakai sistem.</li>
+        </ul>
+
+        <h3>6.3 Steps</h3>
+        <ol>
+          <li>Buka menu SIMAN.</li>
+          <li>Klik Tambah Data SiMAN atau menu upload data yang tersedia.</li>
+          <li>Pastikan file CSV sesuai format yang ditentukan.</li>
+          <li>Template CSV dengan format yang sesuai tersedia untuk diunduh.</li>
+          <li>Pilih file CSV SIMAN dari komputer.</li>
+          <li>Isi label batch jika diminta.</li>
+          <li>Jalankan proses impor dan tunggu hasilnya.</li>
+          <li>Periksa hasil impor pada daftar SIMAN dalam table.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-6.1.png" alt="Placeholder Import SIMAN" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman utama data SIMAN.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman daftar SIMAN sebelum upload.</li>
+            <li>Action: Pengguna memulai proses impor dari menu SIMAN.</li>
+            <li>Why: Menunjukkan titik awal proses input data SIMAN agar alur dokumentasi jelas.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-6.2.png" alt="Placeholder Import SIMAN" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form import data SIMAN.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form upload CSV SIMAN.</li>
+            <li>Action: Pengguna memilih file dan menjalankan impor.</li>
+            <li>Why: Penting untuk menunjukkan file source yang diproses sistem.</li>
+          </ul> -->
+        </div>
+
+        <h3>6.4 Expected Result</h3>
+        <p>Data SIMAN tersimpan sebagai batch dan dapat digunakan untuk komparasi dan laporan.</p>
+
+        <h3>6.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika impor gagal, periksa kembali format CSV dan kolom wajib.</li>
+          <li>Jika sistem menolak file duplikat, tunggu proses selesai atau gunakan file yang berbeda.</li>
+          <li>Jika ada data yang dilewati, tinjau hasil impor untuk melihat baris yang bermasalah.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="reports">
+      <div class="section-number">7. Reports</div>
+      <h2>Laporan dan Ekspor</h2>
+      <div class="card">
+        <h3>7.1 Purpose</h3>
+        <p>Memberikan hasil ringkasan dan file ekspor yang dapat digunakan untuk analisis, pelaporan, dan distribusi dokumen.</p>
+
+        <h3>7.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna sudah login.</li>
+          <li>Data sudah tersedia pada modul terkait.</li>
+          <li>Pengguna mengetahui jenis laporan yang ingin dibuka atau diekspor.</li>
+        </ul>
+
+        <h3>7.3 Steps</h3>
+        <ol>
+          <li>Buka dashboard, comparison page, activity logs, internal data, invalid data, atau PSP sesuai laporan yang diperlukan.</li>
+          <li>Tentukan filter yang ingin dipakai, misalnya batch, status, user, atau rentang tanggal.</li>
+          <li>Klik tombol ekspor yang tersedia untuk menghasilkan file Excel atau PDF.</li>
+          <li>Simpan atau buka file hasil unduhan sesuai kebutuhan operasional.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-7.1.png" alt="Placeholder Reports" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman tabel komparasi.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman laporan sebelum ekspor.</li>
+            <li>Action: Pengguna memilih filter dan tombol ekspor.</li>
+            <li>Why: Menunjukkan titik pengambilan laporan agar prosedur mudah diulang oleh pengguna akhir.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-7.2.png" alt="Placeholder Reports" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Tampilan setelah mengekspor laporan.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: File hasil ekspor setelah proses selesai.</li>
+            <li>Action: Pengguna membuka atau menyimpan file yang dihasilkan.</li>
+            <li>Why: Menjadi bukti hasil akhir bahwa laporan berhasil dibuat.</li>
+          </ul> -->
+        </div>
+
+        <h3>7.4 Expected Result</h3>
+        <p>Pengguna memperoleh file laporan yang sesuai dengan data dan filter yang dipilih.</p>
+
+        <h3>7.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika file tidak terunduh, periksa pop-up blocker atau hak akses browser.</li>
+          <li>Jika data tidak sesuai filter, ulangi proses dengan parameter yang benar.</li>
+          <li>Jika file PDF kosong, pastikan data yang dipilih memang tersedia.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="invalid-data">
+      <div class="section-number">8. Invalid Data</div>
+      <h2>Penanganan Data Invalid</h2>
+      <div class="card">
+        <h3>8.1 Purpose</h3>
+        <p>Memungkinkan pengguna meninjau data yang gagal validasi, memperbaikinya, atau menghapusnya bila tidak diperlukan lagi.</p>
+
+        <h3>8.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna sudah login.</li>
+          <li>Data invalid sudah tersedia di sistem.</li>
+        </ul>
+
+        <h3>8.3 Steps</h3>
+        <ol>
+          <li>Buka menu Invalid Data.</li>
+          <li>Gunakan daftar untuk meninjau data yang bermasalah.</li>
+          <li>Buka baris data untuk diperbaiki bila data dapat diselamatkan.</li>
+          <li>Simpan perubahan agar data dipindahkan ke data internal jika memenuhi syarat.</li>
+          <li>Hapus data invalid jika memang tidak dipakai lagi.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-8.1.png" alt="Placeholder Invalid Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman daftar data invalid.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman daftar data invalid.</li>
+            <li>Action: Pengguna meninjau baris yang gagal masuk ke data internal.</li>
+            <li>Why: Menunjukkan daftar kerja yang dipakai untuk perbaikan data.</li>
+          </ul> -->
+        </div>
+
+        <!-- <div class="placeholder">
+          <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form edit data invalid.</li>
+            <li>Action: Pengguna memperbaiki nilai yang salah.</li>
+            <li>Why: Penting untuk mendokumentasikan koreksi sebelum data dipindahkan.</li>
+          </ul>
+        </div> -->
+
+        <h3>8.4 Expected Result</h3>
+        <p>Data invalid berhasil diperbaiki menjadi data internal atau dihapus dari daftar invalid.</p>
+
+        <h3>8.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika penyimpanan gagal, periksa kembali field wajib dan format angka.</li>
+          <li>Jika data tidak pindah ke internal, pastikan semua informasi penting sudah lengkap.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="locked-data">
+      <div class="section-number">9. Locked Data</div>
+      <h2>Pengelolaan Data Terkunci</h2>
+      <div class="card">
+        <h3>9.1 Purpose</h3>
+        <p>Menampilkan data internal yang berstatus terkunci dan memungkinkan proses request unlock, unlock, atau reject request sesuai hak akses.</p>
+
+        <h3>9.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna sudah login.</li>
+          <li>Pengguna memiliki akses ke menu terkait locked data.</li>
+        </ul>
+
+        <h3>9.3 Steps</h3>
+        <ol>
+          <li>Buka menu Locked Data.</li>
+          <li>Gunakan filter untuk mencari data berdasarkan unit kerja, lokasi, kategori, atau status request.</li>
+          <li>Buka detail data yang dibutuhkan.</li>
+          <li>Lakukan lock, unlock, request unlock, atau reject request sesuai hak akses dan kondisi data.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-9.1(1).png" alt="Placeholder Locked Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Keterangan:
+                1. Tombol untuk melihat detail data.
+                2. Tombol untuk menolak permintaan unlock data.
+                3. Tombol untuk membuka kunci data.
+                4. Tombol untuk export file BAST data internal ke PDF.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman locked data.</li>
+            <li>Action: Pengguna melihat data yang berstatus locked dan memeriksa status request.</li>
+            <li>Why: Menjelaskan area kontrol data yang tidak lagi dapat diubah bebas oleh pengguna biasa.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-9.2.png" alt="Placeholder Locked Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Tampilan setelah berhasil membuka data yang terkunci.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Tombol lock, unlock, request unlock, atau reject request pada baris data.</li>
+            <li>Action: Pengguna menjalankan aksi status pada data tertentu.</li>
+            <li>Why: Membuktikan lokasi aksi penguncian yang digunakan dalam proses kontrol aset.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-9.3.png" alt="Placeholder Locked Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Tampilan view data yang terkunci.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Tombol lock, unlock, request unlock, atau reject request pada baris data.</li>
+            <li>Action: Pengguna menjalankan aksi status pada data tertentu.</li>
+            <li>Why: Membuktikan lokasi aksi penguncian yang digunakan dalam proses kontrol aset.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-9.4.png" alt="Placeholder Locked Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Tampilan view data yang terkunci setelah mengirim request unlock.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Tombol lock, unlock, request unlock, atau reject request pada baris data.</li>
+            <li>Action: Pengguna menjalankan aksi status pada data tertentu.</li>
+            <li>Why: Membuktikan lokasi aksi penguncian yang digunakan dalam proses kontrol aset.</li>
+          </ul> -->
+        </div>
+
+        <h3>9.4 Expected Result</h3>
+        <p>Status data berubah sesuai aksi yang dipilih dan tampilan daftar diperbarui.</p>
+
+        <h3>9.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika tombol tidak tersedia, periksa peran pengguna.</li>
+          <li>Jika data tidak berubah status, muat ulang halaman dan ulangi aksi.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="settings">
+      <div class="section-number">10. Settings</div>
+      <h2>Pengaturan Sistem</h2>
+      <div class="card">
+        <h3>10.1 Purpose</h3>
+        <p>Memperbarui data pengaturan yang dipakai pada dokumen PSP dan informasi administratif lain yang ditampilkan sistem.</p>
+
+        <h3>10.2 Preconditions</h3>
+        <ul>
+          <li>Pengguna administrator sudah login.</li>
+          <li>Pengguna memiliki hak akses ke halaman Settings.</li>
+        </ul>
+
+        <h3>10.3 Steps</h3>
+        <ol>
+          <li>Buka menu Settings.</li>
+          <li>Periksa nilai yang ada seperti admin phone, biro, NIP biro, kepada, jabatan, dan lokasi.</li>
+          <li>Ubah nilai yang diperlukan sesuai data terbaru.</li>
+          <li>Simpan perubahan.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-10.1.png" alt="Placeholder Settings" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman pengaturan sistem.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman Settings.</li>
+            <li>Action: Administrator meninjau dan mengubah nilai pengaturan.</li>
+            <li>Why: Menunjukkan area administrasi yang memengaruhi isi dokumen dan kontak sistem.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-10.2.png" alt="Placeholder Settings" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman pengaturan sistem.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman Settings.</li>
+            <li>Action: Administrator meninjau dan mengubah nilai pengaturan.</li>
+            <li>Why: Menunjukkan area administrasi yang memengaruhi isi dokumen dan kontak sistem.</li>
+          </ul> -->
+        </div>
+
+        <h3>10.4 Expected Result</h3>
+        <p>Nilai pengaturan tersimpan dan digunakan oleh modul yang bergantung pada data tersebut.</p>
+
+        <h3>10.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika penyimpanan gagal, periksa batas panjang field atau pesan validasi.</li>
+          <li>Jika data tidak berubah di dokumen, buka ulang halaman untuk memastikan perubahan tersimpan.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="user-management">
+      <div class="section-number">11. User Management</div>
+      <h2>Manajemen Pengguna</h2>
+      <div class="card">
+        <h3>11.1 Purpose</h3>
+        <p>Memungkinkan administrator menambah, memperbarui, dan menghapus akun pengguna sistem.</p>
+
+        <h3>11.2 Preconditions</h3>
+        <ul>
+          <li>Administrator sudah login.</li>
+          <li>Menu User tersedia pada role administrator.</li>
+        </ul>
+
+        <h3>11.3 Steps</h3>
+        <ol>
+          <li>Buka menu User.</li>
+          <li>Klik Create User untuk menambahkan akun baru.</li>
+          <li>Isi nama, email, password, level akses, dan unit kerja bila diperlukan.</li>
+          <li>Simpan data pengguna.</li>
+          <li>Gunakan menu edit untuk memperbarui data pengguna yang sudah ada.</li>
+          <li>Gunakan menu hapus untuk menghapus pengguna yang tidak dipakai lagi.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-11.1.png" alt="Placeholder User Management" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman daftar pengguna.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Daftar pengguna.</li>
+            <li>Action: Administrator meninjau akun yang ada sebelum menambah atau mengubah data.</li>
+            <li>Why: Menunjukkan lokasi utama pengelolaan akun dalam sistem.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-11.2.png" alt="Placeholder User Management" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah pengguna.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form tambah pengguna.</li>
+            <li>Action: Administrator mengisi data akun baru dan memilih level akses.</li>
+            <li>Why: Penting untuk mendokumentasikan pengaturan akun baru dan hak aksesnya.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-11.3.png" alt="Placeholder User Management" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form edit pengguna.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form edit pengguna.</li>
+            <li>Action: Administrator memperbarui data akun yang ada.</li>
+            <li>Why: Menunjukkan cara perubahan data pengguna dilakukan secara operasional.</li>
+          </ul> -->
+        </div>
+
+        <h3>11.4 Expected Result</h3>
+        <p>Data pengguna tersimpan dan dapat digunakan untuk login sesuai level aksesnya.</p>
+
+        <h3>11.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika email sudah terdaftar, gunakan email lain.</li>
+          <li>Jika password tidak diterima, pastikan minimal 6 karakter dan konfirmasi cocok.</li>
+          <li>Pengguna admin bawaan bernomor ID 1 tidak dapat diubah atau dihapus berdasarkan kode sumber.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="master-data">
+      <div class="section-number">12. CRUD Operations / Master Data</div>
+      <h2>Pengelolaan Data Referensi</h2>
+      <div class="card">
+        <h3>12.1 Purpose</h3>
+        <p>Memelihara data referensi yang dipakai oleh modul operasional, seperti BMN, satker, barang, lokasi, identitas kategori, identitas, atribut, unit kerja, dan unit teknis.</p>
+
+        <h3>12.2 Preconditions</h3>
+        <ul>
+          <li>Administrator sudah login.</li>
+          <li>Data referensi dapat diakses melalui menu master data masing-masing.</li>
+        </ul>
+
+        <h3>12.3 Steps</h3>
+        <ol>
+          <li>Buka menu master data yang ingin dikelola.</li>
+          <li>Klik Create untuk menambah data referensi baru.</li>
+          <li>Isi form sesuai jenis data referensi.</li>
+          <li>Simpan data.</li>
+          <li>Gunakan Edit untuk mengubah data yang sudah tersimpan.</li>
+          <li>Gunakan Delete untuk menghapus data yang tidak lagi dipakai.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-12.1.png" alt="Placeholder Master Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman daftar master data - Data Jenis BMN.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Salah satu halaman master data, misalnya BMN atau Barang.</li>
+            <li>Action: Administrator membuka daftar referensi sebelum melakukan tambah, ubah, atau hapus.</li>
+            <li>Why: Menunjukkan pola CRUD yang dipakai di seluruh menu referensi.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-12.2.png" alt="Placeholder Master Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah master data - Data Jenis BMN.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Form tambah master data.</li>
+            <li>Action: Administrator menambahkan referensi baru.</li>
+            <li>Why: Membantu pengguna memahami cara mengisi data referensi yang menjadi dasar transaksi.</li>
+          </ul> -->
+        </div>
+
+        <h3>12.4 Expected Result</h3>
+        <p>Data referensi tersimpan dan dapat dipakai oleh modul lain seperti internal, SIMAN, dan PSP.</p>
+
+        <h3>12.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika nama sudah ada, gunakan nilai yang unik sesuai pesan validasi.</li>
+          <li>Jika data tidak dapat dihapus, periksa apakah data masih digunakan oleh relasi lain.</li>
+        </ul>
+      </div>
+
+      <div class="card spaced" id="identitas-master-data">
+        <h3>12.6 Identitas, Atribut, dan Kategori Identitas</h3>
+        <p>
+          Tiga data referensi ini saling berhubungan dan dipakai sebagai struktur data dinamis untuk aset internal.
+          Dengan berdasarkan alur: kategori identitas mengelompokkan identitas, identitas menjadi
+          template atau kelompok data, dan atribut menjadi komponen isian yang ditautkan ke identitas melalui pivot.
+          <!-- Evidence: [app/Http/Controllers/IdentitasKategoriController.php](../app/Http/Controllers/IdentitasKategoriController.php), [app/Http/Controllers/IdentitasController.php](../app/Http/Controllers/IdentitasController.php), [app/Http/Controllers/AtributController.php](../app/Http/Controllers/AtributController.php), [app/Models/IdentitasKategori.php](../app/Models/IdentitasKategori.php), [app/Models/Identitas.php](../app/Models/Identitas.php), [app/Models/Atribut.php](../app/Models/Atribut.php). -->
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Data Referensi</th>
+              <th>Fungsi di Sistem</th>
+              <th>Hubungan dengan Data Lain</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Kategori Identitas</td>
+              <td>Mengelompokkan identitas ke dalam kategori yang lebih mudah dipilih saat input data.</td>
+              <td>Memiliki banyak identitas.</td>
+            </tr>
+            <tr>
+              <td>Identitas</td>
+              <td>Menjadi template identitas aset dan menentukan atribut apa saja yang perlu diisi.</td>
+              <td>Belongs to kategori identitas dan berelasi many-to-many dengan atribut.</td>
+            </tr>
+            <tr>
+              <td>Atribut</td>
+              <td>Menentukan elemen data seperti string, number, atau date yang dapat dipakai pada identitas.</td>
+              <td>Dapat dipakai oleh banyak identitas, tetapi tidak dapat dihapus jika masih digunakan.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>12.6.1 Purpose</h4>
+        <p>
+          Menjelaskan cara mengelola struktur identitas aset agar pengguna dapat menyiapkan referensi data yang konsisten
+          sebelum mengisi data internal.
+        </p>
+
+        <h4>12.6.2 Preconditions</h4>
+        <ul>
+          <li>Administrator sudah login.</li>
+          <li>Menu Identitas Kategori, Identitas, dan Atribut tersedia di sistem.</li>
+          <li>Pengguna memahami urutan kerja: kategori dibuat terlebih dahulu, lalu atribut, lalu identitas yang mengikat atribut.</li>
+        </ul>
+
+        <h4>12.6.3 Steps</h4>
+        <ol>
+          <li>Buka menu Kategori Identitas untuk membuat kelompok identitas baru.</li>
+          <li>Isi nama kategori dan slug yang unik, lalu simpan.</li>
+          <li>Buka menu Atribut untuk membuat komponen data seperti kode, tanggal, atau angka.</li>
+          <li>Isi key, label, dan tipe data atribut, lalu simpan.</li>
+          <li>Buka menu Identitas untuk membuat template identitas baru.</li>
+          <li>Pilih kategori identitas yang sesuai.</li>
+          <li>Pilih atribut yang akan dipakai oleh identitas tersebut.</li>
+          <li>Tentukan atribut mana yang wajib, urutan tampil, placeholder, dan bantuan teks jika diperlukan.</li>
+          <li>Simpan identitas setelah seluruh relasi selesai dipilih.</li>
+          <li>Gunakan menu edit untuk memperbarui kategori, atribut, atau identitas bila ada perubahan kebutuhan data.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-12.3.png" alt="Placeholder Identitas Master Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah kategori identitas.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman Kategori Identitas saat administrator menambah kategori baru.</li>
+            <li>Action: Administrator mengisi nama dan slug kategori.</li>
+            <li>Why: Penting untuk menunjukkan dasar pengelompokan identitas sebelum atribut dan template dibuat.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-12.4.png" alt="Placeholder Identitas Master Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah atribut.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman Atribut saat administrator menambah atribut baru.</li>
+            <li>Action: Administrator memilih key, label, dan tipe data atribut.</li>
+            <li>Why: Menunjukkan bahwa atribut adalah komponen isian yang akan dipakai ulang oleh banyak identitas.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-12.5.png" alt="Placeholder Identitas Master Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah identitas.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman Identitas saat administrator memilih kategori dan atribut.</li>
+            <li>Action: Administrator menautkan atribut ke identitas dan menandai atribut wajib bila perlu.</li>
+            <li>Why: Menjelaskan bagian paling penting dari konfigurasi struktur data dinamis pada sistem.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-12.6.png" alt="Placeholder Identitas Master Data" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman form tambah identitas.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman Identitas saat administrator memilih kategori dan atribut.</li>
+            <li>Action: Administrator menautkan atribut ke identitas dan menandai atribut wajib bila perlu.</li>
+            <li>Why: Menjelaskan bagian paling penting dari konfigurasi struktur data dinamis pada sistem.</li>
+          </ul> -->
+        </div>
+
+        <h4>12.6.4 Expected Result</h4>
+        <p>
+          Kategori identitas tersimpan, atribut tersedia untuk dipilih, dan identitas dapat dipakai sebagai template
+          yang menampilkan atribut sesuai konfigurasi.
+        </p>
+
+        <h4>12.6.5 Troubleshooting</h4>
+        <ul>
+          <li>Jika kategori tidak tersimpan, cek apakah nama atau slug sudah dipakai.</li>
+          <li>Jika atribut tidak bisa dihapus, periksa apakah atribut masih dipakai oleh identitas lain.</li>
+          <li>Jika identitas tidak menampilkan atribut yang diharapkan, pastikan atribut diberi status enabled saat disimpan.</li>
+          <li>Jika data pilihan tidak muncul pada form, muat ulang halaman setelah menyimpan perubahan referensi.</li>
+        </ul>
+
+        <h4>12.6.6 Operational Notes</h4>
+        <ul>
+          <li>Kategori identitas harus dibuat terlebih dahulu agar identitas dapat dipetakan ke kategori yang benar.</li>
+          <li>Atribut dapat dipakai ulang oleh lebih dari satu identitas sehingga perubahan atribut perlu dilakukan hati-hati.</li>
+          <li>Struktur ini digunakan agar data internal dapat menampilkan komponen identitas secara konsisten.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="backup">
+      <div class="section-number">13. Backup Management</div>
+      <h2>Manajemen Cadangan</h2>
+      <div class="card">
+        <h3>13.1 Purpose</h3>
+        <p>Menjalankan, memantau, mengunduh, dan menghapus file cadangan aplikasi.</p>
+
+        <h3>13.2 Preconditions</h3>
+        <ul>
+          <li>Administrator sudah login.</li>
+          <li>Menu Backups tersedia.</li>
+        </ul>
+
+        <h3>13.3 Steps</h3>
+        <ol>
+          <li>Buka menu Backups.</li>
+          <li>Periksa daftar file backup yang tersedia.</li>
+          <li>Klik Full Backup untuk menjalankan cadangan lengkap.</li>
+          <li>Klik Files Only jika hanya ingin mencadangkan file.</li>
+          <li>Gunakan tombol Download untuk mengambil file backup tertentu.</li>
+          <li>Gunakan tombol Delete bila file backup sudah tidak diperlukan.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-13.1.png" alt="Placeholder Backup Management" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman backup management.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman backup management.</li>
+            <li>Action: Administrator meninjau daftar backup dan memilih tindakan.</li>
+            <li>Why: Menunjukkan area operasional untuk perlindungan data sistem.</li>
+          </ul> -->
+        </div>
+
+        <h3>13.4 Expected Result</h3>
+        <p>File backup dapat dibuat, diunduh, atau dihapus sesuai kebutuhan administrasi.</p>
+
+        <h3>13.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika file tidak ditemukan, pastikan backup sudah berhasil dibuat.</li>
+          <li>Jika unduhan gagal, cek izin akses dan ketersediaan file pada folder backup.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="activity-logs">
+      <div class="section-number">14. Activity Log Review</div>
+      <h2>Peninjauan Log Aktivitas</h2>
+      <div class="card">
+        <h3>14.1 Purpose</h3>
+        <p>Memeriksa riwayat aktivitas pengguna, mengekspor log, dan membersihkan log lama bila diperlukan.</p>
+
+        <h3>14.2 Preconditions</h3>
+        <ul>
+          <li>Administrator atau pengguna yang diberi akses sudah login.</li>
+          <li>Log aktivitas sudah tersedia di database.</li>
+        </ul>
+
+        <h3>14.3 Steps</h3>
+        <ol>
+          <li>Buka menu Activity Logs.</li>
+          <li>Gunakan filter berdasarkan user, metode, atau tanggal bila diperlukan.</li>
+          <li>Buka detail log untuk melihat URI, route, parameter, status code, dan user agent.</li>
+          <li>Klik Export untuk mengunduh log dalam format Excel.</li>
+          <li>Klik Cleanup untuk menghapus log yang sangat lama sesuai kebijakan sistem.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-14.1.png" alt="Placeholder Activity Logs" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman daftar log aktivitas dengan filter dan tombol ekspor.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman Activity Logs.</li>
+            <li>Action: Pengguna meninjau daftar log dan menerapkan filter.</li>
+            <li>Why: Membantu audit operasional dan menelusuri tindakan pengguna.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-14.2.png" alt="Placeholder Activity Logs Detail" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman detail log aktivitas.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Detail satu log aktivitas.</li>
+            <li>Action: Pengguna membuka rincian log untuk investigasi.</li>
+            <li>Why: Memperlihatkan informasi detail yang dipakai saat audit atau penelusuran insiden.</li>
+          </ul> -->
+        </div>
+
+        <h3>14.4 Expected Result</h3>
+        <p>Pengguna mendapatkan visibilitas atas aktivitas aplikasi dan dapat mengekspor log bila diperlukan.</p>
+
+        <h3>14.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika tabel kosong, pastikan ada data yang cocok dengan filter.</li>
+          <li>Jika ekspor gagal, coba ulangi setelah filter disederhanakan.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="psp">
+      <div class="section-number">15. PSP Document Generation</div>
+      <h2>Generasi Dokumen PSP</h2>
+      <div class="card">
+        <h3>15.1 Purpose</h3>
+        <p>Membuat dokumen PSP dalam format PDF berdasarkan data internal yang dipilih dan data pengaturan yang disimpan di sistem.</p>
+
+        <h3>15.2 Preconditions</h3>
+        <ul>
+          <li>Administrator sudah login.</li>
+          <li>Data internal yang akan diproses sudah tersedia.</li>
+          <li>Pengaturan biro, NIP biro, kepada, jabatan, dan lokasi sudah diisi bila diperlukan.</li>
+        </ul>
+
+        <h3>15.3 Steps</h3>
+        <ol>
+          <li>Buka menu PSP.</li>
+          <li>Pilih data internal yang akan dimasukkan ke dokumen.</li>
+          <li>Isi lampiran bila diperlukan.</li>
+          <li>Gunakan tombol unduh atau generate untuk membuat PDF PSP.</li>
+          <li>Simpan file PDF yang dihasilkan.</li>
+        </ol>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-5.2(1).png" alt="Placeholder PSP Generation" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Klik tombol Generate dokumen PSP (4) untuk masuk ke laman export PDF PSP.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman PSP sebelum pemilihan data.</li>
+            <li>Action: Administrator memilih data internal yang akan dicetak ke PDF.</li>
+            <li>Why: Menunjukkan sumber data yang digunakan untuk menghasilkan dokumen PSP.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-15.1.png" alt="Placeholder PSP Generation" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Halaman pemilihan data untuk generate PSP.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Halaman PSP sebelum pemilihan data.</li>
+            <li>Action: Administrator memilih data internal yang akan dicetak ke PDF.</li>
+            <li>Why: Menunjukkan sumber data yang digunakan untuk menghasilkan dokumen PSP.</li>
+          </ul> -->
+        </div>
+
+        <div class="placeholder">
+            <img src="SOP-images/img-15.2.png" alt="Placeholder PSP Result" style="width:100%; height:auto; border-radius: 8px;">
+            <small><pre>Hasil PDF PSP yang terbuka atau terunduh.
+            </pre></small>
+          <!-- <div class="title">Placeholder gambar</div>
+          <ul>
+            <li>Screen: Hasil PDF PSP yang terbuka atau terunduh.</li>
+            <li>Action: Administrator memeriksa dokumen hasil generate.</li>
+            <li>Why: Penting untuk memverifikasi isi dan format dokumen sebelum dipakai resmi.</li>
+          </ul> -->
+        </div>
+
+        <h3>15.4 Expected Result</h3>
+        <p>File PDF PSP berhasil dibuat dengan data yang dipilih dan siap digunakan.</p>
+
+        <h3>15.5 Troubleshooting</h3>
+        <ul>
+          <li>Jika PDF kosong, pastikan data internal yang dipilih memang ada.</li>
+          <li>Jika hasil dokumen tidak sesuai, cek kembali pengaturan biro dan lokasi.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- <section id="important-notes">
+      <div class="section-number">16. Important Notes</div>
+      <h2>Catatan Penting</h2>
+      <div class="card">
+        <ul>
+          <li>Registration tidak ditemukan pada source code, sehingga tidak disertakan sebagai SOP operasional.</li>
+          <li>Profile Management tidak ditemukan pada source code, sehingga tidak disertakan sebagai SOP operasional.</li>
+          <li>Notifications tidak ditemukan sebagai fitur pengguna akhir yang terimplementasi, sehingga tidak disertakan sebagai SOP operasional.</li>
+          <li>SOP ini hanya mendokumentasikan fitur yang terlihat pada controller, route, view, service, middleware, dan model yang ada.</li>
+          <li>Jika halaman tertentu tidak muncul, kemungkinan pengguna belum memiliki peran yang sesuai.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="appendix" class="appendix">
+      <div class="section-number">17. Appendix</div>
+      <h2>Screenshots Required</h2>
+      <p class="small">Daftar berikut memuat seluruh screenshot yang diperlukan untuk melengkapi SOP ini.</p>
+      <table class="screenshot-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Screenshot Name</th>
+            <th>Description</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>Login Page Idle</td><td>Tampilan halaman login sebelum kredensial diisi.</td><td>Section 2. Login</td></tr>
+          <tr><td>2</td><td>Login Submission</td><td>Tampilan saat pengguna menekan tombol Login.</td><td>Section 2. Login</td></tr>
+          <tr><td>3</td><td>Logout Control</td><td>Menu atau tombol Logout pada aplikasi.</td><td>Section 3. Logout</td></tr>
+          <tr><td>4</td><td>Logout Result</td><td>Halaman login setelah sesi berakhir.</td><td>Section 3. Logout</td></tr>
+          <tr><td>5</td><td>Dashboard Overview</td><td>Kartu ringkasan dan navigasi utama dashboard.</td><td>Section 4. Dashboard Usage</td></tr>
+          <tr><td>6</td><td>Dashboard Filter Unit Kerja</td><td>Tampilan dashboard setelah filter Unit Kerja dipilih.</td><td>Section 4. Dashboard Usage</td></tr>
+          <tr><td>7</td><td>Internal List</td><td>Daftar data internal sebelum tindakan CRUD.</td><td>Section 5. Asset Management</td></tr>
+          <tr><td>8</td><td>Internal Create Form</td><td>Form tambah data internal.</td><td>Section 5. Asset Management</td></tr>
+          <tr><td>9</td><td>Internal Edit Form</td><td>Form edit data internal.</td><td>Section 5. Asset Management</td></tr>
+          <tr><td>10</td><td>Internal Attachment Area</td><td>Area unggah foto atau dokumen pada data internal.</td><td>Section 5. Asset Management</td></tr>
+          <tr><td>11</td><td>SIMAN List</td><td>Halaman daftar SIMAN sebelum impor baru.</td><td>Section 6. Import SIMAN</td></tr>
+          <tr><td>12</td><td>SIMAN Import Form</td><td>Form upload file CSV SIMAN.</td><td>Section 6. Import SIMAN</td></tr>
+          <tr><td>13</td><td>Report Filter Screen</td><td>Halaman laporan sebelum ekspor.</td><td>Section 7. Reports</td></tr>
+          <tr><td>14</td><td>Report Download Result</td><td>Hasil file ekspor setelah proses selesai.</td><td>Section 7. Reports</td></tr>
+          <tr><td>15</td><td>Invalid Data List</td><td>Daftar data invalid.</td><td>Section 8. Invalid Data</td></tr>
+          <tr><td>16</td><td>Invalid Data Edit Form</td><td>Form perbaikan data invalid.</td><td>Section 8. Invalid Data</td></tr>
+          <tr><td>17</td><td>Locked Data List</td><td>Daftar data terkunci.</td><td>Section 9. Locked Data</td></tr>
+          <tr><td>18</td><td>Locked Action Buttons</td><td>Tombol lock, unlock, request unlock, atau reject request.</td><td>Section 9. Locked Data</td></tr>
+          <tr><td>19</td><td>Settings Screen</td><td>Halaman pengaturan sistem.</td><td>Section 10. Settings</td></tr>
+          <tr><td>20</td><td>User List</td><td>Daftar pengguna sistem.</td><td>Section 11. User Management</td></tr>
+          <tr><td>21</td><td>User Create Form</td><td>Form tambah pengguna.</td><td>Section 11. User Management</td></tr>
+          <tr><td>22</td><td>User Edit Form</td><td>Form edit pengguna.</td><td>Section 11. User Management</td></tr>
+          <tr><td>23</td><td>Master Data List</td><td>Salah satu halaman master data seperti BMN atau Barang.</td><td>Section 12. CRUD Operations / Master Data</td></tr>
+          <tr><td>24</td><td>Master Data Create Form</td><td>Form tambah master data referensi.</td><td>Section 12. CRUD Operations / Master Data</td></tr>
+          <tr><td>25</td><td>Backups Dashboard</td><td>Halaman pengelolaan backup.</td><td>Section 13. Backup Management</td></tr>
+          <tr><td>26</td><td>Activity Logs Screen</td><td>Daftar log aktivitas dan filter yang tersedia.</td><td>Section 14. Activity Log Review</td></tr>
+          <tr><td>27</td><td>Activity Log Detail</td><td>Rincian satu aktivitas.</td><td>Section 14. Activity Log Review</td></tr>
+          <tr><td>28</td><td>PSP Selection Screen</td><td>Halaman PSP sebelum memilih data.</td><td>Section 15. PSP Document Generation</td></tr>
+          <tr><td>29</td><td>PSP PDF Output</td><td>File PDF PSP yang dihasilkan.</td><td>Section 15. PSP Document Generation</td></tr>
+        </tbody>
+      </table>
+    </section> -->
+  </div>
+</body>
+</html>

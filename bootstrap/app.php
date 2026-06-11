@@ -184,102 +184,102 @@ return Application::configure(basePath: dirname(__DIR__))
     // })->create();
     ->withExceptions(function (Exceptions $exceptions): void {
 
-        // $exceptions->render(function (\Throwable $e, $request) {
+        $exceptions->render(function (\Throwable $e, $request) {
 
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Authentication / Session Expired
-        //     |--------------------------------------------------------------------------
-        //     */
-        //     if ($e instanceof \Illuminate\Auth\AuthenticationException ||
-        //         $e instanceof \Illuminate\Session\TokenMismatchException) {
+            /*
+            |--------------------------------------------------------------------------
+            | Authentication / Session Expired
+            |--------------------------------------------------------------------------
+            */
+            if ($e instanceof \Illuminate\Auth\AuthenticationException ||
+                $e instanceof \Illuminate\Session\TokenMismatchException) {
 
-        //         if ($request->expectsJson()) {
-        //             return response()->json([
-        //                 'message' => 'Session expired. Please login again.'
-        //             ], 401);
-        //         }
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'Session expired. Please login again.'
+                    ], 401);
+                }
 
-        //         return redirect()
-        //             ->guest(route('login'))
-        //             ->with('error', 'Session expired. Please login again.');
-        //     }
-
-
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Authorization (403)
-        //     |--------------------------------------------------------------------------
-        //     */
-        //     if ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
-
-        //         if ($request->expectsJson()) {
-        //             return response()->json([
-        //                 'message' => 'You are not authorized.'
-        //             ], 403);
-        //         }
-
-        //         return redirect()
-        //             ->back()
-        //             ->with('error', 'You are not authorized to perform this action.');
-        //     }
+                return redirect()
+                    ->guest(route('login'))
+                    ->with('error', 'Session expired. Please login again.');
+            }
 
 
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Validation Error
-        //     |--------------------------------------------------------------------------
-        //     */
-        //     if ($e instanceof \Illuminate\Validation\ValidationException) {
+            /*
+            |--------------------------------------------------------------------------
+            | Authorization (403)
+            |--------------------------------------------------------------------------
+            */
+            if ($e instanceof \Illuminate\Auth\Access\AuthorizationException) {
 
-        //         if ($request->expectsJson()) {
-        //             return response()->json([
-        //                 'message' => 'Validation failed',
-        //                 'errors' => $e->errors()
-        //             ], 422);
-        //         }
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'You are not authorized.'
+                    ], 403);
+                }
 
-        //         return redirect()
-        //             ->back()
-        //             ->withErrors($e->errors())
-        //             ->withInput();
-        //     }
+                return redirect()
+                    ->back()
+                    ->with('error', 'You are not authorized to perform this action.');
+            }
 
 
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Model Not Found
-        //     |--------------------------------------------------------------------------
-        //     */
-        //     if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+            /*
+            |--------------------------------------------------------------------------
+            | Validation Error
+            |--------------------------------------------------------------------------
+            */
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
 
-        //         if ($request->expectsJson()) {
-        //             return response()->json([
-        //                 'message' => 'Resource not found.'
-        //             ], 404);
-        //         }
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'Validation failed',
+                        'errors' => $e->errors()
+                    ], 422);
+                }
 
-        //         return redirect()
-        //             ->back()
-        //             ->with('error', 'The requested resource was not found.');
-        //     }
+                return redirect()
+                    ->back()
+                    ->withErrors($e->errors())
+                    ->withInput();
+            }
 
 
-        //     /*
-        //     |--------------------------------------------------------------------------
-        //     | Fallback Error
-        //     |--------------------------------------------------------------------------
-        //     */
-        //     if ($request->expectsJson()) {
-        //         return response()->json([
-        //             'message' => 'Something went wrong.'
-        //         ], 500);
-        //     }
+            /*
+            |--------------------------------------------------------------------------
+            | Model Not Found
+            |--------------------------------------------------------------------------
+            */
+            if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
 
-        //     return redirect()
-        //         ->back()
-        //         ->with('error', 'Something went wrong. Please try again.');
-        // });
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => 'Resource not found.'
+                    ], 404);
+                }
+
+                return redirect()
+                    ->back()
+                    ->with('error', 'The requested resource was not found.');
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Fallback Error
+            |--------------------------------------------------------------------------
+            */
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Something went wrong.'
+                ], 500);
+            }
+
+            return redirect()
+                ->back()
+                ->with('error', 'Something went wrong. Please try again.');
+        });
 
     })
     ->create();

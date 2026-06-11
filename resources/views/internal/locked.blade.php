@@ -73,224 +73,229 @@ table.dataTable th.dt-action-col::before {
                 </div>
               </div>
               <div class="card-body">
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="mb-2">
-                            <label for="nupSearch" class="form-label fw-bold">
-                                Search by NUP Range
-                            </label>
-                            <div class="row g-1">
-                                <div class="col-6">
-                                    <input
-                                        type="number"
-                                        id="nupMin"
-                                        class="form-control form-control-sm"
-                                        placeholder="Min NUP"
-                                        min="1"
-                                    >
-                                </div>
-                                <div class="col-6">
-                                    <input
-                                        type="number"
-                                        id="nupMax"
-                                        class="form-control form-control-sm"
-                                        placeholder="Max NUP"
-                                        min="1"
-                                    >
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="itemsSearch" class="form-label fw-bold">
-                                Search by Kode Barang
-                            </label>
-                                <select
-                                        class="form-control"
-                                        data-trigger
-                                        name="itemsSearch"
-                                        id="itemSelect"
-                                    >
-                                        <option value="" selected disabled>--Pilih Kode Barang--</option>
-                                        <option value="">Semua</option>
-                                        @foreach ($barang as $keybarang)
-
-                                        <option value="{{ $keybarang->kode_barang }}">{{ $keybarang->kode_barang }} - {{ $keybarang->nama_barang }}</option>
-                                        @endforeach
-                                </select>
-                            <input
-                                type="hidden"
-                                id="itemSearch"
-                                placeholder=""
-                            >
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="mb-2">
-                            <label for="unitSearch" class="form-label fw-bold">
-                                Search by Unit Kerja
-                            </label>
-                            <select
-                                        class="form-control "
-                                        data-unit
-                                        name="unitSearch"
-                                        id="unitSelect"
-                                    >
-                                        <option style="z-index: 4" value="" selected disabled>--Pilih Unit Kerja--</option>
-                                        <option style="z-index: 4" value="">Semua</option>
-                                        @foreach ($unitkerja as $keyunitkerja)
-
-                                        <option style="z-index: 4" value="{{ $keyunitkerja->id }}">{{ $keyunitkerja->name }}</option>
-                                        @endforeach
-                                    </select>
-                            <input
-                                type="hidden"
-                                id="unitSearch"
-                                placeholder=""
-                            >
-                        </div>
-                    </div>
-                </div>
-
-                {{-- filter by tgl --}}
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <label for="lokasiSearch" class="form-label fw-bold">
-                                Search by Tanggal Perolehan
-                            </label>
-                        <div class="accordion " id="accordionTgl">
-                            <div class="accordion-item">
-                                <h5 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                    Pilih Rentang Tanggal Perolehan
-                                </button>
-                                </h5>
-                                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionTgl">
-                                    <div class="accordion-body">
-                                        <div class="row">
-
-                                            <div class="col-md-6">
-                                                <label for="tglFrom" class="form-label">Dari tanggal</label>
-                                                <input type="text" id="tglFrom" class="form-control mb-3" autocomplete="off">
-                                                <button class="btn btn-sm btn-secondary" onclick="clearTgl()">Clear Filter</button>
-
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="tglTo" class="form-label">Sampai tanggal</label>
-                                                <input type="text" id="tglTo" class="form-control mb-3" autocomplete="off">
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="mb-2">
-                            <label for="lokasiSearch" class="form-label fw-bold">
-                                Search by Lokasi Ruang
-                            </label>
-                            <select
-                                        class="form-control"
-                                        data-lokasi
-                                        name="lokasiSearch"
-                                        id="lokasiSearch"
-                                    >
-                                        <option value="" selected disabled>--Pilih Lokasi Ruang--</option>
-                                        <option value="">Semua</option>
-                                        @foreach ($lokasiruang as $keylokasiruang)
-
-                                        <option value="{{ $keylokasiruang->id }}">{{ $keylokasiruang->name }}</option>
-                                        @endforeach
-                                    </select>
-                            <input
-                                type="hidden"
-                                id="lokasiSearch"
-                                placeholder=""
-                            >
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label for="identitasSearch" class="form-label fw-bold">
-                                Search by Identitas
-                            </label>
-                        <div class="accordion " id="accordionIdentitas">
-                            <div class="accordion-item">
-                                <h5 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIdentitas" aria-expanded="false" aria-controls="collapseIdentitas">
-                                    Pilih Identitas
-                                </button>
-                                </h5>
-                                <div id="collapseIdentitas" class="accordion-collapse collapse" data-bs-parent="#accordionIdentitas">
-                                    <div class="accordion-body">
-                                        <div class="row d-flex justify-content-between flex-column">
-                                            <div class="col-md-12">
-                                            <div class="mb-2">
-                                                <label for="kategoriIdentitasSearch" class="form-label">
-                                                    Pilih Kategori Identitas
-                                                </label>
-                                                <select
-                                                    class="form-control"
-                                                    data-kategori-identitas
-                                                    name="kategoriIdentitasSearch"
-                                                    id="kategoriIdentitasSearch"
-                                                >
-                                                    <option value="" selected disabled>--Pilih Kategori Identitas--</option>
-                                                    <option value="">Semua</option>
-                                                    @foreach ($identitasKategori as $kategori)
-                                                    <option value="{{ $kategori->id }}">{{ $kategori->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <div class="mb-2">
-                                                <label for="identitasSearch" class="form-label">
-                                                    Pilih Identitas
-                                                </label>
-                                                <select
-                                                    class="form-control"
-                                                    data-identitas
-                                                    name="identitasSearch"
-                                                    id="identitasSearch"
-                                                    disabled
-                                                >
-                                                    <option value="" selected disabled>--Pilih Identitas--</option>
-                                                    <option value="">Semua</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- filter by identitas --}}
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <div class="mb-2">
-                            <label class="form-label fw-bold">
-                                Search by Permintaan Unlock
-                            </label>
-                            <div>
-                                <label class="form-check-label me-3">
-                                    <input type="checkbox" class="form-check-input" id="isRequestedYes" value="1"> Ya
+                <a class="btn btn-primary px-3 mb-3" data-bs-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+                    Filter Data
+                </a>
+                <div class="collapse"  id="collapseFilter">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="mb-2">
+                                <label for="nupSearch" class="form-label fw-bold">
+                                    Search by NUP Range
                                 </label>
-                                {{-- <label class="form-check-label">
-                                    <input type="checkbox" class="form-check-input" id="isRequestedNo" value=""> Tidak
-                                </label> --}}
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <input
+                                            type="number"
+                                            id="nupMin"
+                                            class="form-control form-control-sm"
+                                            placeholder="Min NUP"
+                                            min="1"
+                                        >
+                                    </div>
+                                    <div class="col-6">
+                                        <input
+                                            type="number"
+                                            id="nupMax"
+                                            class="form-control form-control-sm"
+                                            placeholder="Max NUP"
+                                            min="1"
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <label for="itemsSearch" class="form-label fw-bold">
+                                    Search by Kode Barang
+                                </label>
+                                    <select
+                                            class="form-control"
+                                            data-trigger
+                                            name="itemsSearch"
+                                            id="itemSelect"
+                                        >
+                                            <option value="" selected disabled>--Pilih Kode Barang--</option>
+                                            <option value="">Semua</option>
+                                            @foreach ($barang as $keybarang)
+
+                                            <option value="{{ $keybarang->kode_barang }}">{{ $keybarang->kode_barang }} - {{ $keybarang->nama_barang }}</option>
+                                            @endforeach
+                                    </select>
+                                <input
+                                    type="hidden"
+                                    id="itemSearch"
+                                    placeholder=""
+                                >
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2">
+                                <label for="unitSearch" class="form-label fw-bold">
+                                    Search by Unit Kerja
+                                </label>
+                                <select
+                                            class="form-control "
+                                            data-unit
+                                            name="unitSearch"
+                                            id="unitSelect"
+                                        >
+                                            <option style="z-index: 4" value="" selected disabled>--Pilih Unit Kerja--</option>
+                                            <option style="z-index: 4" value="">Semua</option>
+                                            @foreach ($unitkerja as $keyunitkerja)
+
+                                            <option style="z-index: 4" value="{{ $keyunitkerja->id }}">{{ $keyunitkerja->name }}</option>
+                                            @endforeach
+                                        </select>
+                                <input
+                                    type="hidden"
+                                    id="unitSearch"
+                                    placeholder=""
+                                >
                             </div>
                         </div>
                     </div>
-                </div>
 
+                    {{-- filter by tgl --}}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="lokasiSearch" class="form-label fw-bold">
+                                    Search by Tanggal Perolehan
+                                </label>
+                            <div class="accordion " id="accordionTgl">
+                                <div class="accordion-item">
+                                    <h5 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        Pilih Rentang Tanggal Perolehan
+                                    </button>
+                                    </h5>
+                                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionTgl">
+                                        <div class="accordion-body">
+                                            <div class="row">
+
+                                                <div class="col-md-6">
+                                                    <label for="tglFrom" class="form-label">Dari tanggal</label>
+                                                    <input type="text" id="tglFrom" class="form-control mb-3" autocomplete="off">
+                                                    <button class="btn btn-sm btn-secondary" onclick="clearTgl()">Clear Filter</button>
+
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="tglTo" class="form-label">Sampai tanggal</label>
+                                                    <input type="text" id="tglTo" class="form-control mb-3" autocomplete="off">
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-2">
+                                <label for="lokasiSearch" class="form-label fw-bold">
+                                    Search by Lokasi Ruang
+                                </label>
+                                <select
+                                            class="form-control"
+                                            data-lokasi
+                                            name="lokasiSearch"
+                                            id="lokasiSearch"
+                                        >
+                                            <option value="" selected disabled>--Pilih Lokasi Ruang--</option>
+                                            <option value="">Semua</option>
+                                            @foreach ($lokasiruang as $keylokasiruang)
+
+                                            <option value="{{ $keylokasiruang->id }}">{{ $keylokasiruang->name }}</option>
+                                            @endforeach
+                                        </select>
+                                <input
+                                    type="hidden"
+                                    id="lokasiSearch"
+                                    placeholder=""
+                                >
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="identitasSearch" class="form-label fw-bold">
+                                    Search by Identitas
+                                </label>
+                            <div class="accordion " id="accordionIdentitas">
+                                <div class="accordion-item">
+                                    <h5 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIdentitas" aria-expanded="false" aria-controls="collapseIdentitas">
+                                        Pilih Identitas
+                                    </button>
+                                    </h5>
+                                    <div id="collapseIdentitas" class="accordion-collapse collapse" data-bs-parent="#accordionIdentitas">
+                                        <div class="accordion-body">
+                                            <div class="row d-flex justify-content-between flex-column">
+                                                <div class="col-md-12">
+                                                <div class="mb-2">
+                                                    <label for="kategoriIdentitasSearch" class="form-label">
+                                                        Pilih Kategori Identitas
+                                                    </label>
+                                                    <select
+                                                        class="form-control"
+                                                        data-kategori-identitas
+                                                        name="kategoriIdentitasSearch"
+                                                        id="kategoriIdentitasSearch"
+                                                    >
+                                                        <option value="" selected disabled>--Pilih Kategori Identitas--</option>
+                                                        <option value="">Semua</option>
+                                                        @foreach ($identitasKategori as $kategori)
+                                                        <option value="{{ $kategori->id }}">{{ $kategori->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12">
+                                                <div class="mb-2">
+                                                    <label for="identitasSearch" class="form-label">
+                                                        Pilih Identitas
+                                                    </label>
+                                                    <select
+                                                        class="form-control"
+                                                        data-identitas
+                                                        name="identitasSearch"
+                                                        id="identitasSearch"
+                                                        disabled
+                                                    >
+                                                        <option value="" selected disabled>--Pilih Identitas--</option>
+                                                        <option value="">Semua</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- filter by identitas --}}
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="mb-2">
+                                <label class="form-label fw-bold">
+                                    Search by Permintaan Unlock
+                                </label>
+                                <div>
+                                    <label class="form-check-label me-3">
+                                        <input type="checkbox" class="form-check-input" id="isRequestedYes" value="1"> Ya
+                                    </label>
+                                    {{-- <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input" id="isRequestedNo" value=""> Tidak
+                                    </label> --}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
                 {{-- <div class="table-responsive"> --}}
                     <table id="new-cons" class="table table-striped  " style="width:100%">
                         <thead>

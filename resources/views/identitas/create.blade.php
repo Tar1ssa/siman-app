@@ -49,7 +49,7 @@
                 <form action="{{ route('identitas.store') }}" method="post">
                     @csrf
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="mb-3">
 
                                 <label class="form-label">Kategori</label>
@@ -158,9 +158,9 @@
                                 </div>
 
                         </div>
-                        <div class="col-md-6 d-flex justify-content-center align-items-center">
+                        {{-- <div class="col-md-6 d-flex justify-content-center align-items-center">
                             <i class="ti ti-id font-size-icon text-blue-500"></i>
-                        </div>
+                        </div> --}}
                     </div>
                     <button type="submit" class="btn btn-shadow btn-primary">Submit</button>
                     <a href="{{ route('identitas.index') }}" class="btn btn-shadow btn-secondary">Kembali</a>

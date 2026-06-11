@@ -29,61 +29,124 @@
           <div class="col-sm-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between">
-                <h3>Tabel Komparasi</h3>
+                    <h3>Tabel Komparasi</h3>
+                    <a class="btn btn-primary px-3 " data-bs-toggle="collapse" href="#collapseAction" role="button" aria-expanded="false" aria-controls="collapseAction">
+                        Menu
+                    </a>
                 </div>
+                <div class="row">
+                    <div class="col-md-12 d-flex justify-content-center align-items-center gap-1 flex-wrap">
+                                <div class="collapse"  id="collapseAction">
+                                    <div class="card card-body d-flex gap-2 flex-row">
+                                        <a
+                                            href="{{ route('export.matchtgl', [
+                                                'batch_internal' => request('batch_internal'),
+                                                'batch_siman'    => request('batch_siman'),
+                                            ]) }}"
+                                            class="btn btn-info mb-3 text-white"
+                                        >
+                                            <i class="fa fa-file-excel"></i> Export Match Tanggal
+                                        </a>
 
-                {{-- laundry trans button --}}
-                {{-- <div>
-                    <a href="{{ route('internal.create') }}" class="btn btn-shadow btn-primary">Import data Internal</a>
-                    <button
-                    type="button"
-                    class="btn btn-shadow btn-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                    >
-                    Hapus batch data
-                </button> --}}
-                {{-- </div> --}}
+
+                                        <a
+                                            href="{{ route('export.matchnilai', [
+                                                'batch_internal' => request('batch_internal'),
+                                                'batch_siman'    => request('batch_siman'),
+                                            ]) }}"
+                                            class="btn btn-dark mb-3 text-white"
+                                        >
+                                            <i class="fa fa-file-excel"></i> Export Match Nilai
+                                        </a>
+
+                                        <a
+                                            href="{{ route('export.matchnup', [
+                                                'batch_internal' => request('batch_internal'),
+                                                'batch_siman'    => request('batch_siman'),
+                                            ]) }}"
+                                            class="btn btn-white mb-3 text-dark border border-dark"
+                                        >
+                                            <i class="fa fa-file-excel"></i> Export Match NUP
+                                        </a>
+
+                                        <a
+                                            href="{{ route('export.match', [
+                                                'batch_internal' => request('batch_internal'),
+                                                'batch_siman'    => request('batch_siman'),
+                                            ]) }}"
+                                            class="btn btn-success mb-3"
+                                        >
+                                            <i class="fa fa-file-excel"></i> Export MATCH
+                                        </a>
+
+
+                                        <a
+                                            href="{{ route('export.internal', [
+                                                'batch_internal' => request('batch_internal'),
+                                                'batch_siman'    => request('batch_siman'),
+                                            ]) }}"
+                                            class="btn btn-warning mb-3"
+                                        >
+                                            <i class="fa fa-file-excel"></i> Export Internal Only
+                                        </a>
+                                        <a
+                                            href="{{ route('export.siman', [
+                                                'batch_internal' => request('batch_internal'),
+                                                'batch_siman'    => request('batch_siman'),
+                                            ]) }}"
+                                            class="btn btn-primary mb-3"
+                                        >
+                                            <i class="fa fa-file-excel"></i> Export SIMAN Only
+                                        </a>
+
+                                </div>
+                    </div>
+                </div>
 
 
                 <div class="card-body">
 
                     <div class="row mb-3">
-                        <div class="col-md-3 mb-3">
-                            <select id="statusFilter" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="MATCH">MATCH</option>
-                                <option value="MATCH_NILAI">MATCH NILAI (Tanggal Tidak Sama)</option>
-                                <option value="MATCH_TGL">MATCH TGL (Nilai Tidak Sama)</option>
-                                <option value="MATCH_NUP">MATCH NUP (Tanggal & Nilai Tidak Sama)</option>
-                                <option value="INTERNAL_ONLY">INTERNAL ONLY</option>
-                                <option value="SIMAN_ONLY">SIMAN ONLY</option>
-                            </select>
+                        <div class="container">
+
+                            <a class="btn btn-primary px-3 mb-3" data-bs-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+                                Filter Data
+                            </a>
                         </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-3">
-                                <label>Batch Internal</label>
-                                <select id="batchInternal" class="form-select">
-                                    <option value="">Semua</option>
-                                    @foreach($batchInternal as $b)
-                                        <option value="{{ $b->batch }}">{{ $b->batch }} - {{ $b->label }}</option>
-                                    @endforeach
+                        <div class="collapse"  id="collapseFilter">
+                            <div class="col-md-3 mb-3">
+                                <select id="statusFilter" class="form-select">
+                                    <option value="">Semua Status</option>
+                                    <option value="MATCH">MATCH</option>
+                                    <option value="MATCH_NILAI">MATCH NILAI (Tanggal Tidak Sama)</option>
+                                    <option value="MATCH_TGL">MATCH TGL (Nilai Tidak Sama)</option>
+                                    <option value="MATCH_NUP">MATCH NUP (Tanggal & Nilai Tidak Sama)</option>
+                                    <option value="INTERNAL_ONLY">INTERNAL ONLY</option>
+                                    <option value="SIMAN_ONLY">SIMAN ONLY</option>
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
-                                <label>Batch SIMAN</label>
-                                <select id="batchSiman" class="form-select">
-                                    <option value="">Semua</option>
-                                    @foreach($batchSiman as $id)
-                                        <option value="{{ $id->id }}">{{ $id->id }} - {{ $id->label }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label>Batch Internal</label>
+                                    <select id="batchInternal" class="form-select">
+                                        <option value="">Semua</option>
+                                        @foreach($batchInternal as $b)
+                                            <option value="{{ $b->batch }}">{{ $b->batch }} - {{ $b->label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label>Batch SIMAN</label>
+                                    <select id="batchSiman" class="form-select">
+                                        <option value="">Semua</option>
+                                        @foreach($batchSiman as $id)
+                                            <option value="{{ $id->id }}">{{ $id->id }} - {{ $id->label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
-
-
-
                         </div>
 
 
@@ -111,66 +174,9 @@
                         <div class="row">
                             <div class="col-md-3 d-flex flex-column justify-content-around">
 
-                                <a
-                                    href="{{ route('export.matchtgl', [
-                                        'batch_internal' => request('batch_internal'),
-                                        'batch_siman'    => request('batch_siman'),
-                                    ]) }}"
-                                    class="btn btn-info mb-3 text-white"
-                                >
-                                    <i class="fa fa-file-excel"></i> Export Match Tanggal
-                                </a>
 
 
-                                <a
-                                    href="{{ route('export.matchnilai', [
-                                        'batch_internal' => request('batch_internal'),
-                                        'batch_siman'    => request('batch_siman'),
-                                    ]) }}"
-                                    class="btn btn-dark mb-3 text-white"
-                                >
-                                    <i class="fa fa-file-excel"></i> Export Match Nilai
-                                </a>
 
-                                <a
-                                    href="{{ route('export.matchnup', [
-                                        'batch_internal' => request('batch_internal'),
-                                        'batch_siman'    => request('batch_siman'),
-                                    ]) }}"
-                                    class="btn btn-white mb-3 text-dark border border-dark"
-                                >
-                                    <i class="fa fa-file-excel"></i> Export Match NUP
-                                </a>
-
-                                <a
-                                    href="{{ route('export.match', [
-                                        'batch_internal' => request('batch_internal'),
-                                        'batch_siman'    => request('batch_siman'),
-                                    ]) }}"
-                                    class="btn btn-success mb-3"
-                                >
-                                    <i class="fa fa-file-excel"></i> Export MATCH
-                                </a>
-                            </div>
-                            <div class="col-md-3 d-flex flex-column justify-content-around">
-                                <a
-                                    href="{{ route('export.internal', [
-                                        'batch_internal' => request('batch_internal'),
-                                        'batch_siman'    => request('batch_siman'),
-                                    ]) }}"
-                                    class="btn btn-warning mb-3"
-                                >
-                                    <i class="fa fa-file-excel"></i> Export Internal Only
-                                </a>
-                                <a
-                                    href="{{ route('export.siman', [
-                                        'batch_internal' => request('batch_internal'),
-                                        'batch_siman'    => request('batch_siman'),
-                                    ]) }}"
-                                    class="btn btn-primary mb-3"
-                                >
-                                    <i class="fa fa-file-excel"></i> Export SIMAN Only
-                                </a>
                             </div>
                         </div>
 

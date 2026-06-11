@@ -49,93 +49,97 @@
                 </div>
               </div>
               <div class="card-body">
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="mb-2">
-                            <label for="nupSearch" class="form-label fw-bold">
-                                Search by NUP Range
-                            </label>
-                            <div class="row g-1">
-                                <div class="col-6">
-                                    <input
-                                        type="number"
-                                        id="nupMin"
-                                        class="form-control form-control-sm"
-                                        placeholder="Min NUP"
-                                        min="1"
-                                    >
-                                </div>
-                                <div class="col-6">
-                                    <input
-                                        type="number"
-                                        id="nupMax"
-                                        class="form-control form-control-sm"
-                                        placeholder="Max NUP"
-                                        min="1"
-                                    >
+                <a class="btn btn-primary px-3 mb-3" data-bs-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+                    Filter Data
+                </a>
+                <div class="collapse"  id="collapseFilter">
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <div class="mb-2">
+                                <label for="nupSearch" class="form-label fw-bold">
+                                    Search by NUP Range
+                                </label>
+                                <div class="row g-1">
+                                    <div class="col-6">
+                                        <input
+                                            type="number"
+                                            id="nupMin"
+                                            class="form-control form-control-sm"
+                                            placeholder="Min NUP"
+                                            min="1"
+                                        >
+                                    </div>
+                                    <div class="col-6">
+                                        <input
+                                            type="number"
+                                            id="nupMax"
+                                            class="form-control form-control-sm"
+                                            placeholder="Max NUP"
+                                            min="1"
+                                        >
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2">
-                            <label for="itemsSearch" class="form-label fw-bold">
-                                Search by Kode Barang
-                            </label>
-                            <select
-                                        class="form-control"
-                                        data-trigger
-                                        name=""
-                                        id="itemSelect"
-                                    >
-                                        <option value="" selected disabled>--Pilih Kode Barang--</option>
-                                        <option value="">Semua</option>
-                                        @foreach ($barang as $keybarang)
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <label for="itemsSearch" class="form-label fw-bold">
+                                    Search by Kode Barang
+                                </label>
+                                <select
+                                            class="form-control"
+                                            data-trigger
+                                            name=""
+                                            id="itemSelect"
+                                        >
+                                            <option value="" selected disabled>--Pilih Kode Barang--</option>
+                                            <option value="">Semua</option>
+                                            @foreach ($barang as $keybarang)
 
-                                        <option value="{{ $keybarang->kode_barang }}">{{ $keybarang->kode_barang }} - {{ $keybarang->nama_barang }}</option>
-                                        @endforeach
-                                    </select>
-                            <input
-                                type="hidden"
-                                id="itemSearch"
-                                placeholder=""
-                            >
+                                            <option value="{{ $keybarang->kode_barang }}">{{ $keybarang->kode_barang }} - {{ $keybarang->nama_barang }}</option>
+                                            @endforeach
+                                        </select>
+                                <input
+                                    type="hidden"
+                                    id="itemSearch"
+                                    placeholder=""
+                                >
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="col-md-4">
-                        <label for="" class="form-label"></label>
-                        <div class="accordion " id="accordionTgl">
-                            <div class="accordion-item">
-                                <h5 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                    Search by Tanggal Perolehan
-                                </button>
-                                </h5>
-                                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionTgl">
-                                    <div class="accordion-body">
-                                        <div class="row">
+                        <div class="col-md-4">
+                            <label for="" class="form-label"></label>
+                            <div class="accordion " id="accordionTgl">
+                                <div class="accordion-item">
+                                    <h5 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        Search by Tanggal Perolehan
+                                    </button>
+                                    </h5>
+                                    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionTgl">
+                                        <div class="accordion-body">
+                                            <div class="row">
 
-                                            <div class="col-md-6">
-                                                <label for="tglFrom" class="form-label">Dari tanggal</label>
-                                                <input type="text" id="tglFrom" class="form-control mb-3" autocomplete="off">
-                                                <button class="btn btn-sm btn-secondary" onclick="clearTgl()">Clear Filter</button>
+                                                <div class="col-md-6">
+                                                    <label for="tglFrom" class="form-label">Dari tanggal</label>
+                                                    <input type="text" id="tglFrom" class="form-control mb-3" autocomplete="off">
+                                                    <button class="btn btn-sm btn-secondary" onclick="clearTgl()">Clear Filter</button>
 
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="tglTo" class="form-label">Sampai tanggal</label>
-                                                <input type="text" id="tglTo" class="form-control mb-3" autocomplete="off">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="tglTo" class="form-label">Sampai tanggal</label>
+                                                    <input type="text" id="tglTo" class="form-control mb-3" autocomplete="off">
 
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
-
                 </div>
-
                 {{-- <img src="{{ $imageUrl }}" alt="Downloaded Image" style="max-width: 300px;"> --}}
                 <div class="">
                     <table id="new-cons" class="table table-striped" style="width:100%">
